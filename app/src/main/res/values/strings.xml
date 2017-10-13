@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">Need</string>
+    <string name="company">entreprise</string>
+    <string name="individual">particulier</string>
+    <string name="user_type_label">JE SUIS UN(E) :</string>
+    <string name="plus">+</string>
+    <string name="title_activity_user_need">Besoin</string>
+    <string name="title_activity_messages">Messages</string>
+    <string name="sample_text">Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi</string>
+
+
+    <!--Auth-->
+    <string name="action_sign_in_short">Inscription</string>
+    <string name="email">Email</string>
+    <string name="minimum_password">"Mot de passe trop court!"</string>
+    <string name="minimum_username">"Nom d'utilisateur trop court!"</string>
+    <string name="invalid_username">"Nom d'utilisateur invalide!"</string>
+    <string name="singup_auth_failed">Echec de l\' authentication</string>
+    <string name="signin_auth_failed">Echec de l\' authentication.\nVérifiez vos identifiants.</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Mot de passe</string>
+    <string name="btn_login">Connexion</string>
+    <string name="btn_link_to_register">Pas encore membre? Je m\'inscris!</string>
+    <string name="btn_link_to_login">J\'ai déjà un compte. Je me connecte!</string>
+    <string name="btn_forgot_password">Mot de passe oublié?</string>
+    <string name="btn_reset_password">Réinitialiser le mot de passe</string>
+    <string name="btn_back"><![CDATA[<< Retour]]></string>
+    <string name="btn_sign_out">Déconnexion</string>
+    <string name="lbl_forgot_password">Mot de passe oublié?</string>
+    <string name="lbl_signin">Connexion</string>
+    <string name="lbl_signup">Inscription</string>
+    <string name="forgot_password_msg">Entrez votre email d\'inscription pour recevoir les instructions de réinitialisation de votre mot de passe</string>
+    <string name="title_activity_uther_profile">UtherProfileActivity</string>
+    <string name="usename">Nom d\'utilisateur</string>
+    <string name="avail_to_available_warning">Vous serez vu comme disponible.\nVous recevrez des notifications.</string>
+    <string name="avail_to_busy_warning">Vous serez vu comme occupé.\nVous ne recevrez plus de notifications.</string>
+    <string name="delete_need_warning">Ce besoin sera supprimé!</string>
+    <string name="delete_keyword_warning">Ce mot-clé sera supprimé!</string>
+</resources>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/save_need_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingBottom="16dp"
+            android:paddingTop="8dp"
+            app:layout_scrollFlags="scroll">
+
+            <TextView
+                android:id="@+id/keywords_List_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/small"
+                android:ellipsize="end"
+                android:text="Publier votre recherche"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textColor="#212121"
+                android:textSize="16dp" />
+
+            <TextView
+                android:id="@+id/keywords_List_indication2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="(publier votre recherche comme annonce)"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textColor="#212121"
+                android:textSize="12dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="32dp"
+                android:paddingRight="32dp"
+                android:paddingTop="32dp">
+
+                <TextView
+                    android:id="@+id/keyword_textview"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_marginLeft="@dimen/large"
+                    android:layout_marginRight="@dimen/large"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:text="Annonce active" />
+
+                <Switch
+                    android:id="@+id/need_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/need_form_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/activity_horizontal_margin"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingBottom="0dp"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingTop="@dimen/activity_vertical_margin" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_save_need"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:backgroundTint="@android:color/transparent"
+        android:elevation="8dp"
+        android:src="@drawable/ic_done_24dp"
+        app:borderWidth="0dp"
+        app:pressedTranslationZ="6dp"
+        app:rippleColor="@android:color/transparent" />
+
+
+    <fragment
+        android:id="@+id/waiter_modal_fragment"
+        class="com.aj.need.tools.components.fragments.ProgressBarFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout="@layout/fragment_progressbar" />
+
+</FrameLayout>
+
+
+
+

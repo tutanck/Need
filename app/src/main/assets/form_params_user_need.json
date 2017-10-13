@@ -1,0 +1,46 @@
+{
+  "ordered_fields_names": [
+    "search",
+    "title",
+    "description",
+    "where",
+    "when",
+    "reward"
+  ],
+  "search": {
+    "label": "Mots-clés de la recherche",
+    "indication": "Mots-clés de la recherche",
+    "indication2": "Mots-clés de la recherche",
+    "kind": 1
+  },
+  "title": {
+    "label": "Titre du besoin",
+    "indication": "Donnez un titre à votre besoin",
+    "indication2": "Entrez le titre de ce besoin",
+    "kind": 1
+  },
+  "description": {
+    "label": "Description du besoin",
+    "indication": "Décrivez votre besoin",
+    "indication2": "Expliquez votre besoin",
+    "kind": 0
+  },
+  "reward": {
+    "label": "Rémunération",
+    "indication": "Précisez la récompense",
+    "indication2": "Quelle rémunération proposez vous ?",
+    "kind": 1
+  },
+  "when": {
+    "label": "Moment du besoin",
+    "indication": "Précisez une date ou un moment",
+    "indication2": "Quand en aurez vous besoin ?",
+    "kind": 1
+  },
+  "where": {
+    "label": "Lieu du besoin",
+    "indication": "Précisez un lieu",
+    "indication2": "Où en aurez vous besoin ?",
+    "kind": 1
+  }
+}

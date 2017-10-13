@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/small"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/small"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/small">
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/fragment_user_needs_indications"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/keywords_List_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/small"
+                android:ellipsize="end"
+                android:text="Recherches sauvegardées"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textColor="#212121"
+                android:textSize="16dp" />
+
+            <TextView
+                android:id="@+id/keywords_List_indication2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="@dimen/medium"
+                android:text="(Vos recherches sauvegardées se trouvent ici)"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textColor="#212121"
+                android:textSize="14dp" />
+        </LinearLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/needs_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scrollbars="vertical" />
+
+    </LinearLayout>
+
+    <fragment
+        android:id="@+id/waiter_modal_fragment"
+        class="com.aj.need.tools.components.fragments.ProgressBarFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout="@layout/fragment_progressbar" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_add_need"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/ic_search_24dp"
+        app:backgroundTint="@color/Gold" />
+
+</FrameLayout>

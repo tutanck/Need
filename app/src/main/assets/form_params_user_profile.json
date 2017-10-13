@@ -1,0 +1,25 @@
+{
+  "ordered_fields_names": [
+    "username",
+    "resume",
+    "tariff"
+  ],
+  "username": {
+    "label": "NOM D\'UTILISATEUR",
+    "indication": "NOM D\'UTILISATEUR",
+    "indication2": "Choisissez un nom d\'utilisateur",
+    "kind": 1
+  },
+  "resume": {
+    "label": "MON ACTIVITE",
+    "indication": "MON ACTIVITE",
+    "indication2": "Dites en plus sur votre activité",
+    "kind": 0
+  },
+  "tariff": {
+    "label": "MES TARIFS (Optionnel)",
+    "indication": "MES TARIFS (Optionnel)",
+    "indication2": "Indiquez vos tarifs (Optionnel)",
+    "kind": 0
+  }
+}
