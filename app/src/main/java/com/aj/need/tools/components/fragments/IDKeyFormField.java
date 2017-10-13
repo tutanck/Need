@@ -1,6 +1,7 @@
 package com.aj.need.tools.components.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -13,10 +14,15 @@ import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.colls.PROFILES;
+import com.aj.need.domain.entities.User;
 import com.aj.need.tools.components.services.ComponentsServices;
 import com.aj.need.tools.components.services.Ic;
 import com.aj.need.tools.regina.ack.UIAck;
 import com.aj.need.tools.utils.KeyboardServices;
+import com.aj.need.tools.utils.__;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.json.JSONObject;
 
@@ -47,6 +53,8 @@ public class IDKeyFormField extends Fragment {
     private String _id;
 
     private boolean editable;
+
+    FirebaseFirestore db;
 
 
     //instance parameters
@@ -83,6 +91,8 @@ public class IDKeyFormField extends Fragment {
         super.onCreateView(inflater, container, savedInstanceState);
 
         final Bundle args = getArguments();
+
+        db = FirebaseFirestore.getInstance();
 
         formFieldId = args.getInt(FORM_FIELD_ID);
 
@@ -121,13 +131,20 @@ public class IDKeyFormField extends Fragment {
                         @Override
                         public void onClick(View view) {
                             if (!isOpen()) open();
-                            else
-                                PROFILES.setField(_id, getKey(), getETText(), new UIAck(getActivity()) {
-                                    @Override
-                                    protected void onRes(Object res, JSONObject ctx) {
-                                        close();
-                                    }
-                                });
+                            else db.collection(User.coll).document(_id)
+                                    .update(getKey(), getETText())
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            close();
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            __.showShortToast(getContext(), "Echec de la mise à jour");
+                                        }
+                                    });
                         }
                     }
             );

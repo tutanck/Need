@@ -20,6 +20,8 @@ import android.view.MenuItem;
 
 import com.aj.need.R;
 
+import com.aj.need.domain.components.profile.ProfileFragment;
+import com.aj.need.domain.entities.User;
 import com.aj.need.tools.oths.PageFragment;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.__;
@@ -41,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener authListener;
     FirebaseAuth mAuth;
     FirebaseFirestore db;
+
+    static String uid;
 
     ListenerRegistration profileRegistration;
 
@@ -93,8 +97,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        final DocumentReference profileRef = db.collection(Profile.coll).document(mAuth.getUid());
-        profileRef.update("availability", Avail.AVAILABLE);
+        uid=mAuth.getUid();
+
+        final DocumentReference profileRef = db.collection(User.coll).document(mAuth.getUid());
+        profileRef.update(User.availabilityKey, Avail.AVAILABLE);
 
         profileRegistration = profileRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -102,8 +108,8 @@ public class MainActivity extends AppCompatActivity {
                                 @Nullable FirebaseFirestoreException e) {
 
                 if (e == null && snapshot != null && snapshot.exists()) {
-                    Log.d("TAG", "Current data: " + snapshot.getData().toString());
-                    resetAvailabilityBtn(((Long) snapshot.getData().get("availability")).intValue());
+                    Log.d("AvailabilityListener: ", "Current data: " + snapshot.getData().toString());
+                    resetAvailabilityBtn(((Long) snapshot.getData().get(User.availabilityKey)).intValue());
                 }
             }
         });
@@ -140,8 +146,8 @@ public class MainActivity extends AppCompatActivity {
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        db.collection(Profile.coll).document(mAuth.getUid())
-                                .update("availability", Avail.nextStatus(mAvailability));
+                        db.collection(User.coll).document(mAuth.getUid())
+                                .update(User.availabilityKey, Avail.nextStatus(mAvailability));
                     }
                 });
 
@@ -156,8 +162,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.action_settings:
-                db.collection(Profile.coll).document(mAuth.getUid())
-                        .update("availability", Avail.OFFLINE)
+                db.collection(User.coll).document(mAuth.getUid())
+                        .update(User.availabilityKey, Avail.OFFLINE)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
@@ -194,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return PageFragment.newInstance(position);//AdsFragment.newInstance();
                 case 1:
-                    return PageFragment.newInstance(position);//ProfileFragment.newInstance(user_id, true);
+                    return ProfileFragment.newInstance(uid,true);
                 case 2:
                     return PageFragment.newInstance(position);//UserNeedsFragment.newInstance();
                 case 3:

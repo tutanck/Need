@@ -3,10 +3,12 @@ package com.aj.need.domain.components.profile;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,10 +19,13 @@ import android.widget.RatingBar;
 import com.aj.need.R;
 import com.aj.need.db.colls.PROFILES;
 import com.aj.need.db.colls.USER_RATINGS;
+import com.aj.need.domain.entities.User;
+import com.aj.need.domain.entities.UserRating;
 import com.aj.need.main.A;
 import com.aj.need.domain.components.keywords.UserKeywordsActivity;
 import com.aj.need.domain.components.keywords.UtherKeywordsActivity;
 import com.aj.need.domain.components.messages.MessagesActivity;
+import com.aj.need.main.MainActivity;
 import com.aj.need.tools.components.fragments.IDKeyFormField;
 import com.aj.need.tools.components.fragments.ImageFragment;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
@@ -29,6 +34,13 @@ import com.aj.need.tools.regina.ack.VoidBAck;
 import com.aj.need.tools.utils.JSONServices;
 import com.aj.need.tools.utils.__;
 import com.aj.need.tools.regina.ack.UIAck;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,9 +56,9 @@ public class ProfileFragment extends Fragment {
 
     private final static String USER_ID = "USER_ID";
 
-    private boolean isEditable = false;
-
     private String user_id = null;
+
+    private boolean isEditable = false;
 
     private JSONObject formParams;
 
@@ -55,6 +67,9 @@ public class ProfileFragment extends Fragment {
     private Map<String, IDKeyFormField> formFields = new HashMap<>();
 
     private RadioGroup userTypeRG;
+
+    FirebaseAuth mAuth;
+    FirebaseFirestore db;
 
     public static ProfileFragment newInstance(
             String user_id,
@@ -79,6 +94,10 @@ public class ProfileFragment extends Fragment {
         final Bundle args = getArguments();
 
         user_id = args.getString(USER_ID);
+
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
         isEditable = args.getBoolean(EDITABLE);
 
         View view = inflater.inflate(R.layout.fragment_user_profile, container, false);
@@ -88,7 +107,7 @@ public class ProfileFragment extends Fragment {
 
         final RatingBar userRating = view.findViewById(R.id.user_rating);
 
-        USER_RATINGS.computeUserRating(user_id, new UIAck(getActivity()) {
+        USER_RATINGS.computeUserRating(user_id, new UIAck(getActivity()) { //// TODO: 13/10/2017 urgent
             @Override
             protected void onRes(Object res, JSONObject ctx) {
                 JSONObject ratingDoc = ((JSONArray) res).optJSONObject(0);
@@ -105,17 +124,20 @@ public class ProfileFragment extends Fragment {
 
         if (!isEditable) {
             ratingControl.setIsIndicator(false);
-            USER_RATINGS.getUserRating(A.user_id(getActivity()), user_id, new UIAck(getActivity()) {
-                @Override
-                protected void onRes(Object res, JSONObject ctx) {
-                    JSONObject ratingDoc = ((JSONArray) res).optJSONObject(0);
-                    try {
-                        ratingControl.setRating(ratingDoc != null ? ratingDoc.getInt(USER_RATINGS.ratingKey) : 0);
-                    } catch (JSONException e) {
-                        __.fatal(e); //SNO : if a doc exist the reputation should exist too
+            db.collection(User.coll).document(mAuth.getUid())
+                    .collection(UserRating.coll).document(user_id).get().addOnCompleteListener(
+                    new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                DocumentSnapshot ratingDoc = task.getResult();
+                                ratingControl.setRating((ratingDoc != null && ratingDoc.exists()) ? ratingDoc.getLong(UserRating.ratingKey) : 0);
+                            } else
+                                __.showShortToast(getContext(), "impossible de charger la note attribuées"); //// TODO: 13/10/2017
+
+                        }
                     }
-                }
-            });
+            );
 
             ratingControl.setOnRatingBarChangeListener(
                     new RatingBar.OnRatingBarChangeListener() {
@@ -125,10 +147,20 @@ public class ProfileFragment extends Fragment {
                                 , boolean fromUser
                         ) {
                             if (fromUser)
-                                USER_RATINGS.setUtherRating(rating
-                                        , A.user_id(getActivity())
-                                        , user_id, new VoidBAck(getActivity())
-                                );
+                                db.collection(User.coll).document(mAuth.getUid())
+                                        .collection(UserRating.coll).document(user_id).set(new UserRating(rating))
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                __.showShortToast(getContext(), "Note mise à jour"); //// TODO: 13/10/2017
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                __.showShortToast(getContext(), "Erreur : la note n'a pas été mise à jour");// // TODO: 13/10/2017  
+                                            }
+                                        });
                         }
                     }
             );
@@ -150,7 +182,7 @@ public class ProfileFragment extends Fragment {
                         int radioButtonID = userTypeRG.getCheckedRadioButtonId();
                         RadioButton radioButton = userTypeRG.findViewById(radioButtonID);
                         int index = userTypeRG.indexOfChild(radioButton);
-                        PROFILES.setField(user_id, PROFILES.typeKey, index, new VoidBAck(getActivity()));
+                        db.collection(User.coll).document(user_id).update(User.typeKey, index);
                     }
                 });
             }
@@ -217,39 +249,34 @@ public class ProfileFragment extends Fragment {
         super.onStart();
 
         progressBarFragment.show();
+        db.collection(User.coll).document(mAuth.getUid()).get().addOnCompleteListener(
+                new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot profile = task.getResult();
+                            if (profile != null) {
+                                Log.d("getUserProfile", "DocumentSnapshot data: " + task.getResult().getData());
 
-        PROFILES.getProfile(user_id, new UIAck(getActivity()) {
-            @Override
-            protected void onRes(Object res, JSONObject ctx) {
-                JSONArray jar = (JSONArray) res;
-                try {
-                    JSONObject profile = jar.getJSONObject(0);
+                                //RadioGroup::userTypeRG
+                                Long userType = profile.getLong(User.typeKey);
+                                int selectedIndex = userType == null ? 0 : userType.intValue();
+                                ((RadioButton) userTypeRG.getChildAt(selectedIndex)).setChecked(true);
 
-                    //RadioGroup::userTypeRG
-                    int selectedIndex = ((JSONArray) res).getJSONObject(0).optInt(PROFILES.typeKey, 0);
-                    ((RadioButton) userTypeRG.getChildAt(selectedIndex)).setChecked(true);
+                                //FormField::all
+                                for (String key : formFields.keySet())
+                                    formFields.get(key).getTvContent().setText(profile.getString(key));
 
-                    //FormField::all
-                    for (String key : formFields.keySet())
-                        formFields.get(key).getTvContent().setText(profile.optString(key));
+                                progressBarFragment.hide();
+                            } else __.fatal("No such document");
+                        } else {
+                            Log.d("getUserProfile", "get failed with ", task.getException());
+                            __.showShortToast(getContext(), "Impossible de charger le profile"); //// TODO: 13/10/2017
+                        }
 
-                    progressBarFragment.hide();
-
-                } catch (JSONException e) {
-                    __.fatal(e);
+                    }
                 }
-            }
-
-            @Override
-            protected void onErr(
-                    JSONObject err,
-                    JSONObject ctx
-            ) {
-                super.onErr(err, ctx);
-                progressBarFragment.hide();
-            }
-
-        });
+        );
 
     }
 }
