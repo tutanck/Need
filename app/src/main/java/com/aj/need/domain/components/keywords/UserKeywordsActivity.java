@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,6 +14,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -21,10 +23,19 @@ import android.widget.LinearLayout;
 import com.aj.need.R;
 import com.aj.need.db.colls.USER_KEYWORDS;
 import com.aj.need.domain.components.needs.main.UserNeedsRecyclerAdapter;
+import com.aj.need.domain.entities.User;
 import com.aj.need.main.A;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.regina.ack.UIAck;
 import com.aj.need.tools.utils.__;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,11 +57,17 @@ public class UserKeywordsActivity extends AppCompatActivity {
     private LinearLayout indicationsLayout;
     private ProgressBarFragment progressBarFragment;
 
+    FirebaseAuth mAuth;
+    FirebaseFirestore db;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_keywords);
+
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         btnAdd = (ImageButton) findViewById(R.id.add_keyword_button);
         btnAdd.setEnabled(false);
@@ -86,45 +103,47 @@ public class UserKeywordsActivity extends AppCompatActivity {
 
     private void loadKeywords() {
         progressBarFragment.show();
-        USER_KEYWORDS.loadUserKeywords(A.user_id(this), new UIAck(this) {
-            @Override
-            protected void onRes(Object res, JSONObject ctx) {
-                try {
-                    JSONArray jar = (JSONArray) res;
-                    mUserKeywords.clear();
-                    int i = 0;
-                    for (; i < jar.length(); i++) {
-                        JSONObject jo = jar.getJSONObject(i);
-                        mUserKeywords.add(new UserKeyword(
-                                jo.getString(USER_KEYWORDS.keywordKey)
-                                , jo.getBoolean(USER_KEYWORDS.activeKey)));
-                    }
 
-                    indicationsLayout.setVisibility(i == 0 ? View.VISIBLE : View.GONE);
-                    mAdapter.notifyDataSetChanged();
-                    progressBarFragment.hide();
-                } catch (JSONException e) {
-                    __.fatal(e); //SNO : if a doc exist the keyword field should exist too
-                }
-            }
-        });
+        db.collection(User.coll).document(mAuth.getUid()).collection(UserKeyword.coll).get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            mUserKeywords.clear();
+                            for (DocumentSnapshot keywordDoc : task.getResult())
+                                mUserKeywords.add(new UserKeyword(
+                                        keywordDoc.getId()
+                                        , keywordDoc.getBoolean(UserKeyword.activeKey)
+                                        , keywordDoc.getBoolean(UserKeyword.deletedKey))
+                                );
+
+                            indicationsLayout.setVisibility(mUserKeywords.size() == 0 ? View.VISIBLE : View.GONE);
+                            mAdapter.notifyDataSetChanged();
+                            progressBarFragment.hide();
+                        } else {
+                            __.showShortToast(UserKeywordsActivity.this, "Impossible de charger les mots clés");
+                        }
+                    }
+                });
     }
 
 
     void saveKeyword(String keyword, boolean active, boolean deleted) {
         if (isKeyword(keyword)) {
             progressBarFragment.show();
-            USER_KEYWORDS.saveUserKeyword(keyword, A.user_id(this), active, deleted,
-                    new UIAck(this) {
+
+            db.collection(User.coll).document(mAuth.getUid()).collection(UserKeyword.coll)
+                    .document(keyword).set(new UserKeyword(keyword, active, deleted))
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
-                        protected void onRes(Object res, JSONObject ctx) {
+                        public void onSuccess(Void aVoid) {
                             etKeyword.setText("");
                             loadKeywords();
                         }
-
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
                         @Override
-                        protected void onErr(JSONObject err, JSONObject ctx) {
-                            super.onErr(err, ctx);
+                        public void onFailure(@NonNull Exception e) {
                             progressBarFragment.hide();
                         }
                     });
