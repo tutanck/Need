@@ -38,6 +38,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -99,17 +100,26 @@ public class ProfileFragment extends Fragment {
 
         final RatingBar userRating = view.findViewById(R.id.user_rating);
 
-        USER_RATINGS.computeUserRating(user_id, new UIAck(getActivity()) { //// TODO: 13/10/2017 urgent
-            @Override
-            protected void onRes(Object res, JSONObject ctx) {
-                JSONObject ratingDoc = ((JSONArray) res).optJSONObject(0);
-                try {
-                    userRating.setRating(ratingDoc != null ? ratingDoc.getInt(USER_RATINGS.reputationKey) : 0);
-                } catch (JSONException e) {
-                    __.fatal(e); //SNO : if a doc exist the reputation should exist too
-                }
-            }
-        });
+        USER_RATINGS.getUserRatingsRef(user_id)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            int nbVoters = 0;
+                            float ratingsSum = 0;
+                            for (DocumentSnapshot ratingDoc : task.getResult()) {
+                                Log.d("ratingDoc", ratingDoc.getId() + " => " + ratingDoc.getData());
+                                ratingsSum += ratingDoc.getLong(USER_RATINGS.ratingKey);
+                                nbVoters++;
+                            }
+                            userRating.setRating(nbVoters == 0 ? 0 : ratingsSum / nbVoters);
+                        } else {
+                            Log.d("ratingDoc", "Error getting documents: ", task.getException());
+                            userRating.setEnabled(false);
+                        }
+                    }
+                });
 
 
         final RatingBar ratingControl = view.findViewById(R.id.rating_control);

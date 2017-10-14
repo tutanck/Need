@@ -20,7 +20,6 @@ public final class USER_RATINGS implements Coll {
 
     private final static String coll = "_RATINGS";
     public final static String ratingKey = "rating";
-    public final static String reputationKey = "reputation";
 
 
     public final static CollectionReference getUserRatingsRef(String uid) {
@@ -29,16 +28,6 @@ public final class USER_RATINGS implements Coll {
 
     public final static CollectionReference getCurrentUserRatingsRef() {
         return USERS.getCurrentUserRef().collection(coll);
-    }
-
-
-    //// TODO: 14/10/2017  
-    public static void computeUserRating(String userID, _Ack ack) {
-        try {
-            IO.socket.emit("getUserRating", __.jo().put("userID", userID), null, ack);
-        } catch (JSONException e) {
-            __.fatal(e);
-        }
     }
 
 }
