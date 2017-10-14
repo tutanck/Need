@@ -10,13 +10,18 @@ public class UserKeyword {
     private boolean active;
     private boolean deleted;
 
-    public UserKeyword(String keyword, boolean active) {
-        this.keyword = keyword;
-        this.active = active;
-        this.deleted=false;
+
+    public UserKeyword() {
     }
 
-    public UserKeyword(String keyword, boolean active, boolean deleted) {
+
+    UserKeyword(String keyword, boolean active) {
+        this.keyword = keyword;
+        this.active = active;
+        this.deleted = false;
+    }
+
+    UserKeyword(String keyword, boolean active, boolean deleted) {
         this.keyword = keyword;
         this.active = active;
         this.deleted = deleted;

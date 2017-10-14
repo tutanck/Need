@@ -6,11 +6,7 @@ package com.aj.need.domain.entities;
 
 public class UserRating {
 
-
-
     private float rating;
-
-
 
     public UserRating() {
     }

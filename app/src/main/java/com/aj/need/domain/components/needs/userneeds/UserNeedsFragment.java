@@ -93,7 +93,9 @@ public class UserNeedsFragment extends Fragment {
         super.onStart();
         progressBarFragment.show();
 
-        NEEDS.getCurrentUserNeedsRef().get()
+        NEEDS.getCurrentUserNeedsRef()
+                .whereEqualTo(NEEDS.deletedKey, false)
+                .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {

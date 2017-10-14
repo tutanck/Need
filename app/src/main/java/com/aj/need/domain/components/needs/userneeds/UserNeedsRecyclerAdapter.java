@@ -102,18 +102,21 @@ public class UserNeedsRecyclerAdapter extends RecyclerView.Adapter<UserNeedsRecy
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            NEEDS.getCurrentUserNeedsRef().get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                    if (task.isSuccessful()) {
-                                        delegate.reloadList(task.getResult());
-                                    } else {
-                                        __.showShortToast(contextActivity, "impossible de charger les besoins sur supression");
-                                        //// TODO: 14/10/2017 improve this shit
-                                    }
+                            NEEDS.getCurrentUserNeedsRef()
+                                    .whereEqualTo(NEEDS.deletedKey, false)
+                                    .get()
+                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                            if (task.isSuccessful()) {
+                                                delegate.reloadList(task.getResult());
+                                            } else {
+                                                __.showShortToast(contextActivity, "impossible de charger les besoins sur supression");
+                                                //// TODO: 14/10/2017 improve this shit
+                                            }
 
-                                }
-                            });
+                                        }
+                                    });
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -122,21 +125,6 @@ public class UserNeedsRecyclerAdapter extends RecyclerView.Adapter<UserNeedsRecy
                             __.showShortToast(contextActivity, "Imposssible de supprimer le besoin");
                         }
                     });
-            
-
-            /*NEEDS.deleteNeed(mUserNeed.get_id(),
-                    new UIAck(contextActivity) {
-                       /* @Override
-                        protected void onRes(Object res, JSONObject ctx) {
-                            NEEDS.loadNeeds(userID, new UIAck(contextActivity) {
-                                        @Override
-                                        protected void onRes(Object res, JSONObject ctx) {
-                                         //   delegate.reloadList(res, userNeeds, adapter, contextActivity);
-                                        }
-                                    }
-                            );
-                        }
-                    });*/
         }
     }
 }

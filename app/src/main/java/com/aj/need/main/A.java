@@ -18,9 +18,6 @@ public class A extends Application {
 
     private String user_id = null;
 
-    static void resetUser_id(Activity activity, String user_id) {
-        ((A) activity.getApplication()).user_id = user_id;
-    }
 
     public static String user_id(Activity activity) {
         return ((A) activity.getApplication()).user_id;

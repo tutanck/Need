@@ -4,11 +4,11 @@ import android.util.Log;
 
 class Message {
 
-    String message;
-    String senderID;
-    String createdAt;
+    private String message;
+    private String senderID;
+    private String createdAt;
 
-    public Message(String message, String senderID, String createdAt) {
+     Message(String message, String senderID, String createdAt) {
         this.message = message;
         this.senderID = senderID;
         this.createdAt = createdAt;

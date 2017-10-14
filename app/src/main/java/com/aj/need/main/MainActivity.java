@@ -22,6 +22,8 @@ import com.aj.need.R;
 
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
+import com.aj.need.domain.components.ads.AdsFragment;
+import com.aj.need.domain.components.messages.ConversationsFragment;
 import com.aj.need.domain.components.needs.userneeds.UserNeedsFragment;
 import com.aj.need.domain.components.profile.ProfileFragment;
 import com.aj.need.tools.oths.PageFragment;
@@ -32,7 +34,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 
@@ -187,13 +188,13 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return PageFragment.newInstance(position);//AdsFragment.newInstance();
+                    return AdsFragment.newInstance();
                 case 1:
                     return ProfileFragment.newInstance(IO.auth.getCurrentUser().getUid(), true);
                 case 2:
                     return UserNeedsFragment.newInstance();
                 case 3:
-                    return PageFragment.newInstance(position);//ConversationsFragment.newInstance();
+                    return ConversationsFragment.newInstance();
                 default:
                     throw new RuntimeException("Unknown top level tab menu");
             }

@@ -12,6 +12,10 @@ public class UserNeed implements Serializable {
     private String title;
     private String searchText;
     private boolean active;
+    private final boolean deleted = false; //make no sense to instantiate a deleted need
+
+    public UserNeed() {
+    }
 
     UserNeed(
             String _id
@@ -40,5 +44,9 @@ public class UserNeed implements Serializable {
 
     public String getSearchText() {
         return searchText;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
     }
 }

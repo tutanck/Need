@@ -87,7 +87,7 @@ public class ConversationsFragment extends Fragment {
                             for (; i < jar.length(); i++) {
                                 JSONObject jo = jar.getJSONObject(i).getJSONObject("profile");
                                 mProfiles.add(new UserProfile(
-                                        jo.getString(Coll._idKey), jo.getString(USERS.authIDKey), jo.getString(USERS.usernameKey)
+                                        jo.getString("_id"), jo.getString(USERS.authIDKey), jo.getString(USERS.usernameKey)
                                         , 0, jo.getInt(USERS.availabilityKey)) //// TODO: 05/10/2017 : 0 (reputation)
                                 );
                             }

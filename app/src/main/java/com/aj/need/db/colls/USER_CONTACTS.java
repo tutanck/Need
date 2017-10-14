@@ -4,7 +4,6 @@ import com.aj.need.db.IO;
 import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.tools.regina.ack._Ack;
 import com.aj.need.tools.utils.__;
-
 import com.google.firebase.firestore.CollectionReference;
 
 import org.json.JSONException;
@@ -13,21 +12,19 @@ import org.json.JSONException;
  * Created by joan on 02/10/2017.
  */
 
-public final class USER_RATINGS implements Coll {
+public final class USER_CONTACTS implements Coll {
 
-    private USER_RATINGS() {
+    private USER_CONTACTS() {
     }
 
-    private final static String coll = "_RATINGS";
-    public final static String ratingKey = "rating";
-    public final static String reputationKey = "reputation";
+    private final static String coll = "_CONTACTS";
 
 
-    public final static CollectionReference getUserRatingsRef(String uid) {
+    public final static CollectionReference getUserContactsRef(String uid) {
         return USERS.getUserRef(uid).collection(coll);
     }
 
-    public final static CollectionReference getCurrentUserRatingsRef() {
+    public final static CollectionReference getCurrentUserContactsRef() {
         return USERS.getCurrentUserRef().collection(coll);
     }
 
