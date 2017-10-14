@@ -24,14 +24,12 @@ import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.domain.components.needs.userneeds.UserNeedsFragment;
 import com.aj.need.domain.components.profile.ProfileFragment;
-import com.aj.need.domain.entities.User;
 import com.aj.need.tools.oths.PageFragment;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -44,10 +42,6 @@ public class MainActivity extends AppCompatActivity {
     private int mAvailability = Avail.OFFLINE;
 
     private FirebaseAuth.AuthStateListener authListener;
-    FirebaseAuth mAuth;
-    FirebaseFirestore db;
-
-    static String uid;
 
     ListenerRegistration profileRegistration;
 
@@ -61,9 +55,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
 
         authListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -100,14 +91,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        uid = mAuth.getUid();
 
-        /*final DocumentReference profileRef = db.collection(User.coll).document(mAuth.getUid());
-        profileRef.update(User.availabilityKey, Avail.AVAILABLE);*/
+        USERS.getCurrentUserRef().update(USERS.availabilityKey, Avail.AVAILABLE);
 
-        USERS.setUserAvailability(Avail.AVAILABLE);
-
-        profileRegistration = USERS.getUserRef(IO.auth.getUid()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        profileRegistration = USERS.getCurrentUserRef().addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
@@ -118,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mAuth.addAuthStateListener(authListener);
+        IO.auth.addAuthStateListener(authListener);
     }
 
 
@@ -127,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
 
         if (authListener != null)
-            mAuth.removeAuthStateListener(authListener);
+            IO.auth.removeAuthStateListener(authListener);
 
         profileRegistration.remove();
     }
@@ -150,9 +137,7 @@ public class MainActivity extends AppCompatActivity {
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        USERS.setUserAvailability(Avail.nextStatus(mAvailability));
-                        /*db.collection(User.coll).document(mAuth.getUid())
-                                .update(User.availabilityKey, Avail.nextStatus(mAvailability));*/
+                        USERS.getCurrentUserRef().update(USERS.availabilityKey, Avail.nextStatus(mAvailability));
                     }
                 });
 
@@ -167,14 +152,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.action_settings:
-                USERS.setUserAvailability(Avail.OFFLINE)
-                /*db.collection(User.coll).document(mAuth.getUid())
-                        .update(User.availabilityKey, Avail.OFFLINE)*/
+                USERS.getCurrentUserRef().update(USERS.availabilityKey, Avail.OFFLINE)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 Log.i("signOut", "signOut");
-                                mAuth.signOut();
+                                IO.auth.signOut();
                             }
                         })
                         .addOnFailureListener(new OnFailureListener() {
@@ -206,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return PageFragment.newInstance(position);//AdsFragment.newInstance();
                 case 1:
-                    return ProfileFragment.newInstance(uid, true);
+                    return ProfileFragment.newInstance(IO.auth.getCurrentUser().getUid(), true);
                 case 2:
                     return UserNeedsFragment.newInstance();
                 case 3:

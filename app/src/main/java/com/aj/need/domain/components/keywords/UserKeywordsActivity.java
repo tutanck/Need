@@ -49,30 +49,25 @@ public class UserKeywordsActivity extends AppCompatActivity {
     private LinearLayout indicationsLayout;
     private ProgressBarFragment progressBarFragment;
 
-    FirebaseAuth mAuth;
-    FirebaseFirestore db;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_keywords);
 
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
 
-        btnAdd = (ImageButton) findViewById(R.id.add_keyword_button);
+        btnAdd = findViewById(R.id.add_keyword_button);
         btnAdd.setEnabled(false);
 
-        etKeyword = (EditText) findViewById(R.id.add_keyword_input);
+        etKeyword = findViewById(R.id.add_keyword_input);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.keywords_recycler_view);
+        mRecyclerView = findViewById(R.id.keywords_recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         mAdapter = new UserKeywordsRecyclerAdapter(UserKeywordsActivity.this, mUserKeywords);
         mRecyclerView.setAdapter(mAdapter);
 
-        indicationsLayout = (LinearLayout) findViewById(R.id.activity_user_keywords_indications);
+        indicationsLayout = findViewById(R.id.activity_user_keywords_indications);
         progressBarFragment = (ProgressBarFragment) getSupportFragmentManager().findFragmentById(R.id.waiter_modal_fragment);
         progressBarFragment.setBackgroundColor(Color.TRANSPARENT);
 
@@ -95,8 +90,9 @@ public class UserKeywordsActivity extends AppCompatActivity {
 
     private void loadKeywords() {
         progressBarFragment.show();
-        USER_KEYWORDS.loadUserKeywords()
-        /*db.collection(User.coll).document(mAuth.getUid()).collection(UserKeyword.coll).get()*/
+        USER_KEYWORDS.getCurrentUserKeywordsRef()
+                .whereEqualTo(USER_KEYWORDS.deletedKey, false)
+                .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -105,8 +101,8 @@ public class UserKeywordsActivity extends AppCompatActivity {
                             for (DocumentSnapshot keywordDoc : task.getResult())
                                 mUserKeywords.add(new UserKeyword(
                                         keywordDoc.getId()
-                                        , keywordDoc.getBoolean(UserKeyword.activeKey)
-                                        , keywordDoc.getBoolean(UserKeyword.deletedKey))
+                                        , keywordDoc.getBoolean(USER_KEYWORDS.activeKey)
+                                        , keywordDoc.getBoolean(USER_KEYWORDS.deletedKey))
                                 );
 
                             indicationsLayout.setVisibility(mUserKeywords.size() == 0 ? View.VISIBLE : View.GONE);
@@ -123,9 +119,8 @@ public class UserKeywordsActivity extends AppCompatActivity {
     void saveKeyword(String keyword, boolean active, boolean deleted) {
         if (isKeyword(keyword)) {
             progressBarFragment.show();
-            USER_KEYWORDS.saveUserKeyword(keyword,active,deleted)
-           /* db.collection(User.coll).document(mAuth.getUid()).collection(UserKeyword.coll)
-                    .document(keyword).set(new UserKeyword(keyword, active, deleted))*/
+            USER_KEYWORDS.getCurrentUserKeywordsRef()
+                    .document(keyword).set(new UserKeyword(keyword, active, deleted))
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {

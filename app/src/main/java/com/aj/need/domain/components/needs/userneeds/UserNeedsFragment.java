@@ -20,7 +20,7 @@ import com.aj.need.db.colls.NEEDS;
 import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.domain.components.needs.UserNeedAdActivity;
 import com.aj.need.domain.components.needs.UserNeedNewSearchActivity;
-import com.aj.need.domain.entities.User;
+
 import com.aj.need.main.A;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.others._Recycler;
@@ -33,9 +33,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,9 +51,6 @@ public class UserNeedsFragment extends Fragment {
 
     private UserNeedsFragment self = this;
 
-    FirebaseAuth mAuth;
-    FirebaseFirestore db;
-
     public static UserNeedsFragment newInstance() {
         return new UserNeedsFragment();
     }
@@ -67,9 +62,6 @@ public class UserNeedsFragment extends Fragment {
             , ViewGroup container
             , Bundle savedInstanceState
     ) {
-
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
 
         View view = inflater.inflate(R.layout.fragment_user_needs, container, false);
 
@@ -101,8 +93,7 @@ public class UserNeedsFragment extends Fragment {
         super.onStart();
         progressBarFragment.show();
 
-        /*db.collection(User.coll).document(mAuth.getUid()).collection(NEEDS.coll).get()*/
-        NEEDS.loadUserNeeds()
+        NEEDS.getCurrentUserNeedsRef().get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -118,22 +109,14 @@ public class UserNeedsFragment extends Fragment {
     }
 
     void reloadList(QuerySnapshot res) {
-
         mUserNeeds.clear();
-
-        for (DocumentSnapshot need : res) {
-            Log.d("TAG", need.getId() + " => " + need.getData());
-
+        for (DocumentSnapshot need : res)
             mUserNeeds.add(new UserNeed(need.getId(), need.getString(NEEDS.titleKey)
                     , need.getString(NEEDS.searchKey), need.getBoolean(NEEDS.activeKey))
             );
-
-            indicationsLayout.setVisibility(mUserNeeds.size() == 0 ? View.VISIBLE : View.GONE);
-            mAdapter.notifyDataSetChanged();
-            progressBarFragment.hide();
-        }
-
-
+        indicationsLayout.setVisibility(mUserNeeds.size() == 0 ? View.VISIBLE : View.GONE);
+        mAdapter.notifyDataSetChanged();
+        progressBarFragment.hide();
     }
 
 

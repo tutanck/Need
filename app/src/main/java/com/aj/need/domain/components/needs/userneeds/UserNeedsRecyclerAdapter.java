@@ -98,11 +98,11 @@ public class UserNeedsRecyclerAdapter extends RecyclerView.Adapter<UserNeedsRecy
 
         void deleteNeed(final Activity contextActivity, final UserNeedsFragment delegate, final String userID, final List<UserNeed> userNeeds, final UserNeedsRecyclerAdapter adapter) {
 
-            NEEDS.deleteNeed(mUserNeed.get_id())
+            NEEDS.getCurrentUserNeedsRef().document(mUserNeed.get_id()).update(NEEDS.deletedKey, true)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            NEEDS.loadUserNeeds().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            NEEDS.getCurrentUserNeedsRef().get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {

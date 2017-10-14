@@ -6,12 +6,6 @@ package com.aj.need.domain.components.keywords;
 
 public class UserKeyword {
 
-    public final static String coll = "USER_KEYWORDS";
-
-    public final static String activeKey = "active";
-    public final static String keywordKey = "keyword";
-    public final static String deletedKey = "deleted";
-
     private String keyword;
     private boolean active;
     private boolean deleted;

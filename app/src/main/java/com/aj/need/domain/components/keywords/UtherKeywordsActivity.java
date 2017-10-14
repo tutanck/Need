@@ -45,18 +45,13 @@ public class UtherKeywordsActivity extends AppCompatActivity {
 
     List<String> keywords = new ArrayList<>();
 
-    FirebaseAuth mAuth;
-    FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.component_list_view);
 
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
-
-        mListView = (ListView) findViewById(R.id.list_view);
+        mListView = findViewById(R.id.list_view);
 
         adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, keywords);
         mListView.setAdapter(adapter);
@@ -64,45 +59,17 @@ public class UtherKeywordsActivity extends AppCompatActivity {
         progressBarFragment = (ProgressBarFragment) getSupportFragmentManager().findFragmentById(R.id.waiter_modal_fragment);
         progressBarFragment.setBackgroundColor(Color.TRANSPARENT);
 
-        indicationsLayout = (LinearLayout) findViewById(R.id.component_list_indications);
+        indicationsLayout = findViewById(R.id.component_list_indications);
     }
 
 
     @Override
     protected void onStart() {
         super.onStart();
-        loadKeywords();
 
-//// TODO: 13/10/2017 rem
-      /*  progressBarFragment.show(); 
-        USER_KEYWORDS.loadUtherKeywords(getIntent().getStringExtra(USER_ID)
-                , new UIAck(this) {
-                    @Override
-                    protected void onRes(Object res, JSONObject ctx) {
-                        try {
-                            JSONArray jar = (JSONArray) res;
-                            adapter.clear();
-                            int i = 0;
-                            for (; i < jar.length(); i++)
-                                adapter.add(jar.getJSONObject(i).getString(USER_KEYWORDS.keywordKey));
-
-                            indicationsLayout.setVisibility(i == 0 ? View.VISIBLE : View.GONE);
-                            progressBarFragment.hide();
-
-                        } catch (JSONException e) {
-                            __.fatal(e); //SNO : if a doc exist the keyword field should exist too
-                        }
-                    }
-                });*/
-    }
-
-
-    private void loadKeywords() {
         progressBarFragment.show();
 
-        /*db.collection(User.coll).document(getIntent().getStringExtra(USER_ID))
-                .collection(UserKeyword.coll).get()*/
-        USER_KEYWORDS.loadUtherKeywords(getIntent().getStringExtra(USER_ID))
+        USER_KEYWORDS.getUserKeywordsRef(getIntent().getStringExtra(USER_ID)).get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -114,18 +81,19 @@ public class UtherKeywordsActivity extends AppCompatActivity {
                             indicationsLayout.setVisibility(keywords.size() == 0 ? View.VISIBLE : View.GONE);
                             adapter.notifyDataSetChanged();
                             progressBarFragment.hide();
-                        } else
+                        } else {
                             __.showShortToast(UtherKeywordsActivity.this, "Impossible de charger les mots clés");
-
+                            //// TODO: 14/10/2017  reload btn
+                        }
                     }
                 });
     }
+
 
     public static void start(Context context, String user_id) {
         Intent intent = new Intent(context, UtherKeywordsActivity.class);
         intent.putExtra(USER_ID, user_id);
         context.startActivity(intent);
     }
-
 
 }

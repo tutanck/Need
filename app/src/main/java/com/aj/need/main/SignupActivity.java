@@ -85,7 +85,7 @@ public class SignupActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
 
                                 if (task.isSuccessful())
-                                    USERS.createUser(new User(username, Avail.AVAILABLE))
+                                    USERS.getCurrentUserRef().set(new User(username, Avail.AVAILABLE))
                                     /*db.collection(User.coll).document(auth.getCurrentUser().getUid())
                                             .set(new User(username, Avail.AVAILABLE))*/
                                             .addOnSuccessListener(new OnSuccessListener<Void>() {

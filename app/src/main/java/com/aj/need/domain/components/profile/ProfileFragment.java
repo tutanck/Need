@@ -20,11 +20,10 @@ import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_RATINGS;
-import com.aj.need.domain.entities.User;
-import com.aj.need.domain.entities.UserRating;
 import com.aj.need.domain.components.keywords.UserKeywordsActivity;
 import com.aj.need.domain.components.keywords.UtherKeywordsActivity;
 import com.aj.need.domain.components.messages.MessagesActivity;
+import com.aj.need.domain.entities.UserRating;
 import com.aj.need.tools.components.fragments.IDKeyFormField;
 import com.aj.need.tools.components.fragments.ImageFragment;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
@@ -66,8 +65,6 @@ public class ProfileFragment extends Fragment {
 
     private RadioGroup userTypeRG;
 
-    FirebaseAuth mAuth;
-    FirebaseFirestore db;
 
     public static ProfileFragment newInstance(
             String user_id,
@@ -92,9 +89,6 @@ public class ProfileFragment extends Fragment {
         final Bundle args = getArguments();
 
         user_id = args.getString(USER_ID);
-
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
 
         isEditable = args.getBoolean(EDITABLE);
 
@@ -122,9 +116,7 @@ public class ProfileFragment extends Fragment {
 
         if (!isEditable) {
             ratingControl.setIsIndicator(false);
-            /*db.collection(User.coll).document(mAuth.getUid())
-                    .collection(UserRating.coll).document(user_id).get()*/
-            USER_RATINGS.getUserRating(user_id)
+            USER_RATINGS.getCurrentUserRatingsRef().document(user_id).get()
                     .addOnCompleteListener(
                             new OnCompleteListener<DocumentSnapshot>() {
                                 @Override
@@ -147,9 +139,9 @@ public class ProfileFragment extends Fragment {
                                 , boolean fromUser
                         ) {
                             if (fromUser)
-                                USER_RATINGS.setUtherRating(rating, user_id)
-                               /* db.collection(User.coll).document(mAuth.getUid())
-                                        .collection(UserRating.coll).document(user_id).set(new UserRating(rating))*/
+                                USER_RATINGS.getUserRatingsRef(user_id)
+                                        .document(IO.auth.getCurrentUser().getUid())
+                                        .set(new UserRating(rating))
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
@@ -183,8 +175,7 @@ public class ProfileFragment extends Fragment {
                         int radioButtonID = userTypeRG.getCheckedRadioButtonId();
                         RadioButton radioButton = userTypeRG.findViewById(radioButtonID);
                         int index = userTypeRG.indexOfChild(radioButton);
-                        USERS.setField(USERS.typeKey, index);
-                        //db.collection(User.coll).document(user_id).update(User.typeKey, index);
+                        USERS.getCurrentUserRef().update(USERS.typeKey, index);
                     }
                 });
             }
@@ -251,8 +242,7 @@ public class ProfileFragment extends Fragment {
         super.onStart();
 
         progressBarFragment.show();
-        USERS.getProfile(IO.auth.getUid())
-        /*db.collection(User.coll).document(mAuth.getUid()).get()*/.addOnCompleteListener(
+        USERS.getCurrentUserRef().get().addOnCompleteListener(
                 new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {

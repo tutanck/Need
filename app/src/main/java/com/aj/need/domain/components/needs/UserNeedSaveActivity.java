@@ -61,17 +61,10 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
 
     private FloatingActionButton fab;
 
-    FirebaseAuth mAuth;
-    FirebaseFirestore db;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_need_save);
-
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
 
         _id = getIntent().getStringExtra(_ID);
 
@@ -147,8 +140,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
 
                     //it could lead to a bug if upserted docs on update mode (_id = null upsert / new doc iof update)
                     if (_id == null)
-                        NEEDS.addNeed(need)
-                        /*db.collection(User.coll).document(mAuth.getUid()).collection(NEEDS.coll).add(need)*/
+                        NEEDS.getCurrentUserNeedsRef().add(need)
                                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                                     @Override
                                     public void onSuccess(DocumentReference documentReference) {
@@ -161,8 +153,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
                                     }
                                 }).addOnFailureListener(onFailureListener);
                     else
-                        /*db.collection(User.coll).document(mAuth.getUid()).collection(NEEDS.coll).document(_id).set(need)*/
-                        NEEDS.setNeed(_id, need).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        NEEDS.getCurrentUserNeedsRef().document(_id).set(need).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 close();
@@ -171,8 +162,6 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
                                 //finish(); // TODO: 04/10/2017 uncomment on prod mode
                             }
                         }).addOnFailureListener(onFailureListener);
-
-
                 }
             }
         });
@@ -189,7 +178,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
             formFields.get(NEEDS.searchKey).setText(getIntent().getStringExtra(SEARCH_TEXT));
         } else {
             progressBarFragment.show();
-            NEEDS.loadUserNeed(_id).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            NEEDS.getCurrentUserNeedsRef().document(_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if (task.isSuccessful()) {
@@ -209,21 +198,6 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
                     }
                 }
             });
-            ;
-           /* NEEDS.loadNeed(_id, new UIAck(UserNeedSaveActivity.this) {
-                @Override
-                protected void onRes(Object res, JSONObject ctx) {
-                    try {
-                        JSONObject need = ((JSONArray) res).getJSONObject(0);
-                        for (String key : formFields.keySet())
-                            formFields.get(key).setText(need.getString(key));
-                        needSwitch.setChecked(need.getBoolean(NEEDS.activeKey));
-                    } catch (JSONException e) {
-                        __.fatal(e);
-                    }
-                    progressBarFragment.hide();
-                }
-            });*/
         }
     }
 

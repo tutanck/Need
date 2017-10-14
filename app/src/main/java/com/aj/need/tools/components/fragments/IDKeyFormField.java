@@ -49,8 +49,6 @@ public class IDKeyFormField extends Fragment {
 
     private boolean editable;
 
-    //FirebaseFirestore db;
-
 
     //instance parameters
 
@@ -87,7 +85,7 @@ public class IDKeyFormField extends Fragment {
 
         final Bundle args = getArguments();
 
-       // db = FirebaseFirestore.getInstance();
+        // db = FirebaseFirestore.getInstance();
 
         formFieldId = args.getInt(FORM_FIELD_ID);
 
@@ -126,21 +124,20 @@ public class IDKeyFormField extends Fragment {
                         @Override
                         public void onClick(View view) {
                             if (!isOpen()) open();
-                            else /*db.collection(User.coll).document(_id)
-                                    .update(getKey(), getETText())*/
-                                USERS.setField(/*_id,*/ getKey(),getETText())
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            close();
-                                        }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            __.showShortToast(getContext(), "Echec de la mise à jour");
-                                        }
-                                    });
+                            else
+                                USERS.getCurrentUserRef().update(getKey(), getETText())
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                close();
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                __.showShortToast(getContext(), "Echec de la mise à jour");
+                                            }
+                                        });
                         }
                     }
             );
