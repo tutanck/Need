@@ -4,7 +4,7 @@ package com.aj.need.domain.components.keywords;
  * Created by joan on 21/09/2017.
  */
 
-class UserKeyword {
+public class UserKeyword {
 
     public final static String coll = "USER_KEYWORDS";
 

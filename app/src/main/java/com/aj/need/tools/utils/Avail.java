@@ -1,10 +1,6 @@
 package com.aj.need.tools.utils;
 
 import com.aj.need.R;
-import com.aj.need.domain.components.messages.ConversationsFragment;
-import com.aj.need.domain.components.needs.main.UserNeedsFragment;
-import com.aj.need.domain.components.profile.ProfileFragment;
-import com.aj.need.tools.oths.PageFragment;
 
 /**
  * Created by joan on 07/10/2017.

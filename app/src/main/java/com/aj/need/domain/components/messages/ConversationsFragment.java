@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 
 import com.aj.need.R;
 import com.aj.need.db.colls.MESSAGES;
-import com.aj.need.db.colls.PROFILES;
+import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
@@ -87,8 +87,8 @@ public class ConversationsFragment extends Fragment {
                             for (; i < jar.length(); i++) {
                                 JSONObject jo = jar.getJSONObject(i).getJSONObject("profile");
                                 mProfiles.add(new UserProfile(
-                                        jo.getString(Coll._idKey), jo.getString(PROFILES.authIDKey), jo.getString(PROFILES.usernameKey)
-                                        , 0, jo.getInt(PROFILES.availabilityKey)) //// TODO: 05/10/2017 : 0 (reputation)
+                                        jo.getString(Coll._idKey), jo.getString(USERS.authIDKey), jo.getString(USERS.usernameKey)
+                                        , 0, jo.getInt(USERS.availabilityKey)) //// TODO: 05/10/2017 : 0 (reputation)
                                 );
                             }
                             indicationsLayout.setVisibility(i == 0 ? View.VISIBLE : View.GONE);

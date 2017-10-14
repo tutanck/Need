@@ -1,4 +1,4 @@
-package com.aj.need.domain.components.needs.main;
+package com.aj.need.domain.components.needs.userneeds;
 
 import java.io.Serializable;
 

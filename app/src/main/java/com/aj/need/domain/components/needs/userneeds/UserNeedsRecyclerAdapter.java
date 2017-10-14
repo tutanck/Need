@@ -1,8 +1,9 @@
-package com.aj.need.domain.components.needs.main;
+package com.aj.need.domain.components.needs.userneeds;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -14,6 +15,12 @@ import android.widget.TextView;
 import com.aj.need.R;
 import com.aj.need.db.colls.NEEDS;
 import com.aj.need.tools.regina.ack.UIAck;
+import com.aj.need.tools.utils.__;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONObject;
 
@@ -90,19 +97,46 @@ public class UserNeedsRecyclerAdapter extends RecyclerView.Adapter<UserNeedsRecy
 
 
         void deleteNeed(final Activity contextActivity, final UserNeedsFragment delegate, final String userID, final List<UserNeed> userNeeds, final UserNeedsRecyclerAdapter adapter) {
-            NEEDS.deleteNeed(mUserNeed.get_id(),
-                    new UIAck(contextActivity) {
+
+            NEEDS.deleteNeed(mUserNeed.get_id())
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
+                        public void onSuccess(Void aVoid) {
+                            NEEDS.loadUserNeeds().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        delegate.reloadList(task.getResult());
+                                    } else {
+                                        __.showShortToast(contextActivity, "impossible de charger les besoins sur supression");
+                                        //// TODO: 14/10/2017 improve this shit
+                                    }
+
+                                }
+                            });
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            __.showShortToast(contextActivity, "Imposssible de supprimer le besoin");
+                        }
+                    });
+            
+
+            /*NEEDS.deleteNeed(mUserNeed.get_id(),
+                    new UIAck(contextActivity) {
+                       /* @Override
                         protected void onRes(Object res, JSONObject ctx) {
                             NEEDS.loadNeeds(userID, new UIAck(contextActivity) {
                                         @Override
                                         protected void onRes(Object res, JSONObject ctx) {
-                                            delegate.reloadList(res, userNeeds, adapter, contextActivity);
+                                         //   delegate.reloadList(res, userNeeds, adapter, contextActivity);
                                         }
                                     }
                             );
                         }
-                    });
+                    });*/
         }
     }
 }

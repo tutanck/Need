@@ -14,7 +14,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.aj.need.R;
-import com.aj.need.domain.components.needs.main.UserNeed;
+import com.aj.need.domain.components.needs.userneeds.UserNeed;
 
 
 /**

@@ -17,20 +17,18 @@ import android.widget.RadioGroup;
 import android.widget.RatingBar;
 
 import com.aj.need.R;
-import com.aj.need.db.colls.PROFILES;
+import com.aj.need.db.IO;
+import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_RATINGS;
 import com.aj.need.domain.entities.User;
 import com.aj.need.domain.entities.UserRating;
-import com.aj.need.main.A;
 import com.aj.need.domain.components.keywords.UserKeywordsActivity;
 import com.aj.need.domain.components.keywords.UtherKeywordsActivity;
 import com.aj.need.domain.components.messages.MessagesActivity;
-import com.aj.need.main.MainActivity;
 import com.aj.need.tools.components.fragments.IDKeyFormField;
 import com.aj.need.tools.components.fragments.ImageFragment;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.services.FormFieldKindTranslator;
-import com.aj.need.tools.regina.ack.VoidBAck;
 import com.aj.need.tools.utils.JSONServices;
 import com.aj.need.tools.utils.__;
 import com.aj.need.tools.regina.ack.UIAck;
@@ -124,20 +122,22 @@ public class ProfileFragment extends Fragment {
 
         if (!isEditable) {
             ratingControl.setIsIndicator(false);
-            db.collection(User.coll).document(mAuth.getUid())
-                    .collection(UserRating.coll).document(user_id).get().addOnCompleteListener(
-                    new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                DocumentSnapshot ratingDoc = task.getResult();
-                                ratingControl.setRating((ratingDoc != null && ratingDoc.exists()) ? ratingDoc.getLong(UserRating.ratingKey) : 0);
-                            } else
-                                __.showShortToast(getContext(), "impossible de charger la note attribuées"); //// TODO: 13/10/2017
+            /*db.collection(User.coll).document(mAuth.getUid())
+                    .collection(UserRating.coll).document(user_id).get()*/
+            USER_RATINGS.getUserRating(user_id)
+                    .addOnCompleteListener(
+                            new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        DocumentSnapshot ratingDoc = task.getResult();
+                                        ratingControl.setRating((ratingDoc != null && ratingDoc.exists()) ? ratingDoc.getLong(USER_RATINGS.ratingKey) : 0);
+                                    } else
+                                        __.showShortToast(getContext(), "impossible de charger la note attribuées"); //// TODO: 13/10/2017
 
-                        }
-                    }
-            );
+                                }
+                            }
+                    );
 
             ratingControl.setOnRatingBarChangeListener(
                     new RatingBar.OnRatingBarChangeListener() {
@@ -147,8 +147,9 @@ public class ProfileFragment extends Fragment {
                                 , boolean fromUser
                         ) {
                             if (fromUser)
-                                db.collection(User.coll).document(mAuth.getUid())
-                                        .collection(UserRating.coll).document(user_id).set(new UserRating(rating))
+                                USER_RATINGS.setUtherRating(rating, user_id)
+                               /* db.collection(User.coll).document(mAuth.getUid())
+                                        .collection(UserRating.coll).document(user_id).set(new UserRating(rating))*/
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
@@ -182,7 +183,8 @@ public class ProfileFragment extends Fragment {
                         int radioButtonID = userTypeRG.getCheckedRadioButtonId();
                         RadioButton radioButton = userTypeRG.findViewById(radioButtonID);
                         int index = userTypeRG.indexOfChild(radioButton);
-                        db.collection(User.coll).document(user_id).update(User.typeKey, index);
+                        USERS.setField(USERS.typeKey, index);
+                        //db.collection(User.coll).document(user_id).update(User.typeKey, index);
                     }
                 });
             }
@@ -234,7 +236,7 @@ public class ProfileFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     MessagesActivity.start(getContext(), user_id
-                            , formFields.get(PROFILES.usernameKey).getTvContent().getText().toString());
+                            , formFields.get(USERS.usernameKey).getTvContent().getText().toString());
                 }
             });
         else fabContact.setVisibility(View.GONE);
@@ -249,7 +251,8 @@ public class ProfileFragment extends Fragment {
         super.onStart();
 
         progressBarFragment.show();
-        db.collection(User.coll).document(mAuth.getUid()).get().addOnCompleteListener(
+        USERS.getProfile(IO.auth.getUid())
+        /*db.collection(User.coll).document(mAuth.getUid()).get()*/.addOnCompleteListener(
                 new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -259,7 +262,7 @@ public class ProfileFragment extends Fragment {
                                 Log.d("getUserProfile", "DocumentSnapshot data: " + task.getResult().getData());
 
                                 //RadioGroup::userTypeRG
-                                Long userType = profile.getLong(User.typeKey);
+                                Long userType = profile.getLong(USERS.typeKey);
                                 int selectedIndex = userType == null ? 0 : userType.intValue();
                                 ((RadioButton) userTypeRG.getChildAt(selectedIndex)).setChecked(true);
 

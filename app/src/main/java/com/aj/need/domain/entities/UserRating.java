@@ -6,8 +6,7 @@ package com.aj.need.domain.entities;
 
 public class UserRating {
 
-    public final static String coll = "USER_RATINGS";
-    public final static String ratingKey = "rating";
+
 
     private float rating;
 

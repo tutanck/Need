@@ -1,13 +1,15 @@
-package com.aj.need.domain.components.needs.main;
+package com.aj.need.domain.components.needs.userneeds;
 
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,18 +17,21 @@ import android.widget.LinearLayout;
 
 import com.aj.need.R;
 import com.aj.need.db.colls.NEEDS;
-import com.aj.need.db.colls.PROFILES;
 import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.domain.components.needs.UserNeedAdActivity;
 import com.aj.need.domain.components.needs.UserNeedNewSearchActivity;
+import com.aj.need.domain.entities.User;
 import com.aj.need.main.A;
-import com.aj.need.main.MainActivity;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.others._Recycler;
-import com.aj.need.tools.regina.ack.VoidBAck;
-import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.__;
 import com.aj.need.tools.regina.ack.UIAck;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,6 +53,9 @@ public class UserNeedsFragment extends Fragment {
 
     private UserNeedsFragment self = this;
 
+    FirebaseAuth mAuth;
+    FirebaseFirestore db;
+
     public static UserNeedsFragment newInstance() {
         return new UserNeedsFragment();
     }
@@ -59,6 +67,10 @@ public class UserNeedsFragment extends Fragment {
             , ViewGroup container
             , Bundle savedInstanceState
     ) {
+
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
         View view = inflater.inflate(R.layout.fragment_user_needs, container, false);
 
         mRecyclerView = view.findViewById(R.id.needs_recycler_view);
@@ -88,33 +100,40 @@ public class UserNeedsFragment extends Fragment {
     public void onStart() {
         super.onStart();
         progressBarFragment.show();
-        NEEDS.loadNeeds(A.user_id(getActivity()), new UIAck(getActivity()) {
-            @Override
-            protected void onRes(Object res, JSONObject ctx) {
-                reloadList(res, mUserNeeds, mAdapter, getContext());
-            }
-        });
+
+        /*db.collection(User.coll).document(mAuth.getUid()).collection(NEEDS.coll).get()*/
+        NEEDS.loadUserNeeds()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            reloadList(task.getResult());
+                        } else {
+                            __.showShortToast(getContext(), "impossible de charger les besoins");
+                            progressBarFragment.hide();
+                        }
+
+                    }
+                });
     }
 
-    void reloadList(Object res, List<UserNeed> userNeeds, UserNeedsRecyclerAdapter adapter, Context context) {
-        try {
-            JSONArray jar = (JSONArray) res;
-            userNeeds.clear();
+    void reloadList(QuerySnapshot res) {
 
-            for (int i = 0; i < jar.length(); i++) {
-                JSONObject jo = jar.getJSONObject(i);
-                userNeeds.add(new UserNeed(
-                        jo.getString(Coll._idKey), jo.getString(NEEDS.titleKey)
-                        , jo.getString(NEEDS.searchKey), jo.getBoolean(NEEDS.activeKey))
-                );
-            }
+        mUserNeeds.clear();
+
+        for (DocumentSnapshot need : res) {
+            Log.d("TAG", need.getId() + " => " + need.getData());
+
+            mUserNeeds.add(new UserNeed(need.getId(), need.getString(NEEDS.titleKey)
+                    , need.getString(NEEDS.searchKey), need.getBoolean(NEEDS.activeKey))
+            );
 
             indicationsLayout.setVisibility(mUserNeeds.size() == 0 ? View.VISIBLE : View.GONE);
-            adapter.notifyDataSetChanged();
+            mAdapter.notifyDataSetChanged();
             progressBarFragment.hide();
-        } catch (JSONException e) {
-            __.fatal(e); //SNO : if a doc exist the Need field should exist too
         }
+
+
     }
 
 

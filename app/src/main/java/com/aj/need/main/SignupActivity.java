@@ -12,6 +12,7 @@ import android.widget.EditText;
 
 import com.aj.need.R;
 
+import com.aj.need.db.colls.USERS;
 import com.aj.need.domain.entities.User;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.utils.Avail;
@@ -84,8 +85,9 @@ public class SignupActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
 
                                 if (task.isSuccessful())
-                                    db.collection(User.coll).document(auth.getCurrentUser().getUid())
-                                            .set(new User(username, Avail.AVAILABLE))
+                                    USERS.createUser(new User(username, Avail.AVAILABLE))
+                                    /*db.collection(User.coll).document(auth.getCurrentUser().getUid())
+                                            .set(new User(username, Avail.AVAILABLE))*/
                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                 @Override
                                                 public void onSuccess(Void aVoid) {

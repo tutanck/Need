@@ -73,7 +73,7 @@ public class UtherKeywordsActivity extends AppCompatActivity {
         super.onStart();
         loadKeywords();
 
-//// TODO: 13/10/2017 rem 
+//// TODO: 13/10/2017 rem
       /*  progressBarFragment.show(); 
         USER_KEYWORDS.loadUtherKeywords(getIntent().getStringExtra(USER_ID)
                 , new UIAck(this) {
@@ -100,8 +100,9 @@ public class UtherKeywordsActivity extends AppCompatActivity {
     private void loadKeywords() {
         progressBarFragment.show();
 
-        db.collection(User.coll).document(getIntent().getStringExtra(USER_ID))
-                .collection(UserKeyword.coll).get()
+        /*db.collection(User.coll).document(getIntent().getStringExtra(USER_ID))
+                .collection(UserKeyword.coll).get()*/
+        USER_KEYWORDS.loadUtherKeywords(getIntent().getStringExtra(USER_ID))
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {

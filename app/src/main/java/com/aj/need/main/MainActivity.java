@@ -20,6 +20,9 @@ import android.view.MenuItem;
 
 import com.aj.need.R;
 
+import com.aj.need.db.IO;
+import com.aj.need.db.colls.USERS;
+import com.aj.need.domain.components.needs.userneeds.UserNeedsFragment;
 import com.aj.need.domain.components.profile.ProfileFragment;
 import com.aj.need.domain.entities.User;
 import com.aj.need.tools.oths.PageFragment;
@@ -97,19 +100,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        uid=mAuth.getUid();
+        uid = mAuth.getUid();
 
-        final DocumentReference profileRef = db.collection(User.coll).document(mAuth.getUid());
-        profileRef.update(User.availabilityKey, Avail.AVAILABLE);
+        /*final DocumentReference profileRef = db.collection(User.coll).document(mAuth.getUid());
+        profileRef.update(User.availabilityKey, Avail.AVAILABLE);*/
 
-        profileRegistration = profileRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        USERS.setUserAvailability(Avail.AVAILABLE);
+
+        profileRegistration = USERS.getUserRef(IO.auth.getUid()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
-
                 if (e == null && snapshot != null && snapshot.exists()) {
                     Log.d("AvailabilityListener: ", "Current data: " + snapshot.getData().toString());
-                    resetAvailabilityBtn(((Long) snapshot.getData().get(User.availabilityKey)).intValue());
+                    resetAvailabilityBtn(((Long) snapshot.getData().get(USERS.availabilityKey)).intValue());
                 }
             }
         });
@@ -146,8 +150,9 @@ public class MainActivity extends AppCompatActivity {
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        db.collection(User.coll).document(mAuth.getUid())
-                                .update(User.availabilityKey, Avail.nextStatus(mAvailability));
+                        USERS.setUserAvailability(Avail.nextStatus(mAvailability));
+                        /*db.collection(User.coll).document(mAuth.getUid())
+                                .update(User.availabilityKey, Avail.nextStatus(mAvailability));*/
                     }
                 });
 
@@ -162,8 +167,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.action_settings:
-                db.collection(User.coll).document(mAuth.getUid())
-                        .update(User.availabilityKey, Avail.OFFLINE)
+                USERS.setUserAvailability(Avail.OFFLINE)
+                /*db.collection(User.coll).document(mAuth.getUid())
+                        .update(User.availabilityKey, Avail.OFFLINE)*/
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
@@ -200,9 +206,9 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return PageFragment.newInstance(position);//AdsFragment.newInstance();
                 case 1:
-                    return ProfileFragment.newInstance(uid,true);
+                    return ProfileFragment.newInstance(uid, true);
                 case 2:
-                    return PageFragment.newInstance(position);//UserNeedsFragment.newInstance();
+                    return UserNeedsFragment.newInstance();
                 case 3:
                     return PageFragment.newInstance(position);//ConversationsFragment.newInstance();
                 default:

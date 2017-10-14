@@ -3,10 +3,12 @@ package com.aj.need.domain.components.needs;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Switch;
@@ -15,6 +17,7 @@ import com.aj.need.R;
 import com.aj.need.db.colls.NEEDS;
 
 import com.aj.need.db.colls.itf.Coll;
+import com.aj.need.domain.entities.User;
 import com.aj.need.main.A;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.fragments.FormField;
@@ -24,6 +27,14 @@ import com.aj.need.tools.components.services.FormFieldKindTranslator;
 import com.aj.need.tools.utils.JSONServices;
 import com.aj.need.tools.utils.__;
 import com.aj.need.tools.regina.ack.UIAck;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,11 +61,17 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
 
     private FloatingActionButton fab;
 
+    FirebaseAuth mAuth;
+    FirebaseFirestore db;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_need_save);
+
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         _id = getIntent().getStringExtra(_ID);
 
@@ -105,28 +122,57 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
                 if (validState()) {
                     progressBarFragment.show();
                     fab.setEnabled(false); //update in progress
-                    NEEDS.saveNeed(_id, A.user_id(UserNeedSaveActivity.this)
-                            , needSwitch.isChecked(), formFields, new UIAck(UserNeedSaveActivity.this) {
-                                @Override
-                                protected void onRes(Object res, JSONObject ctx) {
-                                    if (_id == null) try { //robust code
-                                        _id = ((JSONObject) res).getString(Coll._idKey);
-                                    } catch (JSONException e) {
-                                        __.fatal(e);
-                                    }
-                                    close();
-                                    progressBarFragment.hide();
-                                    __.showShortToast(UserNeedSaveActivity.this, "Mise à jour réussie !");
-                                    //finish(); // TODO: 04/10/2017 uncomment on prod mode
-                                }
 
-                                @Override
-                                protected void onErr(JSONObject err, JSONObject ctx) {
-                                    super.onErr(err, ctx);
-                                    fab.setEnabled(true);
-                                    progressBarFragment.hide();
-                                }
-                            });
+
+                    Map<String, Object> need = new HashMap<>();
+
+                    need.put(NEEDS.activeKey, needSwitch.isChecked());
+                    need.put(NEEDS.deletedKey, false);
+
+                    for (String key : formFields.keySet())
+                        if (key.equals(NEEDS.searchKey))
+                            need.put(key, formFields.get(key).getTvContent().getText().toString());
+                        else
+                            need.put(key, formFields.get(key).getEtContent().getText().toString());
+
+
+                    OnFailureListener onFailureListener = new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            fab.setEnabled(true);
+                            progressBarFragment.hide();
+                        }
+                    };
+
+
+                    //it could lead to a bug if upserted docs on update mode (_id = null upsert / new doc iof update)
+                    if (_id == null)
+                        NEEDS.addNeed(need)
+                        /*db.collection(User.coll).document(mAuth.getUid()).collection(NEEDS.coll).add(need)*/
+                                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                    @Override
+                                    public void onSuccess(DocumentReference documentReference) {
+                                        _id = documentReference.getId();
+
+                                        close();
+                                        progressBarFragment.hide();
+                                        __.showShortToast(UserNeedSaveActivity.this, "Mise à jour réussie !");
+                                        //finish(); // TODO: 04/10/2017 uncomment on prod mode
+                                    }
+                                }).addOnFailureListener(onFailureListener);
+                    else
+                        /*db.collection(User.coll).document(mAuth.getUid()).collection(NEEDS.coll).document(_id).set(need)*/
+                        NEEDS.setNeed(_id, need).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                close();
+                                progressBarFragment.hide();
+                                __.showShortToast(UserNeedSaveActivity.this, "Mise à jour réussie !");
+                                //finish(); // TODO: 04/10/2017 uncomment on prod mode
+                            }
+                        }).addOnFailureListener(onFailureListener);
+
+
                 }
             }
         });
@@ -143,7 +189,28 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
             formFields.get(NEEDS.searchKey).setText(getIntent().getStringExtra(SEARCH_TEXT));
         } else {
             progressBarFragment.show();
-            NEEDS.loadNeed(_id, new UIAck(UserNeedSaveActivity.this) {
+            NEEDS.loadUserNeed(_id).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot need = task.getResult();
+                        if (need != null) {
+                            Log.d("LOL/UserNeedSaveAct", "DocumentSnapshot data: " + task.getResult().getData());
+                            for (String key : formFields.keySet())
+                                formFields.get(key).setText(need.getString(key));
+                            needSwitch.setChecked(need.getBoolean(NEEDS.activeKey));
+                            progressBarFragment.hide();
+                        } else {
+                            __.fatal("UserNeedSaveActivity::Inconsistent database : need/" + _id + " should exist");
+                        }
+                    } else {
+                        __.showShortToast(UserNeedSaveActivity.this, "Impossible de charger le besoin");
+                        //// TODO: 14/10/2017
+                    }
+                }
+            });
+            ;
+           /* NEEDS.loadNeed(_id, new UIAck(UserNeedSaveActivity.this) {
                 @Override
                 protected void onRes(Object res, JSONObject ctx) {
                     try {
@@ -156,7 +223,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
                     }
                     progressBarFragment.hide();
                 }
-            });
+            });*/
         }
     }
 

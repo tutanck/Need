@@ -2,9 +2,13 @@ package com.aj.need.db.colls;
 
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.itf.Coll;
+import com.aj.need.domain.components.keywords.UserKeyword;
+import com.aj.need.domain.entities.User;
 import com.aj.need.tools.regina.Regina;
 import com.aj.need.tools.regina.ack._Ack;
 import com.aj.need.tools.utils.__;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONException;
 
@@ -20,19 +24,25 @@ public class USER_KEYWORDS implements Coll {
     public final static String keywordKey = "keyword";
 
 
-    public static void loadUtherKeywords(String userID, _Ack ack) {
-        try {
+    public static Task<QuerySnapshot> loadUtherKeywords(String userID/*, _Ack ack*/) {
+
+       return IO.db.collection(USERS.coll).document(userID)
+                .collection(UserKeyword.coll).get();
+
+        /*try {
             IO.r.find(coll
                     , __.jo().put(userIDKey, userID).put(activeKey, true).put(deletedKey, false)
                     , __.jo(), __.jo(), ack);
         } catch (Regina.NullRequiredParameterException | JSONException e) {
             __.fatal(e);
-        }
+        }*/
     }
 
 
-    public static void loadUserKeywords(String userID, _Ack ack) {
-        try {
+    public static Task<QuerySnapshot> loadUserKeywords(/*String userID, _Ack ack*/) {
+
+        return IO.db.collection(USERS.coll).document(IO.auth.getUid()).collection(coll).get();
+       /* try {
             IO.r.find(
                     coll
                     , __.jo().put(userIDKey, userID).put(deletedKey, false)
@@ -41,12 +51,16 @@ public class USER_KEYWORDS implements Coll {
             );
         } catch (Regina.NullRequiredParameterException | JSONException e) {
             __.fatal(e);
-        }
+        }*/
     }
 
 
-    public static void saveUserKeyword(String keyword, String userID, boolean active, boolean deleted, _Ack ack) {
-        try {
+    public static Task<Void> saveUserKeyword(String keyword,/* String userID,*/ boolean active, boolean deleted/*, _Ack ack*/) {
+
+       return IO. db.collection(USERS.coll).document(IO.auth.getUid()).collection(coll)
+                .document(keyword).set(new UserKeyword(keyword, active, deleted));
+
+        /*try {
             IO.r.update(coll
                     , __.jo().put(userIDKey, userID).put(keywordKey, keyword)
                     , __.jo().put(userIDKey, userID).put(keywordKey, keyword).put(activeKey, active).put(deletedKey, deleted)
@@ -54,7 +68,7 @@ public class USER_KEYWORDS implements Coll {
             );
         } catch (Regina.NullRequiredParameterException | JSONException e) {
             __.fatal(e);
-        }
+        }*/
     }
 
 

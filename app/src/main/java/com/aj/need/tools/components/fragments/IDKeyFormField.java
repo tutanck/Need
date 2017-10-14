@@ -13,18 +13,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.aj.need.R;
-import com.aj.need.db.colls.PROFILES;
-import com.aj.need.domain.entities.User;
+import com.aj.need.db.colls.USERS;
 import com.aj.need.tools.components.services.ComponentsServices;
 import com.aj.need.tools.components.services.Ic;
-import com.aj.need.tools.regina.ack.UIAck;
 import com.aj.need.tools.utils.KeyboardServices;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import org.json.JSONObject;
 
 
 public class IDKeyFormField extends Fragment {
@@ -54,7 +49,7 @@ public class IDKeyFormField extends Fragment {
 
     private boolean editable;
 
-    FirebaseFirestore db;
+    //FirebaseFirestore db;
 
 
     //instance parameters
@@ -92,7 +87,7 @@ public class IDKeyFormField extends Fragment {
 
         final Bundle args = getArguments();
 
-        db = FirebaseFirestore.getInstance();
+       // db = FirebaseFirestore.getInstance();
 
         formFieldId = args.getInt(FORM_FIELD_ID);
 
@@ -131,8 +126,9 @@ public class IDKeyFormField extends Fragment {
                         @Override
                         public void onClick(View view) {
                             if (!isOpen()) open();
-                            else db.collection(User.coll).document(_id)
-                                    .update(getKey(), getETText())
+                            else /*db.collection(User.coll).document(_id)
+                                    .update(getKey(), getETText())*/
+                                USERS.setField(/*_id,*/ getKey(),getETText())
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {

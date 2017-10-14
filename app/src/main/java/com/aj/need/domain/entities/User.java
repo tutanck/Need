@@ -6,11 +6,6 @@ package com.aj.need.domain.entities;
 
 public class User {
 
-    public final static String coll = "USERS";
-    public final static String typeKey = "type";
-    public final static String usernameKey = "username";
-    public final static String availabilityKey = "availability";
-
     private String username;
     private int availability;
 

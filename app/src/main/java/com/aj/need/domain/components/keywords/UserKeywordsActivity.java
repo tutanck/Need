@@ -14,7 +14,6 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -22,11 +21,8 @@ import android.widget.LinearLayout;
 
 import com.aj.need.R;
 import com.aj.need.db.colls.USER_KEYWORDS;
-import com.aj.need.domain.components.needs.main.UserNeedsRecyclerAdapter;
 import com.aj.need.domain.entities.User;
-import com.aj.need.main.A;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
-import com.aj.need.tools.regina.ack.UIAck;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -36,10 +32,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,8 +95,8 @@ public class UserKeywordsActivity extends AppCompatActivity {
 
     private void loadKeywords() {
         progressBarFragment.show();
-
-        db.collection(User.coll).document(mAuth.getUid()).collection(UserKeyword.coll).get()
+        USER_KEYWORDS.loadUserKeywords()
+        /*db.collection(User.coll).document(mAuth.getUid()).collection(UserKeyword.coll).get()*/
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -131,9 +123,9 @@ public class UserKeywordsActivity extends AppCompatActivity {
     void saveKeyword(String keyword, boolean active, boolean deleted) {
         if (isKeyword(keyword)) {
             progressBarFragment.show();
-
-            db.collection(User.coll).document(mAuth.getUid()).collection(UserKeyword.coll)
-                    .document(keyword).set(new UserKeyword(keyword, active, deleted))
+            USER_KEYWORDS.saveUserKeyword(keyword,active,deleted)
+           /* db.collection(User.coll).document(mAuth.getUid()).collection(UserKeyword.coll)
+                    .document(keyword).set(new UserKeyword(keyword, active, deleted))*/
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
