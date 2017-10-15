@@ -1,16 +1,5 @@
 package com.aj.need.domain.components.profile;
 
-import android.util.Log;
-
-import com.aj.need.db.colls.USER_RATINGS;
-import com.aj.need.tools.regina.ack.BAck;
-import com.aj.need.tools.regina.ack.UIAck;
-import com.aj.need.tools.utils.__;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.Serializable;
 
 /**
@@ -25,6 +14,7 @@ public class UserProfile implements Serializable {
     private int reputation;
     private int availability;
 
+    private String conversationID;
     private String lastMessage;
     private String lastMessageDate;
 
@@ -49,10 +39,12 @@ public class UserProfile implements Serializable {
             , String username
             , int reputation
             , int availability
+            , String conversationID
             , String lastMessage
             , String lastMessageDate
     ) {
         this(_id, username, reputation, availability);
+        this.conversationID = conversationID;
         this.lastMessage = lastMessage;
         this.lastMessageDate = lastMessageDate;
     }
@@ -80,5 +72,9 @@ public class UserProfile implements Serializable {
 
     public String getLastMessageDate() {
         return lastMessageDate;
+    }
+
+    public String getConversationID() {
+        return conversationID;
     }
 }

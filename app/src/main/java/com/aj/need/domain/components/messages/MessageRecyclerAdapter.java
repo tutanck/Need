@@ -76,7 +76,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
 
         void bind(Message message) {
             messageText.setText(message.getMessage());
-            timeText.setText(message.getDate().toString());
+            //timeText.setText(message.getDate().toString()); //// TODO: 15/10/2017  
         }
     }
 
@@ -94,7 +94,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
 
         void bind(Message message) {
             messageText.setText(message.getMessage());
-            timeText.setText(message.getDate().toString());
+//            timeText.setText(message.getDate().toString()); //// TODO: 15/10/2017  
 
             // Insert the profile image from the URL into the ImageView.
             //_DateUtils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUrl(), profileImage); // TODO: 29/09/2017

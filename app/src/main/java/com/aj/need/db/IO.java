@@ -28,7 +28,8 @@ public class IO implements Regina.SocketClientEventDelegate {
         db = FirebaseFirestore.getInstance();
     }
 
-
+//// TODO: 16/10/2017 rem && regina too
+    /* 
     public static Regina r;
     public static Socket socket;
 
@@ -39,7 +40,7 @@ public class IO implements Regina.SocketClientEventDelegate {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
-    }
+    }*/
 
 
     public void handle(Regina.SocketClientEvent clientEvent) {

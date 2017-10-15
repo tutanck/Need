@@ -97,7 +97,7 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
 
         @Override
         public void onClick(View view) {
-            MessagesActivity.start(mContext, mUserProfile.get_id(), mUserProfile.getUsername());
+            MessagesActivity.start(mContext, mUserProfile.get_id(), mUserProfile.getUsername(),mUserProfile.getConversationID());
         }
     }
 }

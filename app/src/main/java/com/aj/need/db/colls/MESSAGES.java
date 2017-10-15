@@ -1,5 +1,8 @@
 package com.aj.need.db.colls;
 
+import android.support.annotation.NonNull;
+import android.util.Log;
+
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.domain.components.messages.Message;
@@ -7,6 +10,9 @@ import com.aj.need.tools.regina.Regina;
 
 import com.aj.need.tools.regina.ack._Ack;
 import com.aj.need.tools.utils.__;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -30,53 +36,69 @@ public final class MESSAGES implements Coll {
     public final static String fromKey = "from";
     public final static String toKey = "to";
     public final static String messageKey = "message";
+    public final static String conversationIDKey = "conversationID";
+    public final static String openKey = "open";
 
 
-    public final static CollectionReference getMessagesRef() {
+    public final static CollectionReference getMESSAGESRef() {
         return IO.db.collection(coll);
     }
 
-
-    public static void loadMessages(String aID, String bID, _Ack ack) {
-        try {
-            IO.r.find(
-                    coll
-                    , __.jo().put(
-                            "$or"
-                            , __.jar()
-                                    .put(__.jo().put(fromKey, aID).put(toKey, bID))
-                                    .put(__.jo().put(toKey, aID).put(fromKey, bID))
-                    )
-                    , __.jo().put("sort", __.jo().put(dateKey, 1))
-                    , __.jo(), ack
-            );
-        } catch (Regina.NullRequiredParameterException | JSONException e) {
-            __.fatal(e);
-        }
-    }
-
-
-    public static Task<Void> sendMessage(String to, String text) {
+    public static void sendMessage(
+            String to
+            , String text
+            , String conversationID
+            , final OnSuccessListener<Void> onSuccessListener
+            , final OnFailureListener onFailureListener
+    ) {
 
         String uid = IO.auth.getCurrentUser().getUid();
 
-        Message msg = new Message(text, uid, to, false);
+        if (conversationID == null) {
+            conversationID = uid + "_" + to;
+            Log.i("conversationID:", "new conversationID : " + conversationID);
+        }
 
-        DocumentReference msgRef = getMessagesRef().document();
-        DocumentReference senderUcRef = USER_CONTACTS.getCurrentUserContactsRef().document(to);
-        DocumentReference recipientUcRef = USER_CONTACTS.getUserContactsRef(to).document(uid);
+        Message msg = new Message(text, uid, to, conversationID, false);
 
-        WriteBatch batch = IO.db.batch();
+        final DocumentReference msgRef = getMESSAGESRef().document();
+        final DocumentReference senderUcRef = USER_CONTACTS.getCurrentUserContactsRef().document(to);
+        final DocumentReference recipientUcRef = USER_CONTACTS.getUserContactsRef(to).document(uid);
+
+        final WriteBatch batch = IO.db.batch();
         batch.set(msgRef, msg);
         batch.set(senderUcRef, msg);
         batch.set(recipientUcRef, msg);
 
-        FieldValue timestamp = FieldValue.serverTimestamp();
-        batch.update(msgRef, Coll.dateKey, timestamp);
-        batch.update(senderUcRef, Coll.dateKey, timestamp);
-        batch.update(recipientUcRef, Coll.dateKey, timestamp);
+        batch.commit()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful())
+                            Log.d("NOPe", "succ");
+                        else
+                            Log.d("NOPe", "fail");
+                    }
+                })
+                .addOnFailureListener(onFailureListener)
+                .addOnSuccessListener(onSuccessListener)
 
-        return batch.commit();
+
+        /* todo 
+               .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        WriteBatch batch = IO.db.batch();
+                        FieldValue timestamp = FieldValue.serverTimestamp();
+                        batch.update(msgRef, Coll.dateKey, timestamp);
+                        batch.update(senderUcRef, Coll.dateKey, timestamp);
+                        batch.update(recipientUcRef, Coll.dateKey, timestamp);
+                        batch.commit()
+                                .addOnFailureListener(onFailureListener)
+                                .addOnSuccessListener(onSuccessListener);
+                    }
+                })
+                */;
+
     }
-
 }
