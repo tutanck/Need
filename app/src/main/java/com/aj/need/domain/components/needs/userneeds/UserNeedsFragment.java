@@ -1,6 +1,5 @@
 package com.aj.need.domain.components.needs.userneeds;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,15 +8,13 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.aj.need.R;
-import com.aj.need.db.colls.NEEDS;
-import com.aj.need.db.colls.itf.Coll;
+import com.aj.need.db.colls.USER_NEEDS;
 import com.aj.need.domain.components.needs.UserNeedAdActivity;
 import com.aj.need.domain.components.needs.UserNeedNewSearchActivity;
 
@@ -25,12 +22,9 @@ import com.aj.need.main.A;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.others._Recycler;
 import com.aj.need.tools.utils.__;
-import com.aj.need.tools.regina.ack.UIAck;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 
@@ -93,8 +87,8 @@ public class UserNeedsFragment extends Fragment {
         super.onStart();
         progressBarFragment.show();
 
-        NEEDS.getCurrentUserNeedsRef()
-                .whereEqualTo(NEEDS.deletedKey, false)
+        USER_NEEDS.getCurrentUserNeedsRef()
+                .whereEqualTo(USER_NEEDS.deletedKey, false)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -113,8 +107,8 @@ public class UserNeedsFragment extends Fragment {
     void reloadList(QuerySnapshot res) {
         mUserNeeds.clear();
         for (DocumentSnapshot need : res)
-            mUserNeeds.add(new UserNeed(need.getId(), need.getString(NEEDS.titleKey)
-                    , need.getString(NEEDS.searchKey), need.getBoolean(NEEDS.activeKey))
+            mUserNeeds.add(new UserNeed(need.getId(), need.getString(USER_NEEDS.titleKey)
+                    , need.getString(USER_NEEDS.searchKey), need.getBoolean(USER_NEEDS.activeKey))
             );
         indicationsLayout.setVisibility(mUserNeeds.size() == 0 ? View.VISIBLE : View.GONE);
         mAdapter.notifyDataSetChanged();

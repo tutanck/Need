@@ -1,29 +1,40 @@
 package com.aj.need.db.colls;
 
-import android.util.Log;
-
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.itf.Coll;
+import com.aj.need.domain.components.messages.Message;
 import com.aj.need.tools.regina.Regina;
 
 import com.aj.need.tools.regina.ack._Ack;
 import com.aj.need.tools.utils.__;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.WriteBatch;
 
 import org.json.JSONException;
-
-import java.util.Date;
 
 /**
  * Created by joan on 02/10/2017.
  */
 
-public class MESSAGES implements Coll {
-    private final static String coll = "MESSAGES";
-    public final static String collTag = "#" + coll + "/";
+public final class MESSAGES implements Coll {
 
-    public final static String senderIDKey = "senderID";
-    public final static String toIDKey = "toID";
+    private MESSAGES() {
+    }
+
+
+    private final static String coll = "MESSAGES";
+
+    public final static String fromKey = "from";
+    public final static String toKey = "to";
     public final static String messageKey = "message";
+
+
+    public final static CollectionReference getMessagesRef() {
+        return IO.db.collection(coll);
+    }
 
 
     public static void loadMessages(String aID, String bID, _Ack ack) {
@@ -33,8 +44,8 @@ public class MESSAGES implements Coll {
                     , __.jo().put(
                             "$or"
                             , __.jar()
-                                    .put(__.jo().put(senderIDKey, aID).put(toIDKey, bID))
-                                    .put(__.jo().put(toIDKey, aID).put(senderIDKey, bID))
+                                    .put(__.jo().put(fromKey, aID).put(toKey, bID))
+                                    .put(__.jo().put(toKey, aID).put(fromKey, bID))
                     )
                     , __.jo().put("sort", __.jo().put(dateKey, 1))
                     , __.jo(), ack
@@ -45,29 +56,27 @@ public class MESSAGES implements Coll {
     }
 
 
-    public static void sendMessage(String senderID, String toID, String text, _Ack ack) {
-        try {
-            IO.socket.emit("sendMessage"
-                    , __.jo()
-                            .put(senderIDKey, senderID)
-                            .put(toIDKey, toID)
-                            .put(messageKey, text)
-                    , __.jo().put(
-                            "tags", __.jar().put(__.jo().put("val", collTag + senderID+"/"+toID))
-                    )
-                    , ack);
-        } catch (JSONException e) {
-            __.fatal(e);
-        }
-    }
+    public static Task<Void> sendMessage(String to, String text) {
 
+        String uid = IO.auth.getCurrentUser().getUid();
 
-    public static void computeUserContacts(String userID, _Ack ack) {
-        try {
-            IO.socket.emit("getUserContacts", __.jo().put("userID", userID), null, ack);
-        } catch (JSONException e) {
-            __.fatal(e);
-        }
+        Message msg = new Message(text, uid, to, false);
+
+        DocumentReference msgRef = getMessagesRef().document();
+        DocumentReference senderUcRef = USER_CONTACTS.getCurrentUserContactsRef().document(to);
+        DocumentReference recipientUcRef = USER_CONTACTS.getUserContactsRef(to).document(uid);
+
+        WriteBatch batch = IO.db.batch();
+        batch.set(msgRef, msg);
+        batch.set(senderUcRef, msg);
+        batch.set(recipientUcRef, msg);
+
+        FieldValue timestamp = FieldValue.serverTimestamp();
+        batch.update(msgRef, Coll.dateKey, timestamp);
+        batch.update(senderUcRef, Coll.dateKey, timestamp);
+        batch.update(recipientUcRef, Coll.dateKey, timestamp);
+
+        return batch.commit();
     }
 
 }

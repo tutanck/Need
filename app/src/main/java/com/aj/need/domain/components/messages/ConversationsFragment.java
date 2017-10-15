@@ -2,9 +2,11 @@ package com.aj.need.domain.components.messages;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,20 +14,19 @@ import android.widget.LinearLayout;
 
 import com.aj.need.R;
 import com.aj.need.db.colls.MESSAGES;
-import com.aj.need.db.colls.USERS;
+import com.aj.need.db.colls.USER_CONTACTS;
 import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
-import com.aj.need.main.A;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
-import com.aj.need.tools.regina.ack.UIAck;
 import com.aj.need.tools.utils.__;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class ConversationsFragment extends Fragment {
@@ -61,7 +62,6 @@ public class ConversationsFragment extends Fragment {
         progressBarFragment.setBackgroundColor(Color.TRANSPARENT);
 
         indicationsLayout = view.findViewById(R.id.component_recycler_indications);
-        indicationsLayout.setVisibility(View.VISIBLE);
 
         return view;
     }
@@ -75,27 +75,27 @@ public class ConversationsFragment extends Fragment {
 
     private void loadContacts() {  //// TODO: 10/10/2017  redo
         progressBarFragment.show();
-        MESSAGES.computeUserContacts(A.user_id(getActivity())
-                , new UIAck(getActivity()) {
+        USER_CONTACTS.getCurrentUserContactsRef().get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
-                    protected void onRes(Object res, JSONObject ctx) {
-                        progressBarFragment.hide();
-                        try {
-                            JSONArray jar = (JSONArray) res;
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
                             mProfiles.clear();
-                            int i = 0;
-                            for (; i < jar.length(); i++) {
-                                JSONObject jo = jar.getJSONObject(i).getJSONObject("profile");
-                                mProfiles.add(new UserProfile(
-                                        jo.getString("_id"), jo.getString(USERS.authIDKey), jo.getString(USERS.usernameKey)
-                                        , 0, jo.getInt(USERS.availabilityKey)) //// TODO: 05/10/2017 : 0 (reputation)
+                            for (DocumentSnapshot contact : task.getResult()) {
+                                Log.d("LOL", contact.getId() + " => " + contact.getData());
+
+                                mProfiles.add(new UserProfile(contact.getId(), "todo", 0, 0
+                                                , contact.getString(MESSAGES.messageKey)
+                                                , contact.getDate(Coll.dateKey).toString() //// TODO: 15/10/2017  date iof str
+                                        )
                                 );
                             }
-                            indicationsLayout.setVisibility(i == 0 ? View.VISIBLE : View.GONE);
+                            indicationsLayout.setVisibility(mProfiles.size() == 0 ? View.VISIBLE : View.GONE);
                             mAdapter.notifyDataSetChanged();
                             progressBarFragment.hide();
-                        } catch (JSONException e) {
-                            __.fatal(e); //SNO : if a doc exist the Need field should exist too
+                        } else {
+                            __.showShortToast(getContext(), "Impossible de charger les contacts");
+                            //// TODO: 15/10/2017
                         }
                     }
                 });

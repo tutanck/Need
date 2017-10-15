@@ -85,8 +85,6 @@ public class IDKeyFormField extends Fragment {
 
         final Bundle args = getArguments();
 
-        // db = FirebaseFirestore.getInstance();
-
         formFieldId = args.getInt(FORM_FIELD_ID);
 
         key = args.getString(KEY);

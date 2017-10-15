@@ -13,16 +13,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.aj.need.R;
-import com.aj.need.db.colls.NEEDS;
-import com.aj.need.tools.regina.ack.UIAck;
+import com.aj.need.db.colls.USER_NEEDS;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.QuerySnapshot;
-
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -98,12 +95,12 @@ public class UserNeedsRecyclerAdapter extends RecyclerView.Adapter<UserNeedsRecy
 
         void deleteNeed(final Activity contextActivity, final UserNeedsFragment delegate, final String userID, final List<UserNeed> userNeeds, final UserNeedsRecyclerAdapter adapter) {
 
-            NEEDS.getCurrentUserNeedsRef().document(mUserNeed.get_id()).update(NEEDS.deletedKey, true)
+            USER_NEEDS.getCurrentUserNeedsRef().document(mUserNeed.get_id()).update(USER_NEEDS.deletedKey, true)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            NEEDS.getCurrentUserNeedsRef()
-                                    .whereEqualTo(NEEDS.deletedKey, false)
+                            USER_NEEDS.getCurrentUserNeedsRef()
+                                    .whereEqualTo(USER_NEEDS.deletedKey, false)
                                     .get()
                                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                         @Override

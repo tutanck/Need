@@ -29,10 +29,9 @@ public final class USER_CONTACTS implements Coll {
     }
 
 
-    //// TODO: 14/10/2017  
-    public static void computeUserRating(String userID, _Ack ack) {
+    public static void computeUserContacts(String userID, _Ack ack) {
         try {
-            IO.socket.emit("getUserRating", __.jo().put("userID", userID), null, ack);
+            IO.socket.emit("getUserContacts", __.jo().put("userID", userID), null, ack);
         } catch (JSONException e) {
             __.fatal(e);
         }

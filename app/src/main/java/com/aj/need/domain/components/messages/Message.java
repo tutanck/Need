@@ -1,17 +1,20 @@
 package com.aj.need.domain.components.messages;
 
-import android.util.Log;
+import java.util.Date;
 
-class Message {
+public class Message {
 
     private String message;
-    private String senderID;
-    private String createdAt;
+    private String to;
+    private String from;
+    private Date date;
+    private boolean open;
 
-     Message(String message, String senderID, String createdAt) {
+    public Message(String message, String from, String to, boolean open) {
         this.message = message;
-        this.senderID = senderID;
-        this.createdAt = createdAt;
+        this.from = from;
+        this.to = to;
+        this.open = open;
     }
 
 
@@ -19,16 +22,24 @@ class Message {
         return message;
     }
 
-    public String getSenderID() {
-        return senderID;
+    public String getFrom() {
+        return from;
     }
 
-    public String getCreatedAt() {
-        return createdAt;
+    public Date getDate() {
+        return date;
+    }
+
+    public String getTo() {
+        return to;
+    }
+
+    public boolean isOpen() {
+        return open;
     }
 
     @Override
     public String toString() {
-        return message+" "+senderID+" "+createdAt;
+        return message + " " + from + " " + to + " " + date + " " + open;
     }
 }

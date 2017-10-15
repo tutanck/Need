@@ -30,14 +30,11 @@ import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.services.FormFieldKindTranslator;
 import com.aj.need.tools.utils.JSONServices;
 import com.aj.need.tools.utils.__;
-import com.aj.need.tools.regina.ack.UIAck;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONArray;

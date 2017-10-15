@@ -8,9 +8,9 @@ import com.google.firebase.firestore.CollectionReference;
  * Created by joan on 02/10/2017.
  */
 
-public final class NEEDS implements Coll {
+public final class USER_NEEDS implements Coll {
 
-    private NEEDS() {
+    private USER_NEEDS() {
     }
 
     private static String coll = "_NEEDS";

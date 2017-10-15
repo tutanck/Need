@@ -20,7 +20,7 @@ import java.io.Serializable;
 public class UserProfile implements Serializable {
 
     private String _id;
-    private String authID;
+
     private String username;
     private int reputation;
     private int availability;
@@ -30,13 +30,12 @@ public class UserProfile implements Serializable {
 
     public UserProfile(
             String _id
-            , String authID
             , String username
             , int reputation
             , int availability
     ) {
         this._id = _id;
-        this.authID = authID;
+
         this.username = username;
         this.reputation = reputation;
         this.availability = availability;
@@ -47,14 +46,13 @@ public class UserProfile implements Serializable {
 
     public UserProfile(
             String _id
-            , String authID
             , String username
             , int reputation
             , int availability
             , String lastMessage
             , String lastMessageDate
     ) {
-        this(_id, authID, username, reputation, availability);
+        this(_id, username, reputation, availability);
         this.lastMessage = lastMessage;
         this.lastMessageDate = lastMessageDate;
     }

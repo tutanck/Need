@@ -35,7 +35,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
     // Determines the appropriate ViewType according to the sender of the message.
     @Override
     public int getItemViewType(int position) {
-        if (mMessageList.get(position).getSenderID().equals(A.user_id(mContext)))
+        if (mMessageList.get(position).getFrom().equals(A.user_id(mContext)))
             return VIEW_TYPE_MESSAGE_SENT;
         else
             return VIEW_TYPE_MESSAGE_RECEIVED;
@@ -76,7 +76,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
 
         void bind(Message message) {
             messageText.setText(message.getMessage());
-            timeText.setText(message.getCreatedAt());
+            timeText.setText(message.getDate().toString());
         }
     }
 
@@ -94,7 +94,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
 
         void bind(Message message) {
             messageText.setText(message.getMessage());
-            timeText.setText(message.getCreatedAt());
+            timeText.setText(message.getDate().toString());
 
             // Insert the profile image from the URL into the ImageView.
             //_DateUtils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUrl(), profileImage); // TODO: 29/09/2017

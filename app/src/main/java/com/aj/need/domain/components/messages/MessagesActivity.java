@@ -19,7 +19,6 @@ import com.aj.need.db.colls.MESSAGES;
 import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.domain.components.profile.UtherProfileActivity;
 import com.aj.need.main.A;
-import com.aj.need.tools.regina.ack.VoidBAck;
 import com.aj.need.tools.utils.__;
 import com.aj.need.tools.regina.ack.UIAck;
 
@@ -51,7 +50,7 @@ public class MessagesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.reyclerview_message_list);
+        mRecyclerView = findViewById(R.id.reyclerview_message_list);
         linearLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(linearLayoutManager);
 
@@ -67,8 +66,8 @@ public class MessagesActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        final EditText chatboxET = (EditText) findViewById(R.id.chatbox_et);
-        Button chatboxSendBtn = (Button) findViewById(R.id.chatbox_send_btn);
+        final EditText chatboxET = findViewById(R.id.chatbox_et);
+        Button chatboxSendBtn = findViewById(R.id.chatbox_send_btn);
 
         chatboxSendBtn.setOnClickListener(
                 new View.OnClickListener() {
@@ -97,7 +96,8 @@ public class MessagesActivity extends AppCompatActivity {
         super.onStart();
         loadMessages();
 
-        IO.socket.on(MESSAGES.collTag + contact_id + "/" + A.user_id(this), new Emitter.Listener() {
+        //// TODO: 15/10/2017
+        /*IO.socket.on(MESSAGES.collTag + contact_id + "/" + A.user_id(this), new Emitter.Listener() {
             @Override
             public void call(Object... args) {
                 loadMessages();
@@ -109,19 +109,22 @@ public class MessagesActivity extends AppCompatActivity {
             public void call(Object... args) {
                 loadMessages();
             }
-        });
+        });*/
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        //// TODO: 15/10/2017
+/*
         IO.socket.off(MESSAGES.collTag + contact_id + "/" + A.user_id(this));
         IO.socket.off(MESSAGES.collTag + A.user_id(this) + "/" + contact_id);
+    */
     }
 
 
     private void sendMessage(String text) {
-        MESSAGES.sendMessage(A.user_id(this), contact_id, text, new VoidBAck(this));
+        MESSAGES.sendMessage(contact_id, text);
     }
 
 
@@ -134,7 +137,7 @@ public class MessagesActivity extends AppCompatActivity {
                     messageList.clear();
                     for (int i = 0; i < jar.length(); i++) {
                         JSONObject jo = jar.getJSONObject(i);
-                        messageList.add(new Message(jo.getString(MESSAGES.messageKey), jo.getString(MESSAGES.senderIDKey), jo.getString(Coll.dateKey)));
+                        messageList.add(new Message(jo.getString(MESSAGES.messageKey), jo.getString(MESSAGES.fromKey), jo.getString(Coll.dateKey),true));
                     }
                     Log.i("messageList", messageList.toString());
                     mAdapter.notifyDataSetChanged();

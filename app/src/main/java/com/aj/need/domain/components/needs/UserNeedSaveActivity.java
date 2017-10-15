@@ -14,11 +14,8 @@ import android.widget.EditText;
 import android.widget.Switch;
 
 import com.aj.need.R;
-import com.aj.need.db.colls.NEEDS;
+import com.aj.need.db.colls.USER_NEEDS;
 
-import com.aj.need.db.colls.itf.Coll;
-import com.aj.need.domain.entities.User;
-import com.aj.need.main.A;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.fragments.FormField;
 import com.aj.need.tools.components.services.ComponentsServices;
@@ -26,15 +23,12 @@ import com.aj.need.tools.components.services.FormFieldKindTranslator;
 
 import com.aj.need.tools.utils.JSONServices;
 import com.aj.need.tools.utils.__;
-import com.aj.need.tools.regina.ack.UIAck;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -119,11 +113,11 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
 
                     Map<String, Object> need = new HashMap<>();
 
-                    need.put(NEEDS.activeKey, needSwitch.isChecked());
-                    need.put(NEEDS.deletedKey, false);
+                    need.put(USER_NEEDS.activeKey, needSwitch.isChecked());
+                    need.put(USER_NEEDS.deletedKey, false);
 
                     for (String key : formFields.keySet())
-                        if (key.equals(NEEDS.searchKey))
+                        if (key.equals(USER_NEEDS.searchKey))
                             need.put(key, formFields.get(key).getTvContent().getText().toString());
                         else
                             need.put(key, formFields.get(key).getEtContent().getText().toString());
@@ -140,7 +134,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
 
                     //it could lead to a bug if upserted docs on update mode (_id = null upsert / new doc iof update)
                     if (_id == null)
-                        NEEDS.getCurrentUserNeedsRef().add(need)
+                        USER_NEEDS.getCurrentUserNeedsRef().add(need)
                                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                                     @Override
                                     public void onSuccess(DocumentReference documentReference) {
@@ -153,7 +147,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
                                     }
                                 }).addOnFailureListener(onFailureListener);
                     else
-                        NEEDS.getCurrentUserNeedsRef().document(_id).set(need).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        USER_NEEDS.getCurrentUserNeedsRef().document(_id).set(need).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 close();
@@ -175,10 +169,10 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
 
         if (_id == null) {
             needSwitch.setChecked(true);
-            formFields.get(NEEDS.searchKey).setText(getIntent().getStringExtra(SEARCH_TEXT));
+            formFields.get(USER_NEEDS.searchKey).setText(getIntent().getStringExtra(SEARCH_TEXT));
         } else {
             progressBarFragment.show();
-            NEEDS.getCurrentUserNeedsRef().document(_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            USER_NEEDS.getCurrentUserNeedsRef().document(_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if (task.isSuccessful()) {
@@ -187,7 +181,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
                             Log.d("LOL/UserNeedSaveAct", "DocumentSnapshot data: " + task.getResult().getData());
                             for (String key : formFields.keySet())
                                 formFields.get(key).setText(need.getString(key));
-                            needSwitch.setChecked(need.getBoolean(NEEDS.activeKey));
+                            needSwitch.setChecked(need.getBoolean(USER_NEEDS.activeKey));
                             progressBarFragment.hide();
                         } else {
                             __.fatal("UserNeedSaveActivity::Inconsistent database : need/" + _id + " should exist");
@@ -212,7 +206,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
 
     private void open() {
         for (String key : formFields.keySet())
-            if (!key.equals(NEEDS.searchKey))
+            if (!key.equals(USER_NEEDS.searchKey))
                 formFields.get(key).open();
         fab.setEnabled(true);
         fab.setVisibility(View.VISIBLE);
@@ -229,8 +223,8 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
 
 
     private boolean validState() {
-        EditText titleET = formFields.get(NEEDS.titleKey).getEtContent();
-        EditText descriptionET = formFields.get(NEEDS.descriptionKey).getEtContent();
+        EditText titleET = formFields.get(USER_NEEDS.titleKey).getEtContent();
+        EditText descriptionET = formFields.get(USER_NEEDS.descriptionKey).getEtContent();
 
         if (TextUtils.isEmpty(titleET.getText())) {
             String errStr = "Le titre doit être renseigné !";
