@@ -21,12 +21,15 @@ import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class ConversationsFragment extends Fragment {
@@ -75,7 +78,35 @@ public class ConversationsFragment extends Fragment {
 
     private void loadContacts() {  //// TODO: 10/10/2017  redo
         progressBarFragment.show();
-        USER_CONTACTS.getCurrentUserContactsRef().get()
+
+        USER_CONTACTS.computeCurrentUserContacts()
+                .addOnSuccessListener(new OnSuccessListener<List<UserProfile>>() {
+                    @Override
+                    public void onSuccess(List<UserProfile> result) {
+                        Log.d("TRonSuccess", "Transaction success: " + result);
+                        mProfiles.clear();
+
+                        for (UserProfile uc : result)
+                            mProfiles.add(uc);
+
+
+                        indicationsLayout.setVisibility(mProfiles.size() == 0 ? View.VISIBLE : View.GONE);
+                        mAdapter.notifyDataSetChanged();
+                        progressBarFragment.hide();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("TRonFailure", "Transaction failure.", e);
+                        //// TODO: 15/10/2017
+                    }
+                });
+
+
+
+
+        /*USER_CONTACTS.getCurrentUserContactsRef().get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -98,6 +129,6 @@ public class ConversationsFragment extends Fragment {
                             //// TODO: 15/10/2017
                         }
                     }
-                });
+                });*/
     }
 }
