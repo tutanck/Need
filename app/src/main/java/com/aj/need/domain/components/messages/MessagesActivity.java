@@ -16,13 +16,10 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.aj.need.R;
-import com.aj.need.db.IO;
 import com.aj.need.db.colls.MESSAGES;
 import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.domain.components.profile.UtherProfileActivity;
-import com.aj.need.main.A;
 import com.aj.need.tools.utils.__;
-import com.aj.need.tools.regina.ack.UIAck;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -30,16 +27,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import io.socket.emitter.Emitter;
 
 public class MessagesActivity extends AppCompatActivity {
 
@@ -55,6 +47,8 @@ public class MessagesActivity extends AppCompatActivity {
     private String contact_id = null;
     private String contact_name = null;
     private String conversation_id = null;
+
+    ListenerRegistration conversationRegistration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,46 +89,6 @@ public class MessagesActivity extends AppCompatActivity {
 
     }
 
-    public static void start(Context context, String _id, String username, String conversationID) {
-        Intent intent = new Intent(context, MessagesActivity.class);
-        intent.putExtra(CONTACT_ID, _id);
-        intent.putExtra(CONTACT_NAME, username);
-        intent.putExtra(CONVERSATION_ID, conversationID);
-        context.startActivity(intent);
-    }
-
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        loadMessages();
-
-
-        MESSAGES.getMESSAGESRef()
-                .whereEqualTo(MESSAGES.conversationIDKey, conversation_id)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w("messagesListener", "Listen failed.", e);
-                            return;
-                        }
-                        loadMessages();
-                    }
-                });
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        //// TODO: 15/10/2017
-/*
-        IO.socket.off(MESSAGES.collTag + contact_id + "/" + A.user_id(this));
-        IO.socket.off(MESSAGES.collTag + A.user_id(this) + "/" + contact_id);
-    */
-    }
-
 
     private void sendMessage(String text) {
         MESSAGES.sendMessage(contact_id, text, conversation_id,
@@ -155,37 +109,85 @@ public class MessagesActivity extends AppCompatActivity {
 
 
     private void loadMessages() {
+        if (conversation_id != null)
+            MESSAGES.getMESSAGESRef()
+                    .whereEqualTo(MESSAGES.conversationIDKey, conversation_id).get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful())
+                                reloadMessageList(task.getResult());
+                            else
+                                Log.d("loadMessages", "Error getting documents: ", task.getException()); //// TODO: 15/10/2017
 
-        if (conversation_id == null) return;
-        MESSAGES.getMESSAGESRef()
-                .whereEqualTo(MESSAGES.conversationIDKey, conversation_id).get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            messageList.clear();
-
-                            for (DocumentSnapshot message : task.getResult()) {
-                                Log.d("loadMessages", message.getId() + " => " + message.getData());
-                                //// TODO: 15/10/2017
-                                messageList.add(new Message(
-                                        message.getString(MESSAGES.messageKey)
-                                        , message.getString(MESSAGES.fromKey)
-                                        , message.getString(Coll.dateKey)
-                                        , message.getString(MESSAGES.conversationIDKey)
-                                        , message.getBoolean(MESSAGES.openKey))
-                                );
-                            }
-
-                            Log.i("messageList", messageList.toString());
-                            mAdapter.notifyDataSetChanged();
-                            mRecyclerView.scrollToPosition(mRecyclerView.getAdapter().getItemCount() - 1);
-
-                        } else {
-                            Log.d("loadMessages", "Error getting documents: ", task.getException()); //// TODO: 15/10/2017  
                         }
+                    });
+    }
+
+
+    private void followConversation() {
+        conversationRegistration = MESSAGES.getMESSAGESRef()
+                .whereEqualTo(MESSAGES.conversationIDKey, conversation_id)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(
+                            @Nullable QuerySnapshot value
+                            , @Nullable FirebaseFirestoreException e
+                    ) {
+                        if (e != null) {
+                            Log.w("messagesListener", "Listen failed.", e);
+                            return;
+                        }
+                        reloadMessageList(value);
                     }
                 });
+    }
+
+
+    private void reloadMessageList(QuerySnapshot querySnapshot) {
+
+        messageList.clear();
+
+        for (DocumentSnapshot message : querySnapshot) {
+            Log.d("loadMessages", message.getId() + " => " + message.getData());
+            messageList.add(new Message(
+                    message.getString(MESSAGES.messageKey)
+                    , message.getString(MESSAGES.fromKey)
+                    , message.getString(Coll.dateKey)
+                    , message.getString(MESSAGES.conversationIDKey)
+                    , message.getBoolean(MESSAGES.openKey))
+            );
+        }
+
+        Log.i("messageList", messageList.toString());
+        mAdapter.notifyDataSetChanged();
+        mRecyclerView.scrollToPosition(mRecyclerView.getAdapter().getItemCount() - 1);
+    }
+
+
+    public static void start(Context context, String _id, String username, String conversationID) {
+        Intent intent = new Intent(context, MessagesActivity.class);
+        intent.putExtra(CONTACT_ID, _id);
+        intent.putExtra(CONTACT_NAME, username);
+        intent.putExtra(CONVERSATION_ID, conversationID);
+        context.startActivity(intent);
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        loadMessages();
+        // ||
+        followConversation(); //// TODO: 16/10/2017 sync messageList !importannt
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (conversationRegistration != null)
+            conversationRegistration.remove();
     }
 
 
