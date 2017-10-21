@@ -29,6 +29,7 @@ import com.aj.need.tools.components.fragments.ImageFragment;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.services.FormFieldKindTranslator;
 import com.aj.need.tools.utils.JSONServices;
+import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -193,7 +194,7 @@ public class ProfileFragment extends Fragment {
                 FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
 
                 fragmentTransaction.add(R.id.profile_image_layout, ImageFragment.newInstance( //todo bug : no view found for "profile_image"
-                        "users/" + user_id + "/images/pp.jpg", R.drawable.ic_person_profile_large, isEditable), "profile_image"
+                        _Storage.getRef(user_id), R.drawable.ic_person_profile_large, isEditable), "profile_image"
                 );
 
                 for (int i = 0; i < orderedFieldsKeys.length(); i++) {
@@ -229,7 +230,7 @@ public class ProfileFragment extends Fragment {
 
 
         FloatingActionButton fabContact = view.findViewById(R.id.fabContact);
-        if (isEditable)
+        if (!isEditable)
             fabContact.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

@@ -2,6 +2,7 @@ package com.aj.need.domain.components.profile;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -15,6 +16,10 @@ import android.widget.TextView;
 import com.aj.need.R;
 import com.aj.need.domain.components.messages.MessagesActivity;
 import com.aj.need.tools.utils.Avail;
+import com.aj.need.tools.utils._Storage;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 
@@ -92,12 +97,24 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
             userReputationRBar.setRating(mUserProfile.getReputation());
             messageTV.setText(mUserProfile.getLastMessage());
             messageDateTV.setText(mUserProfile.getLastMessageDate());
+
+            _Storage.loadRef(_Storage.getRef(userProfile.get_id()))
+                    .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            // Load the image using Glide
+                            Glide.with(mContext)
+                                    .load(uri)
+                                    .apply(RequestOptions.circleCropTransform())
+                                    .into(userProfileIV);
+                        }
+                    });
         }
 
 
         @Override
         public void onClick(View view) {
-            MessagesActivity.start(mContext, mUserProfile.get_id(), mUserProfile.getUsername(),mUserProfile.getConversationID());
+            MessagesActivity.start(mContext, mUserProfile.get_id(), mUserProfile.getUsername(), mUserProfile.getConversationID());
         }
     }
 }

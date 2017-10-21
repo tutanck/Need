@@ -94,10 +94,9 @@ public class UserProfile implements Serializable, ITranslatable<UserProfile> {
         String objectID = json.optString("objectID");
         String username = json.optString("username");
         int availability = json.optInt("availability", -1);
-        int rating = json.optInt("rating", 0/*-1//todo*/);
+        int rating = json.optInt("rating", 0);
 
-        if (objectID != null && username != null
-                && rating >= 0 && availability >= 0)
+        if (objectID != null && username != null && availability >= 0)
             return new UserProfile(objectID, username, rating, availability);
 
         return null;
