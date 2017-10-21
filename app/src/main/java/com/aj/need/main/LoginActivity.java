@@ -12,7 +12,9 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.aj.need.R;
+import com.aj.need.db.colls.USERS;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
+import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.KeyboardServices;
 import com.aj.need.tools.utils.__;
 
@@ -80,9 +82,10 @@ public class LoginActivity extends AppCompatActivity {
                         .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful())
+                                if (task.isSuccessful()) {
+                                    USERS.getCurrentUserRef().update(USERS.availabilityKey, Avail.AVAILABLE);
                                     MainActivity.start(LoginActivity.this);
-                                else {
+                                }else {
                                     progressBarFragment.hide();
                                     __.showShortToast(LoginActivity.this, getString(R.string.signin_auth_failed));
                                     Log.d("FirebaseAuth", "" + task.getException());//// TODO: 01/10/2017 check what exc and swow the right msg error

@@ -83,11 +83,8 @@ public class SignupActivity extends AppCompatActivity {
                         .addOnCompleteListener(SignupActivity.this, new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
-
                                 if (task.isSuccessful())
                                     USERS.getCurrentUserRef().set(new User(username, Avail.AVAILABLE))
-                                    /*db.collection(User.coll).document(auth.getCurrentUser().getUid())
-                                            .set(new User(username, Avail.AVAILABLE))*/
                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                 @Override
                                                 public void onSuccess(Void aVoid) {

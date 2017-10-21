@@ -92,9 +92,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-
-        USERS.getCurrentUserRef().update(USERS.availabilityKey, Avail.AVAILABLE);
-
         profileRegistration = USERS.getCurrentUserRef().addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot,
