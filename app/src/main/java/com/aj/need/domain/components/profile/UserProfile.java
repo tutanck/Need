@@ -1,12 +1,16 @@
 package com.aj.need.domain.components.profile;
 
+import com.aj.need.tools.utils.ITranslatable;
+
+import org.json.JSONObject;
+
 import java.io.Serializable;
 
 /**
  * Created by joan on 21/09/2017.
  */
 
-public class UserProfile implements Serializable {
+public class UserProfile implements Serializable, ITranslatable<UserProfile> {
 
     private String _id;
 
@@ -17,6 +21,11 @@ public class UserProfile implements Serializable {
     private String conversationID;
     private String lastMessage;
     private String lastMessageDate;
+
+
+    public UserProfile() {
+    }
+
 
     public UserProfile(
             String _id
@@ -76,5 +85,21 @@ public class UserProfile implements Serializable {
 
     public String getConversationID() {
         return conversationID;
+    }
+
+    @Override
+    public UserProfile tr(JSONObject json) {
+        if (json == null) return null;
+
+        String objectID = json.optString("objectID");
+        String username = json.optString("username");
+        int availability = json.optInt("availability", -1);
+        int rating = json.optInt("rating", 0/*-1//todo*/);
+
+        if (objectID != null && username != null
+                && rating >= 0 && availability >= 0)
+            return new UserProfile(objectID, username, rating, availability);
+
+        return null;
     }
 }

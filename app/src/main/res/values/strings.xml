@@ -36,4 +36,6 @@
     <string name="avail_to_busy_warning">Vous serez vu comme occupé.\nVous ne recevrez plus de notifications.</string>
     <string name="delete_need_warning">Ce besoin sera supprimé!</string>
     <string name="delete_keyword_warning">Ce mot-clé sera supprimé!</string>
+    <string name="search_title">Recherche</string>
+    <string name="search_hint">Que recherchez vous ?</string>
 </resources>

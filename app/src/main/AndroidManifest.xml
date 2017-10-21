@@ -24,10 +24,16 @@
         <activity
             android:name=".domain.components.keywords.UtherKeywordsActivity"
             android:screenOrientation="portrait" />
+
+
         <activity
             android:name=".domain.components.needs.UserNeedNewSearchActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:screenOrientation="portrait">
+            <meta-data android:name="android.app.searchable" android:resource="@xml/searchable" />
+        </activity>
+
+
+
         <activity
             android:name=".domain.components.needs.UserNeedAdActivity"
             android:screenOrientation="portrait"
