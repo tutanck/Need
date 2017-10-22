@@ -14,13 +14,6 @@ public class UserKeyword {
     public UserKeyword() {
     }
 
-
-    UserKeyword(String keyword, boolean active) {
-        this.keyword = keyword;
-        this.active = active;
-        this.deleted = false;
-    }
-
     UserKeyword(String keyword, boolean active, boolean deleted) {
         this.keyword = keyword;
         this.active = active;

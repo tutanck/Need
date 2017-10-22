@@ -80,7 +80,7 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
             mSwitch.setChecked(userKeyword.isActive());
             mSwitch.setClickable(mIsEditable);
 
-            if (mIsEditable)
+            if (mIsEditable) //!importants
                 if (!haveSwitchListener) {
                     mSwitch.setOnClickListener(new View.OnClickListener() {
                         @Override

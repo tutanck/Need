@@ -21,9 +21,6 @@
         <activity
             android:name=".domain.components.keywords.UserKeywordsActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".domain.components.keywords.UtherKeywordsActivity"
-            android:screenOrientation="portrait" />
 
 
         <activity
