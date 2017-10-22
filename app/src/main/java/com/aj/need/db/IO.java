@@ -28,8 +28,17 @@ public class IO implements Regina.SocketClientEventDelegate {
         db = FirebaseFirestore.getInstance();
     }
 
+    public static boolean isCurrentUser(String uid) {
+        return auth.getCurrentUser().getUid().equals(uid);
+    }
+
+    public static String getCurrentUserUid() {
+        return auth.getCurrentUser().getUid();
+    }
+
+
 //// TODO: 16/10/2017 rem && regina too
-    /* 
+    /*
     public static Regina r;
     public static Socket socket;
 

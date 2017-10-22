@@ -1,6 +1,5 @@
 package com.aj.need.domain.components.profile;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -21,7 +20,6 @@ import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_RATINGS;
 import com.aj.need.domain.components.keywords.UserKeywordsActivity;
-import com.aj.need.domain.components.keywords.UtherKeywordsActivity;
 import com.aj.need.domain.components.messages.MessagesActivity;
 import com.aj.need.domain.entities.UserRating;
 import com.aj.need.tools.components.fragments.IDKeyFormField;
@@ -50,9 +48,9 @@ public class ProfileFragment extends Fragment {
 
     private static final String EDITABLE = "EDITABLE";
 
-    private final static String USER_ID = "USER_ID";
+    private final static String UID = "UID";
 
-    private String user_id = null;
+    private String uid = null;
 
     private boolean isEditable = false;
 
@@ -71,7 +69,7 @@ public class ProfileFragment extends Fragment {
     ) {
         Bundle args = new Bundle();
         args.putBoolean(EDITABLE, editable);
-        args.putString(USER_ID, user_id);
+        args.putString(UID, user_id);
         ProfileFragment fragment = new ProfileFragment();
         fragment.setArguments(args);
         return fragment;
@@ -87,7 +85,7 @@ public class ProfileFragment extends Fragment {
 
         final Bundle args = getArguments();
 
-        user_id = args.getString(USER_ID);
+        uid = args.getString(UID);
 
         isEditable = args.getBoolean(EDITABLE);
 
@@ -98,7 +96,7 @@ public class ProfileFragment extends Fragment {
 
         final RatingBar userRating = view.findViewById(R.id.user_rating);
 
-        USER_RATINGS.getUserRatingsRef(user_id)
+        USER_RATINGS.getUserRatingsRef(uid)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -124,7 +122,7 @@ public class ProfileFragment extends Fragment {
 
         if (!isEditable) {
             ratingControl.setIsIndicator(false);
-            USER_RATINGS.getCurrentUserRatingsRef().document(user_id).get()
+            USER_RATINGS.getCurrentUserRatingsRef().document(uid).get()
                     .addOnCompleteListener(
                             new OnCompleteListener<DocumentSnapshot>() {
                                 @Override
@@ -147,7 +145,7 @@ public class ProfileFragment extends Fragment {
                                 , boolean fromUser
                         ) {
                             if (fromUser)
-                                USER_RATINGS.getUserRatingsRef(user_id)
+                                USER_RATINGS.getUserRatingsRef(uid)
                                         .document(IO.auth.getCurrentUser().getUid())
                                         .set(new UserRating(rating))
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -194,7 +192,7 @@ public class ProfileFragment extends Fragment {
                 FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
 
                 fragmentTransaction.add(R.id.profile_image_layout, ImageFragment.newInstance( //todo bug : no view found for "profile_image"
-                        _Storage.getRef(user_id), R.drawable.ic_person_profile_large, isEditable), "profile_image"
+                        _Storage.getRef(uid), R.drawable.ic_person_profile_large, isEditable), "profile_image"
                 );
 
                 for (int i = 0; i < orderedFieldsKeys.length(); i++) {
@@ -202,7 +200,7 @@ public class ProfileFragment extends Fragment {
                     JSONObject fieldParam = formParams.getJSONObject(key);
 
                     IDKeyFormField formField = IDKeyFormField.newInstance
-                            (i, user_id, fieldParam.getString("label"), key
+                            (i, uid, fieldParam.getString("label"), key
                                     , FormFieldKindTranslator.tr(fieldParam.getInt("kind")), isEditable);
 
                     fragmentTransaction.add(R.id.form_layout, formField, key);
@@ -220,11 +218,7 @@ public class ProfileFragment extends Fragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent;
-                if (!isEditable)
-                    UtherKeywordsActivity.start(getContext(), user_id);
-                else
-                    UserKeywordsActivity.start(getContext());
+                UserKeywordsActivity.start(getContext(), uid);
             }
         });
 
@@ -234,8 +228,8 @@ public class ProfileFragment extends Fragment {
             fabContact.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    MessagesActivity.start(getContext(), user_id
-                            , formFields.get(USERS.usernameKey).getTvContent().getText().toString(),null); //// TODO: 15/10/2017  make a request to know if there was a conv between two interlocutors and if yes get the conversationID
+                    MessagesActivity.start(getContext(), uid
+                            , formFields.get(USERS.usernameKey).getTvContent().getText().toString(), null); //// TODO: 15/10/2017  make a request to know if there was a conv between two interlocutors and if yes get the conversationID
                 }
             });
         else fabContact.setVisibility(View.GONE);
@@ -250,14 +244,15 @@ public class ProfileFragment extends Fragment {
         super.onStart();
 
         progressBarFragment.show();
-        USERS.getCurrentUserRef().get().addOnCompleteListener(
+
+        USERS.getUserRef(uid).get().addOnCompleteListener(
                 new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if (task.isSuccessful()) {
                             DocumentSnapshot profile = task.getResult();
-                            if (profile != null) {
-                                Log.d("getUserProfile", "DocumentSnapshot data: " + task.getResult().getData());
+                            if (profile != null && profile.exists()) {
+                                Log.d("getUserProfile", "DocumentSnapshot data: " + profile.getData());
 
                                 //RadioGroup::userTypeRG
                                 Long userType = profile.getLong(USERS.typeKey);
@@ -269,7 +264,7 @@ public class ProfileFragment extends Fragment {
                                     formFields.get(key).getTvContent().setText(profile.getString(key));
 
                                 progressBarFragment.hide();
-                            } else __.fatal("No such document");
+                            } else __.fatal("ProfileFragment : No such document");
                         } else {
                             Log.d("getUserProfile", "get failed with ", task.getException());
                             __.showShortToast(getContext(), "Impossible de charger le profile"); //// TODO: 13/10/2017

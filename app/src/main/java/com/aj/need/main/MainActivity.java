@@ -150,20 +150,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.action_settings:
-                USERS.getCurrentUserRef().update(USERS.availabilityKey, Avail.OFFLINE)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Log.i("signOut", "signOut");
-                                IO.auth.signOut();
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                __.showShortToast(MainActivity.this, "Impossible de se deconnecter");//// TODO: 13/10/2017
-                            }
-                        });
+                USERS.getCurrentUserRef().update(USERS.availabilityKey, Avail.OFFLINE);
+                IO.auth.signOut();
                 return true;
         }
         return super.onOptionsItemSelected(menuItem);

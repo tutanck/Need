@@ -21,6 +21,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 
 import com.aj.need.R;
+import com.aj.need.db.IO;
 import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 import com.aj.need.tools.utils.ALGOLIA;
@@ -83,7 +84,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
         // Pre-build query.
         query = new Query();
         query.setAttributesToRetrieve("keywords", "availability", "rating", "username");
-        //query.setAttributesToHighlight("title");
+        query.setFilters("NOT objectID:"+ IO.getCurrentUserUid());
         query.setHitsPerPage(HITS_PER_PAGE);
 
         FloatingActionButton fab = findViewById(R.id.fab_open_need_save);

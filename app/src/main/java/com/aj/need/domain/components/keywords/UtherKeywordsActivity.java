@@ -90,10 +90,10 @@ public class UtherKeywordsActivity extends AppCompatActivity {
     }
 
 
-    public static void start(Context context, String user_id) {
+    /*public static void start(Context context, String user_id) {
         Intent intent = new Intent(context, UtherKeywordsActivity.class);
         intent.putExtra(USER_ID, user_id);
         context.startActivity(intent);
-    }
+    }*/
 
 }

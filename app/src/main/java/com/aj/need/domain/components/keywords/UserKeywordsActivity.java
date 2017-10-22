@@ -20,23 +20,25 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.aj.need.R;
+import com.aj.need.db.IO;
 import com.aj.need.db.colls.USER_KEYWORDS;
-import com.aj.need.domain.entities.User;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserKeywordsActivity extends AppCompatActivity {
+
+    private final static String UID = "UID";
+
+    private String uid = null;
 
     private List<UserKeyword> mUserKeywords = new ArrayList<>();
 
@@ -55,31 +57,43 @@ public class UserKeywordsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_keywords);
 
+        uid = getIntent().getStringExtra(UID);
 
-        btnAdd = findViewById(R.id.add_keyword_button);
-        btnAdd.setEnabled(false);
-
-        etKeyword = findViewById(R.id.add_keyword_input);
+        if (uid == null) __.fatal("UserKeywordsActivity : uid == null");
 
         mRecyclerView = findViewById(R.id.keywords_recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        mAdapter = new UserKeywordsRecyclerAdapter(UserKeywordsActivity.this, mUserKeywords);
+        mAdapter = new UserKeywordsRecyclerAdapter(UserKeywordsActivity.this, mUserKeywords, IO.isCurrentUser(uid));
         mRecyclerView.setAdapter(mAdapter);
 
-        indicationsLayout = findViewById(R.id.activity_user_keywords_indications);
+        indicationsLayout = findViewById(R.id.activity_user_keywords_indications); //// TODO: 22/10/2017 uther indic
         progressBarFragment = (ProgressBarFragment) getSupportFragmentManager().findFragmentById(R.id.waiter_modal_fragment);
         progressBarFragment.setBackgroundColor(Color.TRANSPARENT);
 
-        functionalizeETKeyword();
-        functionalizeBtnAdd();
-        setRecyclerViewItemTouchListener();
+        etKeyword = findViewById(R.id.add_keyword_input);
+
+        btnAdd = findViewById(R.id.add_keyword_button);
+        btnAdd.setEnabled(false);
+
+        if (IO.isCurrentUser(uid)) {
+            functionalizeETKeyword();
+            functionalizeBtnAdd();
+            setRecyclerViewItemTouchListener();
+        } else {
+            btnAdd.setVisibility(View.GONE);
+            etKeyword.setVisibility(View.GONE);
+        }
+
     }
 
 
-    public static void start(Context context) {
-        context.startActivity(new Intent(context, UserKeywordsActivity.class));
+    public static void start(Context context, String uid) {
+        Intent intent = new Intent(context, UserKeywordsActivity.class);
+        intent.putExtra(UID, uid);
+        context.startActivity(intent);
     }
+
 
     @Override
     protected void onStart() {
@@ -90,7 +104,8 @@ public class UserKeywordsActivity extends AppCompatActivity {
 
     private void loadKeywords() {
         progressBarFragment.show();
-        USER_KEYWORDS.getCurrentUserKeywordsRef()
+
+        USER_KEYWORDS.getUserKeywordsRef(getIntent().getStringExtra(UID))
                 .whereEqualTo(USER_KEYWORDS.deletedKey, false)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -110,6 +125,7 @@ public class UserKeywordsActivity extends AppCompatActivity {
                             progressBarFragment.hide();
                         } else {
                             __.showShortToast(UserKeywordsActivity.this, "Impossible de charger les mots clés");
+                            //// TODO: 14/10/2017  reload btn
                         }
                     }
                 });

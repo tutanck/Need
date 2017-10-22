@@ -41,7 +41,7 @@ public final class USERS implements Coll {
     }
 
     public final static DocumentReference getCurrentUserRef() {
-        return getUserRef(IO.auth.getCurrentUser().getUid());
+        return getUserRef(IO.getCurrentUserUid());
     }
 
 

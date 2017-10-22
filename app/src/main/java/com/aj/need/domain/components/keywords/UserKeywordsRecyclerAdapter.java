@@ -19,13 +19,16 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
 
     private List<UserKeyword> mUserKeywords;
     private Context mContext;
+    private boolean mIsEditable;
 
     public UserKeywordsRecyclerAdapter(
             Context context,
-            List<UserKeyword> userKeywords
+            List<UserKeyword> userKeywords,
+            boolean isEditable
     ) {
         mContext = context;
         mUserKeywords = userKeywords;
+        mIsEditable = isEditable;
     }
 
     @Override
@@ -38,7 +41,7 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.bindItem(mUserKeywords.get(position),mContext);
+        holder.bindItem(mUserKeywords.get(position), mContext, mIsEditable);
     }
 
     @Override
@@ -58,6 +61,8 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
 
         private Context mContext;
 
+        private boolean mIsEditable;
+
 
         public ViewHolder(View v) {
             super(v);
@@ -66,28 +71,32 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
             mSwitch = v.findViewById(R.id.keyword_switch);
         }
 
-        public void bindItem(UserKeyword userKeyword, final Context context) {
+        public void bindItem(UserKeyword userKeyword, final Context context, boolean isEditable) {
             this.mUserKeyword = userKeyword;
             this.mContext = context;
+            this.mIsEditable = isEditable;
 
             mTextView.setText(userKeyword.getKeyword());
             mSwitch.setChecked(userKeyword.isActive());
+            mSwitch.setClickable(mIsEditable);
 
-            if (!haveSwitchListener) {
-                mSwitch.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        ((UserKeywordsActivity)context)
-                                .saveKeyword(mUserKeyword.getKeyword(), !mUserKeyword.isActive(), false);
-                    }
-                });
+            if (mIsEditable)
+                if (!haveSwitchListener) {
+                    mSwitch.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            ((UserKeywordsActivity) context)
+                                    .saveKeyword(mUserKeyword.getKeyword(), !mUserKeyword.isActive(), false);
+                        }
+                    });
 
-                haveSwitchListener = true;
-            }
+                    haveSwitchListener = true;
+                }
         }
 
         void deleteKeyword() {
-            ((UserKeywordsActivity)mContext).saveKeyword(mUserKeyword.getKeyword(), mUserKeyword.isActive(), true);
+            if (mIsEditable)
+                ((UserKeywordsActivity) mContext).saveKeyword(mUserKeyword.getKeyword(), mUserKeyword.isActive(), true);
         }
 
     }
