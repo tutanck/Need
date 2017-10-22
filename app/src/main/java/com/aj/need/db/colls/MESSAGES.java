@@ -6,20 +6,15 @@ import android.util.Log;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.domain.components.messages.Message;
-import com.aj.need.tools.regina.Regina;
 
-import com.aj.need.tools.regina.ack._Ack;
-import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.WriteBatch;
 
-import org.json.JSONException;
 
 /**
  * Created by joan on 02/10/2017.

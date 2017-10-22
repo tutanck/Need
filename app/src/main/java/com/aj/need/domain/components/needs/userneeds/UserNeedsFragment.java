@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.aj.need.R;
+import com.aj.need.db.IO;
 import com.aj.need.db.colls.USER_NEEDS;
 import com.aj.need.domain.components.needs.UserNeedAdActivity;
 import com.aj.need.domain.components.needs.UserNeedNewSearchActivity;
@@ -138,7 +139,7 @@ public class UserNeedsFragment extends Fragment {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         progressBarFragment.show();
                         ((UserNeedsRecyclerAdapter.ViewHolder) viewHolder).deleteNeed(getActivity(), self,
-                                A.user_id(getActivity()), mUserNeeds, mAdapter);
+                                IO.getCurrentUserUid(), mUserNeeds, mAdapter);
                     }
                 });
 

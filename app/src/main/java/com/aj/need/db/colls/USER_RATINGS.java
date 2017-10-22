@@ -1,13 +1,8 @@
 package com.aj.need.db.colls;
 
-import com.aj.need.db.IO;
 import com.aj.need.db.colls.itf.Coll;
-import com.aj.need.tools.regina.ack._Ack;
-import com.aj.need.tools.utils.__;
 
 import com.google.firebase.firestore.CollectionReference;
-
-import org.json.JSONException;
 
 /**
  * Created by joan on 02/10/2017.

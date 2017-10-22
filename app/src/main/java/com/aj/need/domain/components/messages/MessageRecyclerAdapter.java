@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.aj.need.R;
+import com.aj.need.db.IO;
 import com.aj.need.main.A;
 
 import java.util.List;
@@ -35,7 +36,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
     // Determines the appropriate ViewType according to the sender of the message.
     @Override
     public int getItemViewType(int position) {
-        if (mMessageList.get(position).getFrom().equals(A.user_id(mContext)))
+        if (mMessageList.get(position).getFrom().equals(IO.getCurrentUserUid()))
             return VIEW_TYPE_MESSAGE_SENT;
         else
             return VIEW_TYPE_MESSAGE_RECEIVED;
