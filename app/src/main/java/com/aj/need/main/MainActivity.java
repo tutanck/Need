@@ -26,11 +26,7 @@ import com.aj.need.domain.components.ads.AdsFragment;
 import com.aj.need.domain.components.messages.ConversationsFragment;
 import com.aj.need.domain.components.needs.userneeds.UserNeedsFragment;
 import com.aj.need.domain.components.profile.ProfileFragment;
-import com.aj.need.tools.oths.PageFragment;
 import com.aj.need.tools.utils.Avail;
-import com.aj.need.tools.utils.__;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -200,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_profile, menu);
+        getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
 

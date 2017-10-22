@@ -1,4 +1,4 @@
-package com.aj.need.tools.oths;
+package com.aj.need.tools.components.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
