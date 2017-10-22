@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
-import com.aj.need.main.A;
 
 import java.util.List;
 

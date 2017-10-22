@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.domain.components.messages.MessagesActivity;
+import com.aj.need.domain.entities.UserProfile;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils._Storage;
 import com.bumptech.glide.Glide;

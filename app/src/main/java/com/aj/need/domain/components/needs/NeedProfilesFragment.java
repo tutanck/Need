@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.aj.need.R;
-import com.aj.need.domain.components.profile.UserProfile;
+import com.aj.need.domain.entities.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 
 import java.util.ArrayList;

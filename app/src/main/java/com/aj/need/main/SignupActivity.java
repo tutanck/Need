@@ -13,7 +13,6 @@ import android.widget.EditText;
 import com.aj.need.R;
 
 import com.aj.need.db.colls.USERS;
-import com.aj.need.domain.entities.User;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.KeyboardServices;

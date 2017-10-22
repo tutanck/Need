@@ -1,12 +1,19 @@
 package com.aj.need.domain.components.ads;
 
-class Ad {
+import com.aj.need.tools.utils.ITranslatable;
+import com.google.firebase.firestore.DocumentSnapshot;
 
-    String search;
-    String ownerID;
-    String updatedAt;
+import org.json.JSONObject;
 
-    public Ad(String search, String ownerID, String updatedAt) {
+import java.io.Serializable;
+
+public class Ad implements Serializable, ITranslatable<Ad> {
+
+    private String search;
+    private String ownerID;
+    private String updatedAt;
+
+    private Ad(String search, String ownerID, String updatedAt) {
         this.search = search;
         this.ownerID = ownerID;
         this.updatedAt = updatedAt;
@@ -27,6 +34,16 @@ class Ad {
 
     @Override
     public String toString() {
-        return search+" "+ownerID+" "+updatedAt;
+        return search + " " + ownerID + " " + updatedAt;
+    }
+
+    @Override
+    public Ad tr(JSONObject json) {
+        return null;
+    }
+
+    @Override
+    public Ad tr(DocumentSnapshot documentSnapshot) {
+        return null;
     }
 }

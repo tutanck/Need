@@ -1,5 +1,8 @@
 package com.aj.need.tools.utils;
 
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -20,6 +23,21 @@ public class Jarvis<T> {
                 if (json == null) continue;
 
                 T t = (T) translatable.tr(json);
+
+                if (t == null) continue;
+                list.add(t);
+            }
+        return list;
+    }
+
+
+
+
+
+    public List<T> tr(QuerySnapshot querySnapshot, ITranslatable<T> translatable) {
+        List<T> list = new ArrayList<T>();
+            for (DocumentSnapshot documentSnapshot : querySnapshot) {
+                T t = (T) translatable.tr(documentSnapshot);
 
                 if (t == null) continue;
                 list.add(t);

@@ -19,15 +19,13 @@ import com.aj.need.db.colls.USER_NEEDS;
 import com.aj.need.domain.components.needs.UserNeedAdActivity;
 import com.aj.need.domain.components.needs.UserNeedNewSearchActivity;
 
-import com.aj.need.main.A;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.others._Recycler;
+import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
 
 
 import java.util.ArrayList;
@@ -107,10 +105,9 @@ public class UserNeedsFragment extends Fragment {
 
     void reloadList(QuerySnapshot res) {
         mUserNeeds.clear();
-        for (DocumentSnapshot need : res)
-            mUserNeeds.add(new UserNeed(need.getId(), need.getString(USER_NEEDS.titleKey)
-                    , need.getString(USER_NEEDS.searchKey), need.getBoolean(USER_NEEDS.activeKey))
-            );
+
+        mUserNeeds.addAll(new Jarvis<UserNeed>().tr(res, new UserNeed()));
+
         indicationsLayout.setVisibility(mUserNeeds.size() == 0 ? View.VISIBLE : View.GONE);
         mAdapter.notifyDataSetChanged();
         progressBarFragment.hide();

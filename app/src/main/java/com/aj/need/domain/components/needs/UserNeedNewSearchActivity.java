@@ -5,24 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageButton;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
-import com.aj.need.domain.components.profile.UserProfile;
+import com.aj.need.domain.entities.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 import com.aj.need.tools.utils.ALGOLIA;
 import com.aj.need.tools.utils.Jarvis;
@@ -171,7 +166,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
 
         searchView = (SearchView)searchMenuItem.getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName())); //todo : dt work : getSearchableInfo = null
-        //searchView.setIconifiedByDefault(false);
+        searchView.setIconifiedByDefault(false); //todo dt work
         searchView.setOnQueryTextListener(this);
 
         return true;

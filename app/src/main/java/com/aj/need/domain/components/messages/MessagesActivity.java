@@ -17,14 +17,13 @@ import android.widget.EditText;
 
 import com.aj.need.R;
 import com.aj.need.db.colls.MESSAGES;
-import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.domain.components.profile.UtherProfileActivity;
+import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -148,16 +147,7 @@ public class MessagesActivity extends AppCompatActivity {
 
         messageList.clear();
 
-        for (DocumentSnapshot message : querySnapshot) {
-            Log.d("loadMessages", message.getId() + " => " + message.getData());
-            messageList.add(new Message(
-                    message.getString(MESSAGES.messageKey)
-                    , message.getString(MESSAGES.fromKey)
-                    , message.getString(Coll.dateKey)
-                    , message.getString(MESSAGES.conversationIDKey)
-                    , message.getBoolean(MESSAGES.openKey))
-            );
-        }
+        messageList.addAll(new Jarvis<Message>().tr(querySnapshot, new Message()));
 
         Log.i("messageList", messageList.toString());
         mAdapter.notifyDataSetChanged();

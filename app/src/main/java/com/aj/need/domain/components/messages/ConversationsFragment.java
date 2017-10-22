@@ -15,7 +15,7 @@ import android.widget.LinearLayout;
 import com.aj.need.R;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_CONTACTS;
-import com.aj.need.domain.components.profile.UserProfile;
+import com.aj.need.domain.entities.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.utils.__;

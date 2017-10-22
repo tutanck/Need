@@ -1,8 +1,17 @@
 package com.aj.need.domain.components.messages;
 
+import android.util.Log;
+
+import com.aj.need.db.colls.MESSAGES;
+import com.aj.need.tools.utils.ITranslatable;
+import com.google.firebase.firestore.DocumentSnapshot;
+
+import org.json.JSONObject;
+
+import java.io.Serializable;
 import java.util.Date;
 
-public class Message {
+public class Message implements Serializable, ITranslatable<Message> {
 
     private String message;
     private String to;
@@ -10,6 +19,9 @@ public class Message {
     private String conversationID;
     private Date date;
     private boolean open;
+
+    public Message() {
+    }
 
     public Message(String message, String from, String to, String conversationID, boolean open) {
         this.message = message;
@@ -47,5 +59,22 @@ public class Message {
     @Override
     public String toString() {
         return message + " " + from + " " + to + " " + conversationID + " " + date + " " + open;
+    }
+
+    @Override
+    public Message tr(DocumentSnapshot _message) {
+        Log.d("loadMessages", _message.getId() + " => " + _message.getData());
+        return new Message(
+                _message.getString(MESSAGES.messageKey)
+                , _message.getString(MESSAGES.fromKey)
+                , _message.getString(MESSAGES.dateKey)
+                , _message.getString(MESSAGES.conversationIDKey)
+                , _message.getBoolean(MESSAGES.openKey));
+
+    }
+
+    @Override
+    public Message tr(JSONObject json) {
+        return null;
     }
 }

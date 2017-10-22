@@ -90,7 +90,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
         }
 
 
-        needSwitch = (Switch) findViewById(R.id.need_switch);
+        needSwitch =  findViewById(R.id.need_switch);
         needSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -100,7 +100,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
         });
 
 
-        fab = (FloatingActionButton) findViewById(R.id.fab_save_need);
+        fab =  findViewById(R.id.fab_save_need);
         fab.setEnabled(false);
         fab.setVisibility(View.GONE);
         fab.setOnClickListener(new View.OnClickListener() {

@@ -1,6 +1,7 @@
-package com.aj.need.domain.components.profile;
+package com.aj.need.domain.entities;
 
 import com.aj.need.tools.utils.ITranslatable;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import org.json.JSONObject;
 
@@ -27,7 +28,7 @@ public class UserProfile implements Serializable, ITranslatable<UserProfile> {
     }
 
 
-    public UserProfile(
+    private UserProfile(
             String _id
             , String username
             , int reputation
@@ -87,6 +88,7 @@ public class UserProfile implements Serializable, ITranslatable<UserProfile> {
         return conversationID;
     }
 
+
     @Override
     public UserProfile tr(JSONObject json) {
         if (json == null) return null;
@@ -99,6 +101,11 @@ public class UserProfile implements Serializable, ITranslatable<UserProfile> {
         if (objectID != null && username != null && availability >= 0)
             return new UserProfile(objectID, username, rating, availability);
 
+        return null;
+    }
+
+    @Override
+    public UserProfile tr(DocumentSnapshot documentSnapshot) {
         return null;
     }
 }
