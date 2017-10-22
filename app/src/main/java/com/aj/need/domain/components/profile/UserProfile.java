@@ -1,4 +1,4 @@
-package com.aj.need.domain.entities;
+package com.aj.need.domain.components.profile;
 
 import com.aj.need.tools.utils.ITranslatable;
 import com.google.firebase.firestore.DocumentSnapshot;

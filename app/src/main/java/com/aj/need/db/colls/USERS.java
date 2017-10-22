@@ -5,7 +5,7 @@ import android.util.Log;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.itf.Coll;
 
-import com.aj.need.domain.entities.UserProfile;
+import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;

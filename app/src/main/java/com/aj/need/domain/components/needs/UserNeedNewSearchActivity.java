@@ -17,7 +17,7 @@ import android.view.View;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
-import com.aj.need.domain.entities.UserProfile;
+import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 import com.aj.need.tools.utils.ALGOLIA;
 import com.aj.need.tools.utils.Jarvis;
