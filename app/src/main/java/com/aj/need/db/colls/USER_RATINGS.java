@@ -15,6 +15,7 @@ public final class USER_RATINGS implements Coll {
 
     private final static String coll = "_RATINGS";
     public final static String ratingKey = "rating";
+    public final static String avgRatingKey = "avgRating";
 
 
     public final static CollectionReference getUserRatingsRef(String uid) {

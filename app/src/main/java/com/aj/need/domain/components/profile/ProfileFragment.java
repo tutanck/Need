@@ -61,6 +61,10 @@ public class ProfileFragment extends Fragment {
 
     private RadioGroup userTypeRG;
 
+    private  RatingBar userRating;
+
+    private  RatingBar ratingControl;
+
 
     public static ProfileFragment newInstance(
             String user_id,
@@ -93,32 +97,10 @@ public class ProfileFragment extends Fragment {
         progressBarFragment = (ProgressBarFragment) getChildFragmentManager().findFragmentById(R.id.waiter_modal_fragment);
         progressBarFragment.setBackgroundColor(Color.TRANSPARENT);
 
-        final RatingBar userRating = view.findViewById(R.id.user_rating);
+        userRating = view.findViewById(R.id.user_rating);
 
-        USER_RATINGS.getUserRatingsRef(uid)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            int nbVoters = 0;
-                            float ratingsSum = 0;
-                            for (DocumentSnapshot ratingDoc : task.getResult()) {
-                                Log.d("ratingDoc", ratingDoc.getId() + " => " + ratingDoc.getData());
-                                ratingsSum += ratingDoc.getLong(USER_RATINGS.ratingKey);
-                                nbVoters++;
-                            }
-                            userRating.setRating(nbVoters == 0 ? 0 : ratingsSum / nbVoters);
-                        } else {
-                            Log.d("ratingDoc", "Error getting documents: ", task.getException());
-                            userRating.setEnabled(false);
-                        }
-                    }
-                });
-
-
-        final RatingBar ratingControl = view.findViewById(R.id.rating_control);
-
+        ratingControl = view.findViewById(R.id.rating_control);
+        
         if (!isEditable) {
             ratingControl.setIsIndicator(false);
             USER_RATINGS.getCurrentUserRatingsRef().document(uid).get()
@@ -127,10 +109,10 @@ public class ProfileFragment extends Fragment {
                                 @Override
                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                                     if (task.isSuccessful()) {
-                                        DocumentSnapshot ratingDoc = task.getResult();
+                                        DocumentSnapshot ratingDoc = task.getResult(); //// TODO: 23/10/2017  dt work
                                         ratingControl.setRating((ratingDoc != null && ratingDoc.exists()) ? ratingDoc.getLong(USER_RATINGS.ratingKey) : 0);
                                     } else
-                                        __.showShortToast(getContext(), "impossible de charger la note attribuées"); //// TODO: 13/10/2017
+                                        __.showShortToast(getContext(), "impossible de charger la note attribuée"); //// TODO: 13/10/2017
 
                                 }
                             }
@@ -145,20 +127,8 @@ public class ProfileFragment extends Fragment {
                         ) {
                             if (fromUser)
                                 USER_RATINGS.getUserRatingsRef(uid)
-                                        .document(IO.auth.getCurrentUser().getUid())
-                                        .set(new UserRating(rating))
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                __.showShortToast(getContext(), "Note mise à jour"); //// TODO: 13/10/2017
-                                            }
-                                        })
-                                        .addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                __.showShortToast(getContext(), "Erreur : la note n'a pas été mise à jour");// // TODO: 13/10/2017  
-                                            }
-                                        });
+                                        .document(IO.getCurrentUserUid())
+                                        .set(new UserRating(rating));
                         }
                     }
             );
@@ -250,6 +220,10 @@ public class ProfileFragment extends Fragment {
                             DocumentSnapshot profile = task.getResult();
                             if (profile != null && profile.exists()) {
                                 Log.d("getUserProfile", "DocumentSnapshot data: " + profile.getData());
+
+                                //RatingBar:userRating
+                                Long userAvgRating = profile.getLong(USER_RATINGS.avgRatingKey);
+                                userRating.setRating(userAvgRating == null ? 0 : userAvgRating);
 
                                 //RadioGroup::userTypeRG
                                 Long userType = profile.getLong(USERS.typeKey);
