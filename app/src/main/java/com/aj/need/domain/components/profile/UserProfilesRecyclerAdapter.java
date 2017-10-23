@@ -103,8 +103,8 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
                         @Override
                         public void onSuccess(Uri uri) {
                             // Load the image using Glide
-                            if (mContext != null)
-                                Glide.with(mContext) //todo add exception handling : err : you cannot load for an activity destroyed
+
+                                Glide.with(mContext.getApplicationContext()/*!important*/) //fix of : Glide's Fatal Exception: java.lang.IllegalArgumentException: You cannot start a load for a destroyed activity
                                         .load(uri)
                                         .apply(RequestOptions.circleCropTransform())
                                         .into(userProfileIV);
