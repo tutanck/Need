@@ -256,7 +256,8 @@ public class ProfileFragment extends Fragment {
 
 
     private synchronized void hideProgressBar() {
-        if (completions == 1)
+        final int n = isEditable ? 0 : 1;
+        if (completions == n)
             progressBarFragment.hide();
         completions++;
     }
