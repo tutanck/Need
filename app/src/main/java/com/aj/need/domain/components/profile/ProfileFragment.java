@@ -61,9 +61,11 @@ public class ProfileFragment extends Fragment {
 
     private RadioGroup userTypeRG;
 
-    private  RatingBar userRating;
+    private RatingBar userRating;
 
-    private  RatingBar ratingControl;
+    private RatingBar ratingControl;
+
+    private int completions = 0;
 
 
     public static ProfileFragment newInstance(
@@ -100,24 +102,9 @@ public class ProfileFragment extends Fragment {
         userRating = view.findViewById(R.id.user_rating);
 
         ratingControl = view.findViewById(R.id.rating_control);
-        
+
         if (!isEditable) {
             ratingControl.setIsIndicator(false);
-            USER_RATINGS.getCurrentUserRatingsRef().document(uid).get()
-                    .addOnCompleteListener(
-                            new OnCompleteListener<DocumentSnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if (task.isSuccessful()) {
-                                        DocumentSnapshot ratingDoc = task.getResult(); //// TODO: 23/10/2017  dt work
-                                        ratingControl.setRating((ratingDoc != null && ratingDoc.exists()) ? ratingDoc.getLong(USER_RATINGS.ratingKey) : 0);
-                                    } else
-                                        __.showShortToast(getContext(), "impossible de charger la note attribuée"); //// TODO: 13/10/2017
-
-                                }
-                            }
-                    );
-
             ratingControl.setOnRatingBarChangeListener(
                     new RatingBar.OnRatingBarChangeListener() {
                         public void onRatingChanged(
@@ -210,7 +197,27 @@ public class ProfileFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
+        completions = 0;
+
         progressBarFragment.show();
+
+        if (!isEditable)
+            USER_RATINGS.getUserRatingsRef(uid).document(IO.getCurrentUserUid()).get()
+                    .addOnCompleteListener(
+                            new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        DocumentSnapshot ratingDoc = task.getResult();
+                                        ratingControl.setRating((ratingDoc != null && ratingDoc.exists()) ? ratingDoc.getLong(USER_RATINGS.ratingKey) : 0);
+                                        hideProgressBar();
+                                    } else
+                                        __.showShortToast(getContext(), "Impossible de charger la note que vous avez attribuée"); //// TODO: 13/10/2017
+
+                                }
+                            }
+                    );
+
 
         USERS.getUserRef(uid).get().addOnCompleteListener(
                 new OnCompleteListener<DocumentSnapshot>() {
@@ -234,7 +241,7 @@ public class ProfileFragment extends Fragment {
                                 for (String key : formFields.keySet())
                                     formFields.get(key).getTvContent().setText(profile.getString(key));
 
-                                progressBarFragment.hide();
+                                hideProgressBar();
                             } else __.fatal("ProfileFragment : No such document");
                         } else {
                             Log.d("getUserProfile", "get failed with ", task.getException());
@@ -245,5 +252,12 @@ public class ProfileFragment extends Fragment {
                 }
         );
 
+    }
+
+
+    private synchronized void hideProgressBar() {
+        if (completions == 1)
+            progressBarFragment.hide();
+        completions++;
     }
 }
