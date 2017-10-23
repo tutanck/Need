@@ -45,6 +45,7 @@
                 android:id="@+id/user_type_radio_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -63,7 +64,7 @@
 
             </RadioGroup>
 
-            <include layout="@layout/item_divider" />
+            <include layout="@layout/item_divider" android:visibility="gone"/>
 
             <LinearLayout
                 android:id="@+id/form_layout"

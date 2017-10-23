@@ -170,7 +170,6 @@ public class ProfileFragment extends Fragment {
             JSONArray orderedFieldsKeys = formParams.getJSONArray("ordered_fields_names");
 
             userTypeRG = view.findViewById(R.id.user_type_radio_group);
-
             for (int i = 0; i < userTypeRG.getChildCount(); i++) {
                 RadioButton radioButton = (RadioButton) userTypeRG.getChildAt(i);
                 radioButton.setEnabled(isEditable);
@@ -184,7 +183,6 @@ public class ProfileFragment extends Fragment {
                     }
                 });
             }
-
 
             if (savedInstanceState == null) {//no duplicated fragments // TODO: 25/09/2017  check if frag only or else like listener on needSwitch
 
