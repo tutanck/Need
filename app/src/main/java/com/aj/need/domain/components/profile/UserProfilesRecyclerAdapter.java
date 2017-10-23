@@ -102,8 +102,9 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
-                            // Load the image using Glide
-
+                            //todo @see https://github.com/bumptech/glide/issues/803 and try @AllanWang sol if pb :
+                            //I faced the same issue .. i fixed it like that :Glide.with(mContext.getApplicationContext()) //activity.getApplicationContext()
+                            //from @AllanWang : @tutanck I think that removes the whole life cycle handling. Best I initialize it with the activity context on creation or validate beforehand
                                 Glide.with(mContext.getApplicationContext()/*!important*/) //fix of : Glide's Fatal Exception: java.lang.IllegalArgumentException: You cannot start a load for a destroyed activity
                                         .load(uri)
                                         .apply(RequestOptions.circleCropTransform())

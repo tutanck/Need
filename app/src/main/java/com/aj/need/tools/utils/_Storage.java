@@ -1,13 +1,7 @@
 package com.aj.need.tools.utils;
 
-import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.storage.FirebaseStorage;
 
