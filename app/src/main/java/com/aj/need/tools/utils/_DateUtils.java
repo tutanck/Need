@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 /**
- * A class with static util methods.
+ * App class with static util methods.
  */
 
 public class _DateUtils {

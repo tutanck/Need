@@ -103,10 +103,11 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
                         @Override
                         public void onSuccess(Uri uri) {
                             // Load the image using Glide
-                            Glide.with(mContext)
-                                    .load(uri)
-                                    .apply(RequestOptions.circleCropTransform())
-                                    .into(userProfileIV);
+                            if (mContext != null)
+                                Glide.with(mContext) //todo add exception handling : err : you cannot load for an activity destroyed
+                                        .load(uri)
+                                        .apply(RequestOptions.circleCropTransform())
+                                        .into(userProfileIV);
                         }
                     });
         }

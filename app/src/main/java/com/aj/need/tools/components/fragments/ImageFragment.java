@@ -21,7 +21,6 @@ import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageException;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -96,14 +95,6 @@ public class ImageFragment extends Fragment {
 
 
     @Override
-    public void onStart() {
-        super.onStart();
-        progressBarFragment.show();
-        downloadImg();  // TODO: 09/10/2017 Optimize: shouldnt always reload img see how to store img locally
-    }
-
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -119,8 +110,7 @@ public class ImageFragment extends Fragment {
     }
 
 
-    private void upload(Bitmap bitmap) {
-
+    private void upload(final Bitmap bitmap) {
 
         UploadTask uploadTask = imageRef.putBytes(_Bitmap.getBytes(bitmap));
 
@@ -135,30 +125,39 @@ public class ImageFragment extends Fragment {
         }).addOnSuccessListener(getActivity()/*!important*/, new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                downloadImg();
+                imageView.setImageBitmap(bitmap);
+                progressBarFragment.hide();
             }
         });
     }
 
 
-    private void downloadImg() {
-        imageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-                Bitmap bitmap = _Bitmap.getImage(bytes);
-                imageView.setImageBitmap(bitmap);
-                progressBarFragment.hide();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                progressBarFragment.hide();
+    // TODO: 09/10/2017 Optimize: shouldnt always reload img see how to store img locally : do it for all the ProfileFragment iof this fragment
+    private void refreshImg() {
+            progressBarFragment.show();
+            imageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                @Override
+                public void onSuccess(byte[] bytes) {
+                    Bitmap bitmap = _Bitmap.getImage(bytes);
+                    imageView.setImageBitmap(bitmap);
+                    progressBarFragment.hide();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    progressBarFragment.hide();
                /* todo see what to do (could be abusive and disturbing for the user)
                int errCode = ((StorageException) exception).getErrorCode();
                 if (errCode != StorageException.ERROR_OBJECT_NOT_FOUND)
                     __.showShortToast(getContext(), "Erreur de chargement de l'image.");*/
-            }
-        });
+                }
+            });
     }
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        refreshImg();
+    }
 }
