@@ -27,7 +27,7 @@ public class Message implements Serializable, ITranslatable<Message> {
     }
 
     public Message(String message, String from, String to, String conversationID) {
-        this.message = message;
+        this.message = message.trim();
         this.from = from;
         this.to = to;
         this.conversationID = conversationID;
@@ -55,9 +55,12 @@ public class Message implements Serializable, ITranslatable<Message> {
         return to;
     }
 
-
     public String getConversationID() {
         return conversationID;
+    }
+
+    public boolean isPending() {
+        return isPending;
     }
 
     public Message setPending(boolean pending) {

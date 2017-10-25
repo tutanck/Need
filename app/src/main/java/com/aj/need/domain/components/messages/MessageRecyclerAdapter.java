@@ -72,16 +72,20 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
 
     public class SentMessageHolder extends RecyclerView.ViewHolder {
         TextView messageText, timeText;
+        ImageView profileImage;
 
         public SentMessageHolder(View itemView) {
             super(itemView);
             messageText = itemView.findViewById(R.id.text_message_body);
             timeText = itemView.findViewById(R.id.text_message_time);
+            profileImage = itemView.findViewById(R.id.image_message_profile);
         }
 
         void bind(Message message) {
             messageText.setText(message.getMessage());
             timeText.setText(_DateUtils.since(message.getDate()));
+            profileImage.setVisibility(message.isPending()?View.VISIBLE:View.INVISIBLE);
+
         }
     }
 
