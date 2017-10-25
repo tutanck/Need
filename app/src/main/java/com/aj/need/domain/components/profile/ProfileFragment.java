@@ -183,7 +183,7 @@ public class ProfileFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     MessagesActivity.start(getContext(), uid
-                            , formFields.get(USERS.usernameKey).getTvContent().getText().toString(), null); //// TODO: 15/10/2017  make a request to know if there was a conv between two interlocutors and if yes get the conversationID
+                            , formFields.get(USERS.usernameKey).getTvContent().getText().toString());
                 }
             });
         else fabContact.setVisibility(View.GONE);

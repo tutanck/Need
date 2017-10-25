@@ -55,6 +55,14 @@ public class __ {
     }
 
 
+    public static String ordered_concat(String str1, String str2) {
+        String separator = "_";
+        String s1 = str1.trim();
+        String s2 = str2.trim();
+        return s1.compareTo(s2) < 0 ? s1 + separator + s2 : s2 + separator + s1;
+    }
+
+
     public static final JSONObject jo() {
         return new JSONObject();
     }

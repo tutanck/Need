@@ -68,7 +68,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
         // Bind UI components.
         mRecyclerView = findViewById(R.id.found_profiles_recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new UserProfilesRecyclerAdapter(this, mProfiles);
+        mAdapter = new UserProfilesRecyclerAdapter(this, mProfiles, 0);
         mRecyclerView.setAdapter(mAdapter);
 
 
@@ -79,7 +79,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
         // Pre-build query.
         query = new Query();
         query.setAttributesToRetrieve("keywords", "availability", "rating", "username");
-        query.setFilters("NOT objectID:"+ IO.getCurrentUserUid());
+        query.setFilters("NOT objectID:" + IO.getCurrentUserUid());
         query.setHitsPerPage(HITS_PER_PAGE);
 
         FloatingActionButton fab = findViewById(R.id.fab_open_need_save);
@@ -164,7 +164,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
             }
         });
 
-        searchView = (SearchView)searchMenuItem.getActionView();
+        searchView = (SearchView) searchMenuItem.getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName())); //todo : dt work : getSearchableInfo = null
         searchView.setIconifiedByDefault(false); //todo dt work
         searchView.setOnQueryTextListener(this);
@@ -188,8 +188,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
         if (TextUtils.isEmpty(newText)) {
             mProfiles.clear();
             mAdapter.notifyDataSetChanged();
-        }
-        else
+        } else
             search();
         return true;
     }

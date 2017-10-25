@@ -2,6 +2,7 @@ package com.aj.need.domain.components.messages;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,16 +15,23 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.aj.need.R;
+import com.aj.need.db.IO;
 import com.aj.need.db.colls.MESSAGES;
+import com.aj.need.db.colls.USER_CONTACTS;
 import com.aj.need.domain.components.profile.UtherProfileActivity;
 import com.aj.need.tools.utils.Jarvis;
+import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -36,12 +44,14 @@ public class MessagesActivity extends AppCompatActivity {
 
     private final static String CONTACT_ID = "CONTACT_ID";
     private final static String CONTACT_NAME = "CONTACT_NAME";
-    private final static String CONVERSATION_ID = "CONVERSATION_ID";
 
     private List<Message> messageList = new ArrayList<>();
     private RecyclerView mRecyclerView;
     private LinearLayoutManager linearLayoutManager;
     private MessageRecyclerAdapter mAdapter;
+
+    private Button chatboxSendBtn;
+    private EditText chatboxET;
 
     private String contact_id = null;
     private String contact_name = null;
@@ -63,16 +73,14 @@ public class MessagesActivity extends AppCompatActivity {
 
         contact_id = getIntent().getStringExtra(CONTACT_ID);
         contact_name = getIntent().getStringExtra(CONTACT_NAME);
-        conversation_id = getIntent().getStringExtra(CONVERSATION_ID);
+        conversation_id = __.ordered_concat(contact_id, IO.getCurrentUserUid());
 
         getSupportActionBar().setTitle(contact_name);
-
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_person_24dp);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        final EditText chatboxET = findViewById(R.id.chatbox_et);
-        Button chatboxSendBtn = findViewById(R.id.chatbox_send_btn);
+        chatboxET = findViewById(R.id.chatbox_et);
+        chatboxSendBtn = findViewById(R.id.chatbox_send_btn);
 
         chatboxSendBtn.setOnClickListener(
                 new View.OnClickListener() {
@@ -83,9 +91,7 @@ public class MessagesActivity extends AppCompatActivity {
                         sendMessage(msg);
                         chatboxET.setText("");
                     }
-                }
-        );
-
+                });
     }
 
 
@@ -144,22 +150,18 @@ public class MessagesActivity extends AppCompatActivity {
 
 
     private void reloadMessageList(QuerySnapshot querySnapshot) {
-
         messageList.clear();
-
         messageList.addAll(new Jarvis<Message>().tr(querySnapshot, new Message()));
-
         Log.i("messageList", messageList.toString());
         mAdapter.notifyDataSetChanged();
         mRecyclerView.scrollToPosition(mRecyclerView.getAdapter().getItemCount() - 1);
     }
 
 
-    public static void start(Context context, String _id, String username, String conversationID) {
+    public static void start(Context context, String _id, String username) {
         Intent intent = new Intent(context, MessagesActivity.class);
         intent.putExtra(CONTACT_ID, _id);
         intent.putExtra(CONTACT_NAME, username);
-        intent.putExtra(CONVERSATION_ID, conversationID);
         context.startActivity(intent);
     }
 
@@ -183,10 +185,7 @@ public class MessagesActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case android.R.id.home:
-                UtherProfileActivity.start(this, contact_id);
-        }
+        this.onBackPressed();
         return (super.onOptionsItemSelected(menuItem));
     }
 

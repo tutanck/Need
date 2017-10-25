@@ -55,7 +55,7 @@ public class ConversationsFragment extends Fragment {
         mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        mAdapter = new UserProfilesRecyclerAdapter(getContext(), mContacts);
+        mAdapter = new UserProfilesRecyclerAdapter(getContext(), mContacts, 1);
         mRecyclerView.setAdapter(mAdapter);
 
         progressBarFragment = (ProgressBarFragment) getChildFragmentManager().findFragmentById(R.id.waiter_modal_fragment);
