@@ -2,7 +2,6 @@ package com.aj.need.domain.components.messages;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,27 +14,23 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.MESSAGES;
 import com.aj.need.db.colls.USER_CONTACTS;
-import com.aj.need.domain.components.profile.UtherProfileActivity;
 import com.aj.need.tools.utils.Jarvis;
-import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +52,8 @@ public class MessagesActivity extends AppCompatActivity {
     private String contact_name = null;
     private String conversation_id = null;
 
-    ListenerRegistration conversationRegistration;
+    private Query loadQuery;
+    private ListenerRegistration conversationRegistration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,13 +78,17 @@ public class MessagesActivity extends AppCompatActivity {
         chatboxET = findViewById(R.id.chatbox_et);
         chatboxSendBtn = findViewById(R.id.chatbox_send_btn);
 
+        loadQuery = MESSAGES.getMESSAGESRef()
+                .whereEqualTo(MESSAGES.conversationIDKey, conversation_id)
+                .orderBy(MESSAGES.dateKey);
+
         chatboxSendBtn.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        String msg = chatboxET.getText().toString();
-                        if (TextUtils.isEmpty(msg)) return;
-                        sendMessage(msg);
+                        String text = chatboxET.getText().toString();
+                        if (TextUtils.isEmpty(text)) return;
+                        sendMessage(text);
                         chatboxET.setText("");
                     }
                 });
@@ -96,17 +96,24 @@ public class MessagesActivity extends AppCompatActivity {
 
 
     private void sendMessage(String text) {
-        MESSAGES.sendMessage(contact_id, text, conversation_id,
-                new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        __.showShortToast(MessagesActivity.this, "Message envoyé");//// TODO: 15/10/2017
-                    }
-                }
-                , new OnFailureListener() {
+
+        Message msg = new Message(text, IO.getCurrentUserUid(), contact_id, conversation_id);
+
+        final DocumentReference msgRef = MESSAGES.getMESSAGESRef().document();
+        final DocumentReference senderUcRef = USER_CONTACTS.getCurrentUserContactsRef().document(contact_id);
+        final DocumentReference recipientUcRef = USER_CONTACTS.getUserContactsRef(contact_id).document(IO.getCurrentUserUid());
+
+        WriteBatch batch = IO.db.batch();
+        batch.set(msgRef, msg);
+        batch.set(senderUcRef, msg);
+        batch.set(recipientUcRef, msg);
+
+        batch.commit().addOnFailureListener(
+                this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        __.showLongToast(MessagesActivity.this, "Message non envoyé. cause : " + e);//// TODO: 15/10/2017
+                        e.printStackTrace();
+                        __.showLongToast(MessagesActivity.this, "Erreur d'envoi du message!");
                     }
                 }
         );
@@ -114,42 +121,34 @@ public class MessagesActivity extends AppCompatActivity {
 
 
     private void loadMessages() {
-        if (conversation_id != null)
-            MESSAGES.getMESSAGESRef()
-                    .whereEqualTo(MESSAGES.conversationIDKey, conversation_id).get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            if (task.isSuccessful())
-                                reloadMessageList(task.getResult());
-                            else
-                                Log.d("loadMessages", "Error getting documents: ", task.getException()); //// TODO: 15/10/2017
-
-                        }
-                    });
+        loadQuery.get().addOnCompleteListener(this, new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful())
+                    reloadMessageList(task.getResult());
+                else
+                    Log.d("loadMessages", "Error getting documents: ", task.getException()); //// TODO: 15/10/2017 complete but keep this useful log
+            }
+        });
     }
 
 
     private void followConversation() {
-        conversationRegistration = MESSAGES.getMESSAGESRef()
-                .whereEqualTo(MESSAGES.conversationIDKey, conversation_id)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(
-                            @Nullable QuerySnapshot value
-                            , @Nullable FirebaseFirestoreException e
-                    ) {
-                        if (e != null) {
-                            Log.w("messagesListener", "Listen failed.", e);
-                            return;
-                        }
-                        reloadMessageList(value);
-                    }
-                });
+        conversationRegistration = loadQuery.addSnapshotListener(this, new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(
+                    @Nullable QuerySnapshot value
+                    , @Nullable FirebaseFirestoreException e
+            ) {
+                Log.w("followConversation", "value=" + value + " error=" + e);
+                if (e == null)
+                    reloadMessageList(value);
+            }
+        });
     }
 
 
-    private void reloadMessageList(QuerySnapshot querySnapshot) {
+    private synchronized void reloadMessageList(QuerySnapshot querySnapshot) {
         messageList.clear();
         messageList.addAll(new Jarvis<Message>().tr(querySnapshot, new Message()));
         Log.i("messageList", messageList.toString());
@@ -171,7 +170,7 @@ public class MessagesActivity extends AppCompatActivity {
         super.onStart();
         loadMessages();
         // ||
-        followConversation(); //// TODO: 16/10/2017 sync messageList !importannt
+        followConversation();
     }
 
 

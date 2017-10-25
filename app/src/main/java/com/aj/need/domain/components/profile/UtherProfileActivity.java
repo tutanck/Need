@@ -32,9 +32,9 @@ public class UtherProfileActivity extends AppCompatActivity {
                     .commit();
     }
 
-    public static void start(Context context, String id) {
+    public static void start(Context context, String _id) {
         Intent intent = new Intent(context, UtherProfileActivity.class);
-        intent.putExtra(UTHER_ID, id);
+        intent.putExtra(UTHER_ID, _id);
         context.startActivity(intent);
     }
 }

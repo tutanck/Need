@@ -3,6 +3,7 @@ package com.aj.need.domain.components.messages;
 import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +12,11 @@ import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
+import com.aj.need.tools.utils._DateUtils;
 
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class MessageRecyclerAdapter extends RecyclerView.Adapter {
@@ -76,7 +81,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
 
         void bind(Message message) {
             messageText.setText(message.getMessage());
-            //timeText.setText(message.getDate().toString()); //// TODO: 15/10/2017  
+            timeText.setText(_DateUtils.since(message.getDate()));
         }
     }
 
@@ -94,7 +99,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
 
         void bind(Message message) {
             messageText.setText(message.getMessage());
-//            timeText.setText(message.getDate().toString()); //// TODO: 15/10/2017  
+            timeText.setText(_DateUtils.since(message.getDate()));
 
             // Insert the profile image from the URL into the ImageView.
             //_DateUtils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUrl(), profileImage); // TODO: 29/09/2017
