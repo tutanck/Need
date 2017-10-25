@@ -5,23 +5,45 @@
     android:layout_height="wrap_content"
     android:paddingTop="8dp">
 
-    <ImageView
-        android:id="@+id/image_message_profile"
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/image_message_profile_layout"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="8dp"
-        android:background="@drawable/circle" />
+        android:layout_marginLeft="8dp">
+
+        <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/image_message_profile"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginBottom="2dp"
+            android:layout_marginTop="2dp"
+            android:adjustViewBounds="true"
+            android:background="@drawable/circle"
+            android:src="@drawable/ic_person_24dp" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/image_message_profile_status"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_gravity="bottom|end|right"
+            android:layout_marginBottom="1dp"
+            android:layout_marginRight="2dp"
+            android:clickable="false"
+            android:visibility="invisible"
+            app:backgroundTint="@color/Red" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/text_message_body"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="4dp"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/image_message_profile"
+        android:layout_toRightOf="@+id/image_message_profile_layout"
         android:background="@drawable/rounded_rectangle_1"
         android:maxWidth="240dp"
         android:paddingBottom="8dp"

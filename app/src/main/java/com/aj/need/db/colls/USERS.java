@@ -71,7 +71,7 @@ public final class USERS implements Coll {
                                         , userDoc.getLong(USERS.availabilityKey).intValue()
                                         , contactDoc.getString(MESSAGES.conversationIDKey)
                                         , contactDoc.getString(MESSAGES.messageKey)
-                                        , ""+contactDoc.getDate(MESSAGES.dateKey)/*.toString()*/ //// TODO: 15/10/2017
+                                        , contactDoc.getDate(MESSAGES.dateKey)
                                 )
                         );
 

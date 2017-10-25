@@ -6,6 +6,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Created by joan on 21/09/2017.
@@ -21,7 +22,7 @@ public class UserProfile implements Serializable, ITranslatable<UserProfile> {
 
     private String conversationID;
     private String lastMessage;
-    private String lastMessageDate;
+    private Date lastMessageDate;
 
 
     public UserProfile() {
@@ -40,7 +41,6 @@ public class UserProfile implements Serializable, ITranslatable<UserProfile> {
         this.reputation = reputation;
         this.availability = availability;
         this.lastMessage = "";
-        this.lastMessageDate = "";
     }
 
 
@@ -51,7 +51,7 @@ public class UserProfile implements Serializable, ITranslatable<UserProfile> {
             , int availability
             , String conversationID
             , String lastMessage
-            , String lastMessageDate
+            , Date lastMessageDate
     ) {
         this(_id, username, reputation, availability);
         this.conversationID = conversationID;
@@ -80,7 +80,7 @@ public class UserProfile implements Serializable, ITranslatable<UserProfile> {
         return lastMessage;
     }
 
-    public String getLastMessageDate() {
+    public Date getLastMessageDate() {
         return lastMessageDate;
     }
 

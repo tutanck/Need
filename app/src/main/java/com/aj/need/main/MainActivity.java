@@ -110,7 +110,8 @@ public class MainActivity extends AppCompatActivity {
         if (authListener != null)
             IO.auth.removeAuthStateListener(authListener);
 
-        profileRegistration.remove();
+        if (profileRegistration != null)
+            profileRegistration.remove();
     }
 
 

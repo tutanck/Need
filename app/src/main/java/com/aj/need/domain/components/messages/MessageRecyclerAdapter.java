@@ -2,8 +2,10 @@ package com.aj.need.domain.components.messages;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,11 +14,9 @@ import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
+import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils._DateUtils;
 
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.util.Date;
 import java.util.List;
 
 public class MessageRecyclerAdapter extends RecyclerView.Adapter {
@@ -84,7 +84,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
         void bind(Message message) {
             messageText.setText(message.getMessage());
             timeText.setText(_DateUtils.since(message.getDate()));
-            profileImage.setVisibility(message.isPending()?View.VISIBLE:View.INVISIBLE);
+            profileImage.setVisibility(message.isPending() ? View.VISIBLE : View.INVISIBLE);
 
         }
     }
@@ -92,18 +92,26 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
 
     public class ReceivedMessageHolder extends RecyclerView.ViewHolder {
         TextView messageText, timeText;
-        ImageView profileImage;
+        ImageView profileImageIV;
+        FloatingActionButton statusFab;
 
         public ReceivedMessageHolder(View itemView) {
             super(itemView);
             messageText = itemView.findViewById(R.id.text_message_body);
             timeText = itemView.findViewById(R.id.text_message_time);
-            profileImage = itemView.findViewById(R.id.image_message_profile);
+            profileImageIV = itemView.findViewById(R.id.image_message_profile);
+            statusFab = itemView.findViewById(R.id.image_message_profile_status);
         }
 
         void bind(Message message) {
             messageText.setText(message.getMessage());
             timeText.setText(_DateUtils.since(message.getDate()));
+            Integer status = ((MessagesActivity) mContext).getContactAvailability();
+            if (status != null) {
+                statusFab.setBackgroundTintList(ColorStateList.valueOf(
+                        ContextCompat.getColor(mContext, Avail.getColor(status))));
+                statusFab.setVisibility(View.VISIBLE);
+            }
 
             // Insert the profile image from the URL into the ImageView.
             //_DateUtils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUrl(), profileImage); // TODO: 29/09/2017

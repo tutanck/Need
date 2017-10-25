@@ -21,6 +21,7 @@ import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_RATINGS;
 import com.aj.need.domain.components.keywords.UserKeywordsActivity;
 import com.aj.need.domain.components.messages.MessagesActivity;
+import com.aj.need.main.MainActivity;
 import com.aj.need.tools.components.fragments.IDKeyFormField;
 import com.aj.need.tools.components.fragments.ImageFragment;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
@@ -64,6 +65,8 @@ public class ProfileFragment extends Fragment {
     private RatingBar userRating;
 
     private RatingBar ratingControl;
+
+    private int availability;
 
     private int completions = 0;
 
@@ -183,7 +186,8 @@ public class ProfileFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     MessagesActivity.start(getContext(), uid
-                            , formFields.get(USERS.usernameKey).getTvContent().getText().toString());
+                            , formFields.get(USERS.usernameKey).getTvContent().getText().toString()
+                            , availability);
                 }
             });
         else fabContact.setVisibility(View.GONE);
@@ -227,6 +231,8 @@ public class ProfileFragment extends Fragment {
                             DocumentSnapshot profile = task.getResult();
                             if (profile != null && profile.exists()) {
                                 Log.d("getUserProfile", "DocumentSnapshot data: " + profile.getData());
+
+                                availability = profile.getLong(USERS.availabilityKey).intValue();
 
                                 //RatingBar:userRating
                                 Long userAvgRating = profile.getLong(USER_RATINGS.avgRatingKey);

@@ -2,6 +2,8 @@ package com.aj.need.domain.components.messages;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,13 +20,19 @@ import android.widget.EditText;
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.MESSAGES;
+import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_CONTACTS;
 import com.aj.need.tools.utils.Jarvis;
+import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -39,6 +47,9 @@ public class MessagesActivity extends AppCompatActivity {
 
     private final static String CONTACT_ID = "CONTACT_ID";
     private final static String CONTACT_NAME = "CONTACT_NAME";
+    private final static String CONTACT_AVAILABILITY = "CONTACT_AVAILABILITY";
+
+    private int nbMsgToLoad = 20;
 
     private List<Message> messageList = new ArrayList<>();
     private RecyclerView mRecyclerView;
@@ -51,9 +62,12 @@ public class MessagesActivity extends AppCompatActivity {
     private String contact_id = null;
     private String contact_name = null;
     private String conversation_id = null;
+    private Integer contactAvailability;
+    private Bitmap contactImage;
 
     private Query loadQuery;
-    private ListenerRegistration conversationRegistration;
+    private ListenerRegistration conversationRegistration, contactRegistration;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +83,8 @@ public class MessagesActivity extends AppCompatActivity {
 
         contact_id = getIntent().getStringExtra(CONTACT_ID);
         contact_name = getIntent().getStringExtra(CONTACT_NAME);
+        int tmp = getIntent().getIntExtra(CONTACT_AVAILABILITY, -9);
+        contactAvailability = tmp == -9 ? null : tmp;
         conversation_id = __.ordered_concat(contact_id, IO.getCurrentUserUid());
 
         getSupportActionBar().setTitle(contact_name);
@@ -86,7 +102,7 @@ public class MessagesActivity extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        String text = chatboxET.getText().toString();
+                        String text = chatboxET.getText().toString().trim();
                         if (TextUtils.isEmpty(text)) return;
                         sendMessage(text);
                         chatboxET.setText("");
@@ -157,10 +173,11 @@ public class MessagesActivity extends AppCompatActivity {
     }
 
 
-    public static void start(Context context, String _id, String username) {
+    public static void start(Context context, String _id, String username, int availability) {
         Intent intent = new Intent(context, MessagesActivity.class);
         intent.putExtra(CONTACT_ID, _id);
         intent.putExtra(CONTACT_NAME, username);
+        intent.putExtra(CONTACT_AVAILABILITY, availability);
         context.startActivity(intent);
     }
 
@@ -171,6 +188,18 @@ public class MessagesActivity extends AppCompatActivity {
         loadMessages();
         // ||
         followConversation();
+        // ||
+        contactRegistration = USERS.getUserRef(contact_id).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                @Nullable FirebaseFirestoreException e) {
+                if (e == null && snapshot != null && snapshot.exists()) {
+                    Log.d("MessagesActivity: ", "contactRegistration's snapshot : " + snapshot.getData().toString());
+                    contactAvailability = ((Long) snapshot.getData().get(USERS.availabilityKey)).intValue();
+                    mAdapter.notifyDataSetChanged(); //// TODO: 25/10/2017 test with 2 devices
+                }
+            }
+        });
     }
 
 
@@ -179,6 +208,9 @@ public class MessagesActivity extends AppCompatActivity {
         super.onStop();
         if (conversationRegistration != null)
             conversationRegistration.remove();
+
+        if (contactRegistration != null)
+            contactRegistration.remove();
     }
 
 
@@ -188,4 +220,11 @@ public class MessagesActivity extends AppCompatActivity {
         return (super.onOptionsItemSelected(menuItem));
     }
 
+    public Integer getContactAvailability() {
+        return contactAvailability;
+    }
+
+    public Bitmap getContactImage() {
+        return contactImage;
+    }
 }

@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.aj.need.R;
 import com.aj.need.domain.components.messages.MessagesActivity;
 import com.aj.need.tools.utils.Avail;
+import com.aj.need.tools.utils._DateUtils;
 import com.aj.need.tools.utils._Storage;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -102,7 +103,7 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
 
             userReputationRBar.setRating(mUserProfile.getReputation());
             messageTV.setText(mUserProfile.getLastMessage());
-            messageDateTV.setText(mUserProfile.getLastMessageDate());
+            messageDateTV.setText(_DateUtils.since(mUserProfile.getLastMessageDate()));
 
             userProfileIV.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -134,7 +135,7 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
                     UtherProfileActivity.start(mContext, mUserProfile.get_id());
                     break;
                 case 1:
-                    MessagesActivity.start(mContext, mUserProfile.get_id(), mUserProfile.getUsername());
+                    MessagesActivity.start(mContext, mUserProfile.get_id(), mUserProfile.getUsername(),mUserProfile.getAvailability());
                     break;
                 default:
                     throw new RuntimeException("UserProfilesRecyclerAdapter/ViewHolder::onClick: Unknown mOnClickListenerType " + mOnClickListenerType);
