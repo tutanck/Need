@@ -76,6 +76,7 @@ public class MessagesActivity extends AppCompatActivity {
 
         mRecyclerView = findViewById(R.id.reyclerview_message_list);
         linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setReverseLayout(true);
         mRecyclerView.setLayoutManager(linearLayoutManager);
 
         mAdapter = new MessageRecyclerAdapter(this, messageList);
@@ -96,7 +97,7 @@ public class MessagesActivity extends AppCompatActivity {
 
         loadQuery = MESSAGES.getMESSAGESRef()
                 .whereEqualTo(MESSAGES.conversationIDKey, conversation_id)
-                .orderBy(MESSAGES.dateKey);
+                .orderBy(MESSAGES.dateKey, Query.Direction.DESCENDING).limit(nbMsgToLoad);
 
         chatboxSendBtn.setOnClickListener(
                 new View.OnClickListener() {
@@ -169,7 +170,7 @@ public class MessagesActivity extends AppCompatActivity {
         messageList.addAll(new Jarvis<Message>().tr(querySnapshot, new Message()));
         Log.i("messageList", messageList.toString());
         mAdapter.notifyDataSetChanged();
-        mRecyclerView.scrollToPosition(mRecyclerView.getAdapter().getItemCount() - 1);
+        mRecyclerView.scrollToPosition(0/*mRecyclerView.getAdapter().getItemCount() - 1*/);
     }
 
 
