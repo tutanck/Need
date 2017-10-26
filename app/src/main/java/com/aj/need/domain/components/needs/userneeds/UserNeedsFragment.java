@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -39,7 +40,8 @@ public class UserNeedsFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private UserNeedsRecyclerAdapter mAdapter;
 
-    private ProgressBarFragment progressBarFragment;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+
     private LinearLayout indicationsLayout;
 
     private UserNeedsFragment self = this;
@@ -58,16 +60,23 @@ public class UserNeedsFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_user_needs, container, false);
 
-        mRecyclerView = view.findViewById(R.id.needs_recycler_view);
+        mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         mAdapter = new UserNeedsRecyclerAdapter(getContext(), mUserNeeds);
         mRecyclerView.setAdapter(mAdapter);
 
+        mSwipeRefreshLayout = view.findViewById(R.id.recycler_view_SwipeRefreshLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                __.showShortToast(getContext(),"refreshing");
+            }
+        });
+
         setRecyclerViewItemTouchListener();
 
-        indicationsLayout = view.findViewById(R.id.fragment_user_needs_indications);
-        progressBarFragment = (ProgressBarFragment) getChildFragmentManager().findFragmentById(R.id.waiter_modal_fragment);
+        indicationsLayout = view.findViewById(R.id.component_recycler_indications_layout);
 
         FloatingActionButton fab = view.findViewById(R.id.fab_add_need);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -84,7 +93,6 @@ public class UserNeedsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        progressBarFragment.show();
 
         USER_NEEDS.getCurrentUserNeedsRef()
                 .whereEqualTo(USER_NEEDS.deletedKey, false)
@@ -96,7 +104,6 @@ public class UserNeedsFragment extends Fragment {
                             reloadList(task.getResult());
                         } else {
                             __.showShortToast(getContext(), "impossible de charger les besoins");
-                            progressBarFragment.hide();
                         }
 
                     }
@@ -110,7 +117,6 @@ public class UserNeedsFragment extends Fragment {
 
         indicationsLayout.setVisibility(mUserNeeds.size() == 0 ? View.VISIBLE : View.GONE);
         mAdapter.notifyDataSetChanged();
-        progressBarFragment.hide();
     }
 
 
@@ -134,7 +140,6 @@ public class UserNeedsFragment extends Fragment {
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        progressBarFragment.show();
                         ((UserNeedsRecyclerAdapter.ViewHolder) viewHolder).deleteNeed(getActivity(), self,
                                 IO.getCurrentUserUid(), mUserNeeds, mAdapter);
                     }

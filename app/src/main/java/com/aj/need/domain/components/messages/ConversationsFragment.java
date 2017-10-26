@@ -1,9 +1,9 @@
 package com.aj.need.domain.components.messages;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -17,7 +17,6 @@ import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_CONTACTS;
 import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
-import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -37,7 +36,8 @@ public class ConversationsFragment extends Fragment {
     private UserProfilesRecyclerAdapter mAdapter;
 
     private LinearLayout indicationsLayout;
-    private ProgressBarFragment progressBarFragment;
+
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     public static ConversationsFragment newInstance() {
         return new ConversationsFragment();
@@ -58,10 +58,15 @@ public class ConversationsFragment extends Fragment {
         mAdapter = new UserProfilesRecyclerAdapter(getContext(), mContacts, 1);
         mRecyclerView.setAdapter(mAdapter);
 
-        progressBarFragment = (ProgressBarFragment) getChildFragmentManager().findFragmentById(R.id.waiter_modal_fragment);
-        progressBarFragment.setBackgroundColor(Color.TRANSPARENT);
+        mSwipeRefreshLayout = view.findViewById(R.id.recycler_view_SwipeRefreshLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                __.showShortToast(getContext(),"refreshing");
+            }
+        });
 
-        indicationsLayout = view.findViewById(R.id.component_recycler_indications);
+        indicationsLayout = view.findViewById(R.id.component_recycler_indications_layout);
 
         return view;
     }
@@ -74,7 +79,6 @@ public class ConversationsFragment extends Fragment {
 
 
     private void loadContacts() {  //// TODO: 10/10/2017  redo
-        progressBarFragment.show();
 
         USER_CONTACTS.getCurrentUserContactsRef().get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -94,7 +98,6 @@ public class ConversationsFragment extends Fragment {
 
                                             indicationsLayout.setVisibility(mContacts.size() == 0 ? View.VISIBLE : View.GONE);
                                             mAdapter.notifyDataSetChanged();
-                                            progressBarFragment.hide();
                                         }
                                     })
                                     .addOnFailureListener(new OnFailureListener() {

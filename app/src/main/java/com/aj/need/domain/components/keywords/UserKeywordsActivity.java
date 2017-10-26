@@ -49,7 +49,6 @@ public class UserKeywordsActivity extends AppCompatActivity {
     private ImageButton btnAdd;
 
     private LinearLayout indicationsLayout;
-    private ProgressBarFragment progressBarFragment;
 
 
     @Override
@@ -61,16 +60,13 @@ public class UserKeywordsActivity extends AppCompatActivity {
 
         if (uid == null) __.fatal("UserKeywordsActivity : uid == null");
 
-        mRecyclerView = findViewById(R.id.keywords_recycler_view);
+        mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         mAdapter = new UserKeywordsRecyclerAdapter(UserKeywordsActivity.this, mUserKeywords, IO.isCurrentUser(uid));
         mRecyclerView.setAdapter(mAdapter);
 
-        indicationsLayout = findViewById(R.id.activity_user_keywords_indications); //// TODO: 22/10/2017 uther indic
-        progressBarFragment = (ProgressBarFragment) getSupportFragmentManager().findFragmentById(R.id.waiter_modal_fragment);
-        progressBarFragment.setBackgroundColor(Color.TRANSPARENT);
-
+        indicationsLayout = findViewById(R.id.component_recycler_indications_layout); //// TODO: 22/10/2017 uther indic
         etKeyword = findViewById(R.id.add_keyword_input);
 
         btnAdd = findViewById(R.id.add_keyword_button);
@@ -103,7 +99,6 @@ public class UserKeywordsActivity extends AppCompatActivity {
 
 
     private void loadKeywords() {
-        progressBarFragment.show();
 
         USER_KEYWORDS.getUserKeywordsRef(getIntent().getStringExtra(UID))
                 .whereEqualTo(USER_KEYWORDS.deletedKey, false)
@@ -116,7 +111,6 @@ public class UserKeywordsActivity extends AppCompatActivity {
                             mUserKeywords.addAll(new Jarvis<UserKeyword>().tr(task.getResult(), new UserKeyword()));
                             indicationsLayout.setVisibility(mUserKeywords.size() == 0 ? View.VISIBLE : View.GONE);
                             mAdapter.notifyDataSetChanged();
-                            progressBarFragment.hide();
                         } else {
                             __.showShortToast(UserKeywordsActivity.this, "Impossible de charger les mots clés");
                             //// TODO: 14/10/2017  reload btn
@@ -128,7 +122,6 @@ public class UserKeywordsActivity extends AppCompatActivity {
 
     void saveKeyword(String keyword, boolean active, boolean deleted) {
         if (isKeyword(keyword)) {
-            progressBarFragment.show();
             USER_KEYWORDS.getCurrentUserKeywordsRef()
                     .document(keyword).set(new UserKeyword(keyword, active, deleted))
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -141,7 +134,7 @@ public class UserKeywordsActivity extends AppCompatActivity {
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            progressBarFragment.hide();
+                            //// TODO: 26/10/2017
                         }
                     });
         } else
@@ -200,7 +193,6 @@ public class UserKeywordsActivity extends AppCompatActivity {
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        progressBarFragment.show();
                         ((UserKeywordsRecyclerAdapter.ViewHolder) viewHolder).deleteKeyword();
                     }
                 });

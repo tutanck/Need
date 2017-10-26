@@ -53,7 +53,7 @@ public class MessagesActivity extends AppCompatActivity {
     private LinearLayoutManager linearLayoutManager;
     private MessageRecyclerAdapter mAdapter;
 
-    SwipeRefreshLayout mSwipeRefreshLayout;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private Button chatboxSendBtn;
     private EditText chatboxET;
@@ -103,12 +103,14 @@ public class MessagesActivity extends AppCompatActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
 
         chatboxET = findViewById(R.id.chatbox_et);
+        chatboxET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if (hasFocus) mRecyclerView.smoothScrollToPosition(0); //// TODO: 26/10/2017 do better
+            }
+        });
+
         chatboxSendBtn = findViewById(R.id.chatbox_send_btn);
-
-        mLoadQuery = MESSAGES.getMESSAGESRef()
-                .whereEqualTo(MESSAGES.conversationIDKey, conversation_id)
-                .orderBy(MESSAGES.dateKey, Query.Direction.DESCENDING);
-
         chatboxSendBtn.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -119,6 +121,10 @@ public class MessagesActivity extends AppCompatActivity {
                         chatboxET.setText("");
                     }
                 });
+
+        mLoadQuery = MESSAGES.getMESSAGESRef()
+                .whereEqualTo(MESSAGES.conversationIDKey, conversation_id)
+                .orderBy(MESSAGES.dateKey, Query.Direction.DESCENDING);
     }
 
 

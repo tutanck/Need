@@ -166,7 +166,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
 
         searchView = (SearchView) searchMenuItem.getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName())); //todo : dt work : getSearchableInfo = null
-        searchView.setIconifiedByDefault(false); //todo dt work
+        searchView.setIconified(false);
         searchView.setOnQueryTextListener(this);
 
         return true;

@@ -2,6 +2,7 @@ package com.aj.need.domain.components.ads;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.aj.need.R;
+import com.aj.need.tools.utils.__;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,8 @@ public class AdsFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
     private AdsRecyclerAdapter mAdapter;
+
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     public static AdsFragment newInstance() {
         return new AdsFragment();
@@ -39,6 +43,14 @@ public class AdsFragment extends Fragment {
         mAdapter = new AdsRecyclerAdapter(getContext(), mAds);
         mRecyclerView.setAdapter(mAdapter);
 
+        mSwipeRefreshLayout = view.findViewById(R.id.recycler_view_SwipeRefreshLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                __.showShortToast(getContext(), "refreshing");
+            }
+        });
+
         return view;
     }
 
@@ -50,5 +62,6 @@ public class AdsFragment extends Fragment {
     }
 
 
-    private void load() {}
+    private void load() {
+    }
 }

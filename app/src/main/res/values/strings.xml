@@ -39,4 +39,9 @@
     <string name="search_title">Recherche</string>
     <string name="search_hint">Que recherchez vous ?</string>
     <string name="error_message">Une erreur s\'est produite</string>
+    <string name="saved_search">Recherches sauvegardées</string>
+    <string name="saved_search_indic">(Vos recherches sauvegardées se trouvent ici)</string>
+    <string name="nothing_to_show">Rien à afficher</string>
+    <string name="activity_keywords">Mots-clés de mon activité</string>
+    <string name="activity_keyword_indic">(Les mots-clés aident vos clients à vous retrouver)</string>
 </resources>
