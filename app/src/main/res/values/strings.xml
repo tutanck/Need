@@ -38,4 +38,5 @@
     <string name="delete_keyword_warning">Ce mot-clé sera supprimé!</string>
     <string name="search_title">Recherche</string>
     <string name="search_hint">Que recherchez vous ?</string>
+    <string name="error_message">Une erreur s\'est produite</string>
 </resources>

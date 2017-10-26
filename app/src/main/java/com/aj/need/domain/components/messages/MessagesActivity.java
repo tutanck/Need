@@ -22,13 +22,12 @@ import com.aj.need.db.IO;
 import com.aj.need.db.colls.MESSAGES;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_CONTACTS;
+import com.aj.need.tools.utils.FSListener;
 import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -65,7 +64,7 @@ public class MessagesActivity extends AppCompatActivity {
     private Integer contactAvailability;
     private Bitmap contactImage;
 
-    private Query loadQuery;
+    private Query mLoadQuery;
     private QuerySnapshot lastQuerySnapshot;
 
 
@@ -89,7 +88,7 @@ public class MessagesActivity extends AppCompatActivity {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                refresh();
+                loadMessages();
             }
         });
 
@@ -106,7 +105,7 @@ public class MessagesActivity extends AppCompatActivity {
         chatboxET = findViewById(R.id.chatbox_et);
         chatboxSendBtn = findViewById(R.id.chatbox_send_btn);
 
-        loadQuery = MESSAGES.getMESSAGESRef()
+        mLoadQuery = MESSAGES.getMESSAGESRef()
                 .whereEqualTo(MESSAGES.conversationIDKey, conversation_id)
                 .orderBy(MESSAGES.dateKey, Query.Direction.DESCENDING);
 
@@ -149,57 +148,27 @@ public class MessagesActivity extends AppCompatActivity {
 
 
     private void loadMessages() {
-        loadQuery.limit(BATCH_SIZE).get().addOnCompleteListener(this, new OnCompleteListener<QuerySnapshot>() {
+        Query query = mLoadQuery;
+
+        if (lastQuerySnapshot != null) //not the initial load
+            if (lastQuerySnapshot.isEmpty()) { //no more content to load
+                mSwipeRefreshLayout.setRefreshing(false);
+                return;
+            } else {
+                DocumentSnapshot offset = lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1);
+                Log.d("loadMessages/_offset", offset.getData().toString()); //debug
+                query = query.startAfter(offset);
+            }
+
+        query.limit(BATCH_SIZE).get().addOnFailureListener(
+                FSListener.makeFL(this, mSwipeRefreshLayout, "MessagesActivity/loadMessages:: Error loading messages.")
+        ).addOnSuccessListener(this, new OnSuccessListener<QuerySnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful())
-                    refreshMessageList(task.getResult(), true);
-                else//!important : useful comment for index issues tracking
-                    Log.d("MsgAct/loadMessages", "Error loading messages : ", task.getException());
+            public void onSuccess(QuerySnapshot querySnapshot) {
+                refreshMessageList(querySnapshot, false);
+                mSwipeRefreshLayout.setRefreshing(false);
             }
         });
-    }
-
-
-    private void followConversation() {
-        conversationRegistration = loadQuery.limit(BATCH_SIZE)
-                .addSnapshotListener(this, new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(
-                            @Nullable QuerySnapshot value
-                            , @Nullable FirebaseFirestoreException e
-                    ) {
-                        Log.w("followConversation", "value=" + value + " error=" + e);
-                        if (e == null)
-                            refreshMessageList(value, true);
-                    }
-                });
-    }
-
-
-    private void refresh() { //// TODO: 26/10/2017  fusion wth loadMessages
-        if (lastQuerySnapshot == null) {
-            //!important (in case of first load error)
-            loadMessages();
-            return;
-        }
-
-        if (lastQuerySnapshot.isEmpty()) {
-            mSwipeRefreshLayout.setRefreshing(false);
-            return;
-        }
-
-        DocumentSnapshot topDocument = lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1);
-        Log.d("_topDoc", topDocument.getData().toString());
-
-        loadQuery.startAfter(topDocument).limit(BATCH_SIZE).get()
-                .addOnSuccessListener(this, new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot querySnapshot) {
-                        refreshMessageList(querySnapshot, false);
-                        mSwipeRefreshLayout.setRefreshing(false);
-                    }
-                });
     }
 
 
@@ -214,22 +183,23 @@ public class MessagesActivity extends AppCompatActivity {
     }
 
 
-    public static void start(Context context, String _id, String username, int availability) {
-        Intent intent = new Intent(context, MessagesActivity.class);
-        intent.putExtra(CONTACT_ID, _id);
-        intent.putExtra(CONTACT_NAME, username);
-        intent.putExtra(CONTACT_AVAILABILITY, availability);
-        context.startActivity(intent);
-    }
-
-
     @Override
     public void onStart() {
         super.onStart();
-        loadMessages();
+        //initial load then follow
+        conversationRegistration = mLoadQuery.limit(BATCH_SIZE).addSnapshotListener(this, new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(
+                    @Nullable QuerySnapshot value
+                    , @Nullable FirebaseFirestoreException e
+            ) {
+                Log.w("followConversation", "value=" + value + " error=" + e);
+                if (e == null)
+                    refreshMessageList(value, true);
+            }
+        });
         // ||
-        followConversation();
-        // ||
+        //initial load then follow
         contactRegistration = USERS.getUserRef(contact_id).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot,
@@ -241,6 +211,7 @@ public class MessagesActivity extends AppCompatActivity {
                 }
             }
         });
+
     }
 
 
@@ -252,6 +223,15 @@ public class MessagesActivity extends AppCompatActivity {
 
         if (contactRegistration != null)
             contactRegistration.remove();
+    }
+
+
+    public static void start(Context context, String _id, String username, int availability) {
+        Intent intent = new Intent(context, MessagesActivity.class);
+        intent.putExtra(CONTACT_ID, _id);
+        intent.putExtra(CONTACT_NAME, username);
+        intent.putExtra(CONTACT_AVAILABILITY, availability);
+        context.startActivity(intent);
     }
 
 
