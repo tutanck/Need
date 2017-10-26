@@ -31,10 +31,11 @@ public final class USERS implements Coll {
 
     private final static String coll = "USERS";
 
-    public final static String authIDKey = "authID";
     public final static String typeKey = "type";
     public final static String usernameKey = "username";
     public final static String availabilityKey = "availability";
+    private final static String avgRatingKey = "avgRating";
+    private final static String nbVotersKey = "nbVoters";
 
     public final static DocumentReference getUserRef(String id) {
         return IO.db.collection(coll).document(id);
@@ -67,7 +68,7 @@ public final class USERS implements Coll {
                         contacts.add(new UserProfile(
                                         userDoc.getId()
                                         , userDoc.getString(USERS.usernameKey)
-                                        , 0 //// TODO: 15/10/2017
+                                        , userDoc.getLong(USERS.avgRatingKey).intValue()
                                         , userDoc.getLong(USERS.availabilityKey).intValue()
                                         , contactDoc.getString(MESSAGES.conversationIDKey)
                                         , contactDoc.getString(MESSAGES.messageKey)

@@ -3,10 +3,10 @@ package com.aj.need.domain.components.messages;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,10 +23,8 @@ import com.aj.need.db.colls.MESSAGES;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_CONTACTS;
 import com.aj.need.tools.utils.Jarvis;
-import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -45,27 +43,32 @@ import java.util.List;
 
 public class MessagesActivity extends AppCompatActivity {
 
+    private final int BATCH_SIZE = 25;
+
     private final static String CONTACT_ID = "CONTACT_ID";
     private final static String CONTACT_NAME = "CONTACT_NAME";
     private final static String CONTACT_AVAILABILITY = "CONTACT_AVAILABILITY";
-
-    private int nbMsgToLoad = 20;
 
     private List<Message> messageList = new ArrayList<>();
     private RecyclerView mRecyclerView;
     private LinearLayoutManager linearLayoutManager;
     private MessageRecyclerAdapter mAdapter;
 
+    SwipeRefreshLayout mSwipeRefreshLayout;
+
     private Button chatboxSendBtn;
     private EditText chatboxET;
 
-    private String contact_id = null;
-    private String contact_name = null;
-    private String conversation_id = null;
+    private String contact_id;
+    private String contact_name;
+    private String conversation_id;
     private Integer contactAvailability;
     private Bitmap contactImage;
 
     private Query loadQuery;
+    private QuerySnapshot lastQuerySnapshot;
+
+
     private ListenerRegistration conversationRegistration, contactRegistration;
 
 
@@ -82,6 +85,14 @@ public class MessagesActivity extends AppCompatActivity {
         mAdapter = new MessageRecyclerAdapter(this, messageList);
         mRecyclerView.setAdapter(mAdapter);
 
+        mSwipeRefreshLayout = findViewById(R.id.message_list_SwipeRefreshLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh();
+            }
+        });
+
         contact_id = getIntent().getStringExtra(CONTACT_ID);
         contact_name = getIntent().getStringExtra(CONTACT_NAME);
         int tmp = getIntent().getIntExtra(CONTACT_AVAILABILITY, -9);
@@ -97,7 +108,7 @@ public class MessagesActivity extends AppCompatActivity {
 
         loadQuery = MESSAGES.getMESSAGESRef()
                 .whereEqualTo(MESSAGES.conversationIDKey, conversation_id)
-                .orderBy(MESSAGES.dateKey, Query.Direction.DESCENDING).limit(nbMsgToLoad);
+                .orderBy(MESSAGES.dateKey, Query.Direction.DESCENDING);
 
         chatboxSendBtn.setOnClickListener(
                 new View.OnClickListener() {
@@ -138,39 +149,68 @@ public class MessagesActivity extends AppCompatActivity {
 
 
     private void loadMessages() {
-        loadQuery.get().addOnCompleteListener(this, new OnCompleteListener<QuerySnapshot>() {
+        loadQuery.limit(BATCH_SIZE).get().addOnCompleteListener(this, new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful())
-                    reloadMessageList(task.getResult());
-                else
-                    Log.d("loadMessages", "Error getting documents: ", task.getException()); //// TODO: 15/10/2017 complete but keep this useful log
+                    refreshMessageList(task.getResult(), true);
+                else//!important : useful comment for index issues tracking
+                    Log.d("MsgAct/loadMessages", "Error loading messages : ", task.getException());
             }
         });
     }
 
 
     private void followConversation() {
-        conversationRegistration = loadQuery.addSnapshotListener(this, new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(
-                    @Nullable QuerySnapshot value
-                    , @Nullable FirebaseFirestoreException e
-            ) {
-                Log.w("followConversation", "value=" + value + " error=" + e);
-                if (e == null)
-                    reloadMessageList(value);
-            }
-        });
+        conversationRegistration = loadQuery.limit(BATCH_SIZE)
+                .addSnapshotListener(this, new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(
+                            @Nullable QuerySnapshot value
+                            , @Nullable FirebaseFirestoreException e
+                    ) {
+                        Log.w("followConversation", "value=" + value + " error=" + e);
+                        if (e == null)
+                            refreshMessageList(value, true);
+                    }
+                });
     }
 
 
-    private synchronized void reloadMessageList(QuerySnapshot querySnapshot) {
-        messageList.clear();
+    private void refresh() { //// TODO: 26/10/2017  fusion wth loadMessages
+        if (lastQuerySnapshot == null) {
+            //!important (in case of first load error)
+            loadMessages();
+            return;
+        }
+
+        if (lastQuerySnapshot.isEmpty()) {
+            mSwipeRefreshLayout.setRefreshing(false);
+            return;
+        }
+
+        DocumentSnapshot topDocument = lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1);
+        Log.d("_topDoc", topDocument.getData().toString());
+
+        loadQuery.startAfter(topDocument).limit(BATCH_SIZE).get()
+                .addOnSuccessListener(this, new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot querySnapshot) {
+                        refreshMessageList(querySnapshot, false);
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+                });
+    }
+
+
+    private synchronized void refreshMessageList(QuerySnapshot querySnapshot, boolean reset) {
+        lastQuerySnapshot = querySnapshot;
+        if (reset) messageList.clear();
         messageList.addAll(new Jarvis<Message>().tr(querySnapshot, new Message()));
         Log.i("messageList", messageList.toString());
         mAdapter.notifyDataSetChanged();
-        mRecyclerView.scrollToPosition(0/*mRecyclerView.getAdapter().getItemCount() - 1*/);
+        if (reset)
+            mRecyclerView.scrollToPosition(0 /* mRecyclerView.getAdapter().getItemCount() - 1 //todo rem comment*/);
     }
 
 
