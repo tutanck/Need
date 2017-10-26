@@ -3,16 +3,16 @@ package com.aj.need.domain.components.messages;
 import android.util.Log;
 
 import com.aj.need.db.colls.MESSAGES;
+import com.aj.need.domain.entities.Entity;
 import com.aj.need.tools.utils.ITranslatable;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.ServerTimestamp;
 
 import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.Date;
 
-public class Message implements Serializable, ITranslatable<Message> {
+public class Message extends Entity implements Serializable, ITranslatable<Message> {
 
     private String message;
     private String from;
@@ -20,8 +20,6 @@ public class Message implements Serializable, ITranslatable<Message> {
     private String conversationID;
     private boolean isPending = false;
 
-    @ServerTimestamp
-    private Date date;
 
     public Message() {
     }
@@ -42,15 +40,6 @@ public class Message implements Serializable, ITranslatable<Message> {
         return from;
     }
 
-    public Date getDate() {
-        return date;
-    }
-
-    private Message setDate(Date date) {
-        this.date = date;
-        return this;
-    }
-
     public String getTo() {
         return to;
     }
@@ -61,6 +50,11 @@ public class Message implements Serializable, ITranslatable<Message> {
 
     public boolean isPending() {
         return isPending;
+    }
+
+    private Message setDate(Date date) {
+        super.date = date;
+        return this;
     }
 
     public Message setPending(boolean pending) {

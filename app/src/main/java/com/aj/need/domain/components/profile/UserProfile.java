@@ -1,5 +1,6 @@
 package com.aj.need.domain.components.profile;
 
+import com.aj.need.domain.entities.Entity;
 import com.aj.need.tools.utils.ITranslatable;
 import com.google.firebase.firestore.DocumentSnapshot;
 
@@ -12,7 +13,7 @@ import java.util.Date;
  * Created by joan on 21/09/2017.
  */
 
-public class UserProfile implements Serializable, ITranslatable<UserProfile> {
+public class UserProfile extends Entity implements Serializable, ITranslatable<UserProfile> {
 
     private String _id;
 

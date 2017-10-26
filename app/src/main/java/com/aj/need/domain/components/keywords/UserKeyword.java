@@ -1,6 +1,7 @@
 package com.aj.need.domain.components.keywords;
 
 import com.aj.need.db.colls.USER_KEYWORDS;
+import com.aj.need.domain.entities.Entity;
 import com.aj.need.tools.utils.ITranslatable;
 import com.google.firebase.firestore.DocumentSnapshot;
 
@@ -12,7 +13,7 @@ import java.io.Serializable;
  * Created by joan on 21/09/2017.
  */
 
-public class UserKeyword implements Serializable, ITranslatable<UserKeyword> {
+public class UserKeyword extends Entity implements Serializable, ITranslatable<UserKeyword> {
 
     private String keyword;
     private boolean active;

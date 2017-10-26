@@ -1,5 +1,6 @@
 package com.aj.need.domain.components.ads;
 
+import com.aj.need.domain.entities.Entity;
 import com.aj.need.tools.utils.ITranslatable;
 import com.google.firebase.firestore.DocumentSnapshot;
 
@@ -7,11 +8,11 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 
-public class Ad implements Serializable, ITranslatable<Ad> {
+public class Ad extends Entity implements Serializable, ITranslatable<Ad> {
 
     private String search;
     private String ownerID;
-    private String updatedAt;
+    private String updatedAt; //// TODO: 26/10/2017  rem if not needed
 
     private Ad(String search, String ownerID, String updatedAt) {
         this.search = search;

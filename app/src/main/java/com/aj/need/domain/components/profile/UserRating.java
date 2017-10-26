@@ -1,5 +1,6 @@
 package com.aj.need.domain.components.profile;
 
+import com.aj.need.domain.entities.Entity;
 import com.aj.need.tools.utils.ITranslatable;
 import com.google.firebase.firestore.DocumentSnapshot;
 
@@ -11,7 +12,7 @@ import java.io.Serializable;
  * Created by joan on 13/10/2017.
  */
 
-public class UserRating implements Serializable, ITranslatable<UserRating> {
+public class UserRating extends Entity implements Serializable, ITranslatable<UserRating> {
 
     private float rating;
 
