@@ -3,6 +3,7 @@ package com.aj.need.domain.components.needs.userneeds;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -28,6 +29,9 @@ import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -38,7 +42,11 @@ import java.util.List;
 
 public class UserNeedsFragment extends Fragment {
 
-    private final int BATCH_SIZE = 10;//25; // TODO: 27/10/2017  in prod
+    /*
+    *!important the number of results displayed must always be enough to over-fulfill the screen :
+    * The first visible and the last visibles items must never be seen on the same screen
+    * */
+    private final int BATCH_SIZE = 10; //// TODO: 27/10/2017  25 in prod
 
     private boolean isLoading;
 
@@ -55,6 +63,8 @@ public class UserNeedsFragment extends Fragment {
 
     private Query mLoadQuery;
     private QuerySnapshot lastQuerySnapshot;
+
+    private ListenerRegistration needsRegistration;
 
     public static UserNeedsFragment newInstance() {
         return new UserNeedsFragment();
@@ -115,22 +125,42 @@ public class UserNeedsFragment extends Fragment {
     }
 
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        //initial load then follow
+        needsRegistration = mLoadQuery.limit(BATCH_SIZE)
+                .addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(
+                            @Nullable QuerySnapshot value
+                            , @Nullable FirebaseFirestoreException e
+                    ) {
+                        Log.w("needsRegistration", "value=" + value + " error=" + e);
+                        if (e == null)
+                            refreshUserNeedsList(value, true);
+                    }
+                });
+    }
+
+
     private synchronized void loadUserNeeds(final DocumentSnapshot offset) {
         isLoading = true;/*!important : must be 1st instruction and only this method should modify it*/
         mSwipeRefreshLayout.setRefreshing(true);
 
         Query query = mLoadQuery;
 
-        Log.d("loadUserNeeds/_offset=", offset != null ? offset.getData().toString() : "no offset"); //debug
+        Log.d("loadUserNeeds/_offset=", offset != null ? offset.getData().toString() : " no offset"); //debug
 
         if (offset != null/*loadMore*/) query = query.startAfter(offset);
 
-        query.limit(BATCH_SIZE).get()
+        query.limit(BATCH_SIZE)
+                .get()
                 .addOnCompleteListener(getActivity(), new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         //!important : useful log for index issues tracking, etc.
-                        Log.d("UNeedsFra/loadUserNeeds", "res=" + task.getResult() + "e=", task.getException());
+                        Log.d("UNeedsFra/loadUserNeeds", "res=" + task.getResult() + " e=", task.getException());
 
                         if (task.isSuccessful())
                             refreshUserNeedsList(task.getResult(), offset == null/*reload*/);
@@ -144,7 +174,7 @@ public class UserNeedsFragment extends Fragment {
     }
 
 
-    synchronized void refreshUserNeedsList(QuerySnapshot querySnapshot, boolean reset) {
+    private synchronized void refreshUserNeedsList(QuerySnapshot querySnapshot, boolean reset) {
         lastQuerySnapshot = querySnapshot;
         if (reset) needList.clear();
         needList.addAll(new Jarvis<UserNeed>().tr(querySnapshot, new UserNeed()));
@@ -157,17 +187,25 @@ public class UserNeedsFragment extends Fragment {
     private void setRecyclerViewScrollListener() {
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
 
                 if (lastQuerySnapshot == null /*the initial load is required to load more*/
                         || lastQuerySnapshot.isEmpty() /*no more content to load*/
                         || isLoading /*load in progress*/) return;
 
+                int firstCompletelyVisibleItemPosition= linearLayoutManager.findFirstCompletelyVisibleItemPosition();
                 int lastVisibleItemPosition = linearLayoutManager.findLastVisibleItemPosition();
                 int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
-                if (totalItemCount == lastVisibleItemPosition + 1)
+
+                __.showShortToast(getContext(), "load more: firstVisible=" + firstCompletelyVisibleItemPosition + " lastVisible=" + lastVisibleItemPosition);
+
+
+                //// TODO: 27/10/2017  fix bug concurent call with reload
+                if (firstCompletelyVisibleItemPosition > 0 && totalItemCount == lastVisibleItemPosition + 1){
                     loadUserNeeds(lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1));
+                }
+
             }
         });
     }
@@ -212,9 +250,9 @@ public class UserNeedsFragment extends Fragment {
 
 
     @Override
-    public void onStart() {
-        super.onStart();
-        loadUserNeeds(null);
+    public void onStop() {
+        super.onStop();
+        if (needsRegistration != null)
+            needsRegistration.remove();
     }
-
 }

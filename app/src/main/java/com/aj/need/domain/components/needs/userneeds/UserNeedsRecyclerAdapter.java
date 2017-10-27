@@ -94,32 +94,11 @@ public class UserNeedsRecyclerAdapter extends RecyclerView.Adapter<UserNeedsRecy
 
 
         void deleteNeed(final Activity contextActivity, final UserNeedsFragment delegate, final String userID, final List<UserNeed> userNeeds, final UserNeedsRecyclerAdapter adapter) {
-
             USER_NEEDS.getCurrentUserNeedsRef().document(mUserNeed.get_id()).update(USER_NEEDS.deletedKey, true)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {  //// TODO: 27/10/2017  optimize no need to remote load 
-                            USER_NEEDS.getCurrentUserNeedsRef()
-                                    .whereEqualTo(USER_NEEDS.deletedKey, false)//// TODO: 27/10/2017  sort if not rem
-                                    .get()
-                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                            if (task.isSuccessful()) {
-                                                delegate.refreshUserNeedsList(task.getResult(), true);
-                                            } else {
-                                                __.showShortToast(contextActivity, "impossible de charger les besoins sur supression");
-                                                //// TODO: 14/10/2017 improve this shit
-                                            }
-
-                                        }
-                                    });
-                        }
-                    })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            __.showShortToast(contextActivity, "Imposssible de supprimer le besoin");
+                            __.showShortToast(contextActivity, "Erreur de suppression du besoin.");
                         }
                     });
         }

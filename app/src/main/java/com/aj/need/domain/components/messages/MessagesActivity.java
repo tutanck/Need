@@ -22,13 +22,11 @@ import com.aj.need.db.IO;
 import com.aj.need.db.colls.MESSAGES;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_CONTACTS;
-import com.aj.need.tools.utils.FSListener;
 import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -172,7 +170,7 @@ public class MessagesActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 //!important : useful log for index issues tracking, etc.
-                Log.d("MsgAct/loadMessages", "res=" + task.getResult() + "e=", task.getException());
+                Log.d("MsgAct/loadMessages", "res=" + task.getResult() + " e=", task.getException());
 
                 if (task.isSuccessful())
                     refreshMessageList(task.getResult(), false);
@@ -205,7 +203,7 @@ public class MessagesActivity extends AppCompatActivity {
                     @Nullable QuerySnapshot value
                     , @Nullable FirebaseFirestoreException e
             ) {
-                Log.w("followConversation", "value=" + value + " error=" + e);
+                Log.w("MessagesActivity", "conversationRegistration : value=" + value + " error=" + e);
                 if (e == null)
                     refreshMessageList(value, true);
             }
@@ -217,7 +215,7 @@ public class MessagesActivity extends AppCompatActivity {
             public void onEvent(@Nullable DocumentSnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
                 if (e == null && snapshot != null && snapshot.exists()) {
-                    Log.d("MessagesActivity: ", "contactRegistration's snapshot : " + snapshot.getData().toString());
+                    Log.d("MessagesActivity", "contactRegistration's snapshot : " + snapshot.getData().toString());
                     contactAvailability = ((Long) snapshot.getData().get(USERS.availabilityKey)).intValue();
                     mAdapter.notifyDataSetChanged(); //// TODO: 25/10/2017 test with 2 devices
                 }

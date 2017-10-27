@@ -1,5 +1,7 @@
 package com.aj.need.tools.utils;
 
+import android.util.Log;
+
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -16,6 +18,7 @@ import java.util.List;
 public class Jarvis<T> {
 
     public List<T> tr(JSONArray array, ITranslatable<T> translatable) {
+        Log.d("Jarvis/tr", array.toString());
         List<T> list = new ArrayList<T>();
         if (array != null)
             for (int i = 0; i < array.length(); ++i) {
@@ -31,17 +34,15 @@ public class Jarvis<T> {
     }
 
 
-
-
-
     public List<T> tr(QuerySnapshot querySnapshot, ITranslatable<T> translatable) {
         List<T> list = new ArrayList<T>();
-            for (DocumentSnapshot documentSnapshot : querySnapshot) {
-                T t = (T) translatable.tr(documentSnapshot);
+        for (DocumentSnapshot documentSnapshot : querySnapshot) {
+            Log.d("Jarvis/tr", documentSnapshot.getData().toString());
+            T t = (T) translatable.tr(documentSnapshot);
 
-                if (t == null) continue;
-                list.add(t);
-            }
+            if (t == null) continue;
+            list.add(t);
+        }
         return list;
     }
 }
