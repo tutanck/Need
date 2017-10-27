@@ -201,7 +201,7 @@ public class UserNeedsFragment extends Fragment {
                 __.showShortToast(getContext(), "load more: firstVisible=" + firstCompletelyVisibleItemPosition + " lastVisible=" + lastVisibleItemPosition);
 
 
-                //// TODO: 27/10/2017  fix bug concurent call with reload
+                //// TODO: 27/10/2017  fix bug concurent call with reload :: check if all right
                 if (firstCompletelyVisibleItemPosition > 0 && totalItemCount == lastVisibleItemPosition + 1){
                     loadUserNeeds(lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1));
                 }
