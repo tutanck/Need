@@ -35,7 +35,6 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,7 +93,8 @@ public class UserNeedsFragment extends Fragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                loadUserNeeds(null);
+                if (lastQuerySnapshot == null) loadUserNeeds(null);
+                else mSwipeRefreshLayout.setRefreshing(false);
             }
         });
 
@@ -118,7 +118,7 @@ public class UserNeedsFragment extends Fragment {
 
 
         mLoadQuery = USER_NEEDS.getCurrentUserNeedsRef()
-                .whereEqualTo(USER_NEEDS.deletedKey, false)
+                .whereEqualTo(USER_NEEDS.deletedKey, false) //// TODO: 27/10/2017  check if work well on disactivating needs
                 .orderBy(USER_NEEDS.activeKey, Query.Direction.DESCENDING); //// TODO: 27/10/2017 by date too
 
         return view;
@@ -132,13 +132,14 @@ public class UserNeedsFragment extends Fragment {
         needsRegistration = mLoadQuery.limit(BATCH_SIZE)
                 .addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
                     @Override
-                    public void onEvent(
-                            @Nullable QuerySnapshot value
-                            , @Nullable FirebaseFirestoreException e
+                    public void onEvent(@Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException e
                     ) {
-                        Log.w("needsRegistration", "value=" + value + " error=" + e);
-                        if (e == null)
-                            refreshUserNeedsList(value, true);
+                        Log.w("needsRegistration", "querySnapshot=" + querySnapshot + " error=" + e);
+                        if (e == null && querySnapshot != null)
+                            refreshUserNeedsList(querySnapshot, true);
+                        else
+                            __.showShortToast(getActivity(), getString(R.string.load_error_message));
+
                     }
                 });
     }
@@ -154,23 +155,21 @@ public class UserNeedsFragment extends Fragment {
 
         if (offset != null/*loadMore*/) query = query.startAfter(offset);
 
-        query.limit(BATCH_SIZE)
-                .get()
-                .addOnCompleteListener(getActivity(), new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        //!important : useful log for index issues tracking, etc.
-                        Log.d("UNeedsFra/loadUserNeeds", "res=" + task.getResult() + " e=", task.getException());
+        query.limit(BATCH_SIZE).get().addOnCompleteListener(getActivity(), new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                //!important : useful log for index issues tracking, etc.
+                Log.d("UNeedsFra/loadUserNeeds", "res=" + task.getResult() + " e=", task.getException());
 
-                        if (task.isSuccessful())
-                            refreshUserNeedsList(task.getResult(), offset == null/*reload*/);
-                        else
-                            __.showShortToast(getContext(), getString(R.string.load_error_message));
+                if (task.isSuccessful())
+                    refreshUserNeedsList(task.getResult(), offset == null/*reload*/);
+                else
+                    __.showShortToast(getContext(), getString(R.string.load_error_message));
 
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        isLoading = false;
-                    }
-                });
+                mSwipeRefreshLayout.setRefreshing(false);
+                isLoading = false;
+            }
+        });
     }
 
 
@@ -194,15 +193,14 @@ public class UserNeedsFragment extends Fragment {
                         || lastQuerySnapshot.isEmpty() /*no more content to load*/
                         || isLoading /*load in progress*/) return;
 
-                int firstCompletelyVisibleItemPosition= linearLayoutManager.findFirstCompletelyVisibleItemPosition();
+                int firstCompletelyVisibleItemPosition = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
                 int lastVisibleItemPosition = linearLayoutManager.findLastVisibleItemPosition();
                 int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
 
-                __.showShortToast(getContext(), "load more: firstVisible=" + firstCompletelyVisibleItemPosition + " lastVisible=" + lastVisibleItemPosition);
-
+                //__.showShortToast(getContext(), "load more: firstVisible=" + firstCompletelyVisibleItemPosition + " lastVisible=" + lastVisibleItemPosition);
 
                 //// TODO: 27/10/2017  fix bug concurent call with reload :: check if all right
-                if (firstCompletelyVisibleItemPosition > 0 && totalItemCount == lastVisibleItemPosition + 1){
+                if (firstCompletelyVisibleItemPosition > 0 && totalItemCount == lastVisibleItemPosition + 1) {
                     loadUserNeeds(lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1));
                 }
 

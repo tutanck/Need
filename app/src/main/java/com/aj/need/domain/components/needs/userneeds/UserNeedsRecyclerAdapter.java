@@ -98,7 +98,7 @@ public class UserNeedsRecyclerAdapter extends RecyclerView.Adapter<UserNeedsRecy
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            __.showShortToast(contextActivity, "Erreur de suppression du besoin.");
+                            __.showShortToast(contextActivity, contextActivity.getString(R.string.error_deleting_user_need_message));
                         }
                     });
         }

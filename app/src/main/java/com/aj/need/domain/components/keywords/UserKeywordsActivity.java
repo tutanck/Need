@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,21 +15,26 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USER_KEYWORDS;
-import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -48,7 +54,14 @@ public class UserKeywordsActivity extends AppCompatActivity {
     private EditText etKeyword;
     private ImageButton btnAdd;
 
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+
     private LinearLayout indicationsLayout;
+
+    private Query mLoadQuery;
+    private QuerySnapshot lastQuerySnapshot;
+
+    private ListenerRegistration keywordsRegistration;
 
 
     @Override
@@ -66,57 +79,91 @@ public class UserKeywordsActivity extends AppCompatActivity {
         mAdapter = new UserKeywordsRecyclerAdapter(UserKeywordsActivity.this, mUserKeywords, IO.isCurrentUser(uid));
         mRecyclerView.setAdapter(mAdapter);
 
-        indicationsLayout = findViewById(R.id.component_recycler_indications_layout); //// TODO: 22/10/2017 uther indic
+        mSwipeRefreshLayout = findViewById(R.id.recycler_view_SwipeRefreshLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (lastQuerySnapshot == null) loadKeywords();
+                else mSwipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
+
+        indicationsLayout = findViewById(R.id.component_recycler_indications_layout);
+
         etKeyword = findViewById(R.id.add_keyword_input);
 
         btnAdd = findViewById(R.id.add_keyword_button);
         btnAdd.setEnabled(false);
 
+
+        TextView indicationTV1 = findViewById(R.id.indicationTV1);
+        TextView indicationTV2 = findViewById(R.id.indicationTV2);
+
+
         if (IO.isCurrentUser(uid)) {
+            indicationTV1.setText(R.string.activity_keywords_indic1);
+            indicationTV2.setText(R.string.activity_keywords_indic2);
+
             functionalizeETKeyword();
             functionalizeBtnAdd();
             setRecyclerViewItemTouchListener();
         } else {
+
+            indicationTV1.setText(R.string.activity_keywords_indic3);
+            indicationTV2.setText(R.string.activity_keywords_indic4);
+
             btnAdd.setVisibility(View.GONE);
             etKeyword.setVisibility(View.GONE);
         }
 
-    }
 
+        mLoadQuery = USER_KEYWORDS.getUserKeywordsRef(getIntent().getStringExtra(UID))
+                .whereEqualTo(USER_KEYWORDS.deletedKey, false)
+                .orderBy(USER_KEYWORDS.activeKey, Query.Direction.DESCENDING)
+                .orderBy(USER_KEYWORDS.keywordKey);
 
-    public static void start(Context context, String uid) {
-        Intent intent = new Intent(context, UserKeywordsActivity.class);
-        intent.putExtra(UID, uid);
-        context.startActivity(intent);
     }
 
 
     @Override
     protected void onStart() {
         super.onStart();
-        loadKeywords();
+        keywordsRegistration = mLoadQuery.addSnapshotListener(this, new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot querySnapshot, FirebaseFirestoreException e) {
+                Log.w("keywordsRegistration", "querySnapshot=" + querySnapshot + " error=" + e);
+                if (e == null && querySnapshot != null)
+                    refreshUserKeywordsList(querySnapshot);
+                else
+                    __.showShortToast(UserKeywordsActivity.this, getString(R.string.load_error_message));
+
+            }
+        });
     }
 
 
-    private void loadKeywords() {
+    private synchronized void loadKeywords() {
+        mLoadQuery.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful())
+                    refreshUserKeywordsList(task.getResult());
+                else
+                    __.showShortToast(UserKeywordsActivity.this, getString(R.string.load_error_message));
 
-        USER_KEYWORDS.getUserKeywordsRef(getIntent().getStringExtra(UID))
-                .whereEqualTo(USER_KEYWORDS.deletedKey, false)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            mUserKeywords.clear();
-                            mUserKeywords.addAll(new Jarvis<UserKeyword>().tr(task.getResult(), new UserKeyword()));
-                            indicationsLayout.setVisibility(mUserKeywords.size() == 0 ? View.VISIBLE : View.GONE);
-                            mAdapter.notifyDataSetChanged();
-                        } else {
-                            __.showShortToast(UserKeywordsActivity.this, "Impossible de charger les mots clés");
-                            //// TODO: 14/10/2017  reload btn
-                        }
-                    }
-                });
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+        });
+    }
+
+
+    private synchronized void refreshUserKeywordsList(QuerySnapshot querySnapshot) {
+        lastQuerySnapshot = querySnapshot;
+        mUserKeywords.clear();
+        mUserKeywords.addAll(new Jarvis<UserKeyword>().tr(querySnapshot, new UserKeyword()));
+        indicationsLayout.setVisibility(mUserKeywords.size() == 0 ? View.VISIBLE : View.GONE);
+        mAdapter.notifyDataSetChanged();
     }
 
 
@@ -124,21 +171,15 @@ public class UserKeywordsActivity extends AppCompatActivity {
         if (isKeyword(keyword)) {
             USER_KEYWORDS.getCurrentUserKeywordsRef()
                     .document(keyword).set(new UserKeyword(keyword, active, deleted))
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            etKeyword.setText("");
-                            loadKeywords();
-                        }
-                    })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            //// TODO: 26/10/2017
+                            __.showShortToast(UserKeywordsActivity.this, getString(R.string.error_saving_keyword_message));
                         }
                     });
+            etKeyword.setText("");
         } else
-            __.showLongSnack(btnAdd, "Un mot-clé est composé d'un seul mot (caractères alphanumériques sans accents).");
+            __.showLongSnack(btnAdd, getString(R.string.keyword_conformity_indication));
 
     }
 
@@ -212,6 +253,20 @@ public class UserKeywordsActivity extends AppCompatActivity {
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(itemTouchCallback);
         itemTouchHelper.attachToRecyclerView(mRecyclerView);
+    }
+
+
+    public static void start(Context context, String uid) {
+        Intent intent = new Intent(context, UserKeywordsActivity.class);
+        intent.putExtra(UID, uid);
+        context.startActivity(intent);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (keywordsRegistration != null)
+            keywordsRegistration.remove();
     }
 
 }

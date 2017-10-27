@@ -200,12 +200,14 @@ public class MessagesActivity extends AppCompatActivity {
         conversationRegistration = mLoadQuery.limit(BATCH_SIZE).addSnapshotListener(this, new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(
-                    @Nullable QuerySnapshot value
-                    , @Nullable FirebaseFirestoreException e
+                    @Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException e
             ) {
-                Log.w("MessagesActivity", "conversationRegistration : value=" + value + " error=" + e);
-                if (e == null)
-                    refreshMessageList(value, true);
+                Log.w("MessagesActivity", "conversationRegistration : querySnapshot=" + querySnapshot + " error=" + e);
+                if (e == null && querySnapshot != null)
+                    refreshMessageList(querySnapshot, true);
+                else
+                    __.showShortToast(MessagesActivity.this, getString(R.string.load_error_message));
+
             }
         });
         // ||

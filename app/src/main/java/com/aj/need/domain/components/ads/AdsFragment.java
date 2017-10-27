@@ -47,7 +47,7 @@ public class AdsFragment extends Fragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                __.showShortToast(getContext(), "refreshing");
+                mSwipeRefreshLayout.setRefreshing(false);
             }
         });
 
