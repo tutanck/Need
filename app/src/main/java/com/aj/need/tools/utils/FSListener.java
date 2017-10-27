@@ -12,7 +12,7 @@ import com.google.android.gms.tasks.OnFailureListener;
  * Created by joan on 26/10/2017.
  */
 
-public class FSListener {
+public class FSListener { //// TODO: 27/10/2017 rem if not needed
 
     public static OnFailureListener makeFL(
             final Activity activity

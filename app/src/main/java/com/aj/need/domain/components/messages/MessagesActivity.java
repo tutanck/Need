@@ -26,8 +26,10 @@ import com.aj.need.tools.utils.FSListener;
 import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -44,9 +46,9 @@ public class MessagesActivity extends AppCompatActivity {
 
     private final int BATCH_SIZE = 25;
 
-    private final static String CONTACT_ID = "CONTACT_ID";
-    private final static String CONTACT_NAME = "CONTACT_NAME";
-    private final static String CONTACT_AVAILABILITY = "CONTACT_AVAILABILITY";
+    private final static String CONTACT_ID = "CONTACT_ID",
+            CONTACT_NAME = "CONTACT_NAME",
+            CONTACT_AVAILABILITY = "CONTACT_AVAILABILITY";
 
     private List<Message> messageList = new ArrayList<>();
     private RecyclerView mRecyclerView;
@@ -58,9 +60,7 @@ public class MessagesActivity extends AppCompatActivity {
     private Button chatboxSendBtn;
     private EditText chatboxET;
 
-    private String contact_id;
-    private String contact_name;
-    private String conversation_id;
+    private String contact_id, contact_name, conversation_id;
     private Integer contactAvailability;
     private Bitmap contactImage;
 
@@ -106,7 +106,8 @@ public class MessagesActivity extends AppCompatActivity {
         chatboxET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
-                if (hasFocus) mRecyclerView.smoothScrollToPosition(0); //// TODO: 26/10/2017 do better
+                if (hasFocus)
+                    mRecyclerView.smoothScrollToPosition(0); //// TODO: 26/10/2017 do better
             }
         });
 
@@ -121,6 +122,7 @@ public class MessagesActivity extends AppCompatActivity {
                         chatboxET.setText("");
                     }
                 });
+
 
         mLoadQuery = MESSAGES.getMESSAGESRef()
                 .whereEqualTo(MESSAGES.conversationIDKey, conversation_id)
@@ -162,16 +164,21 @@ public class MessagesActivity extends AppCompatActivity {
                 return;
             } else {
                 DocumentSnapshot offset = lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1);
-                Log.d("loadMessages/_offset", offset.getData().toString()); //debug
+                Log.d("loadMessages/_offset=", offset.getData().toString()); //debug
                 query = query.startAfter(offset);
             }
 
-        query.limit(BATCH_SIZE).get().addOnFailureListener(
-                FSListener.makeFL(this, mSwipeRefreshLayout, "MessagesActivity/loadMessages:: Error loading messages.")
-        ).addOnSuccessListener(this, new OnSuccessListener<QuerySnapshot>() {
+        query.limit(BATCH_SIZE).get().addOnCompleteListener(this, new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onSuccess(QuerySnapshot querySnapshot) {
-                refreshMessageList(querySnapshot, false);
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                //!important : useful log for index issues tracking, etc.
+                Log.d("MsgAct/loadMessages", "res=" + task.getResult() + "e=", task.getException());
+
+                if (task.isSuccessful())
+                    refreshMessageList(task.getResult(), false);
+                else
+                    __.showShortToast(MessagesActivity.this, getString(R.string.load_error_message));
+
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
@@ -184,8 +191,7 @@ public class MessagesActivity extends AppCompatActivity {
         messageList.addAll(new Jarvis<Message>().tr(querySnapshot, new Message()));
         Log.i("messageList", messageList.toString());
         mAdapter.notifyDataSetChanged();
-        if (reset)
-            mRecyclerView.scrollToPosition(0 /* mRecyclerView.getAdapter().getItemCount() - 1 //todo rem comment*/);
+        if (reset) mRecyclerView.scrollToPosition(0);
     }
 
 

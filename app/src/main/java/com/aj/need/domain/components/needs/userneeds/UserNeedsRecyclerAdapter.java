@@ -98,15 +98,15 @@ public class UserNeedsRecyclerAdapter extends RecyclerView.Adapter<UserNeedsRecy
             USER_NEEDS.getCurrentUserNeedsRef().document(mUserNeed.get_id()).update(USER_NEEDS.deletedKey, true)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
-                        public void onSuccess(Void aVoid) {
+                        public void onSuccess(Void aVoid) {  //// TODO: 27/10/2017  optimize no need to remote load 
                             USER_NEEDS.getCurrentUserNeedsRef()
-                                    .whereEqualTo(USER_NEEDS.deletedKey, false)
+                                    .whereEqualTo(USER_NEEDS.deletedKey, false)//// TODO: 27/10/2017  sort if not rem
                                     .get()
                                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                         @Override
                                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                             if (task.isSuccessful()) {
-                                                delegate.reloadList(task.getResult());
+                                                delegate.refreshUserNeedsList(task.getResult(), true);
                                             } else {
                                                 __.showShortToast(contextActivity, "impossible de charger les besoins sur supression");
                                                 //// TODO: 14/10/2017 improve this shit

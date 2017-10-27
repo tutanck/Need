@@ -39,9 +39,10 @@
     <string name="search_title">Recherche</string>
     <string name="search_hint">Que recherchez vous ?</string>
     <string name="error_message">Une erreur s\'est produite</string>
-    <string name="saved_search">Recherches sauvegardées</string>
-    <string name="saved_search_indic">(Vos recherches sauvegardées se trouvent ici)</string>
+    <string name="fragment_user_need_indic1">Recherches sauvegardées</string>
+    <string name="fragment_user_need_indic2">(Vos recherches sauvegardées se trouvent ici)</string>
     <string name="nothing_to_show">Rien à afficher</string>
-    <string name="activity_keywords">Mots-clés de mon activité</string>
-    <string name="activity_keyword_indic">(Les mots-clés aident vos clients à vous retrouver)</string>
+    <string name="activity_keywords_indic1">Mots-clés de mon activité</string>
+    <string name="activity_keywords_indic2">(Les mots-clés aident vos clients à vous retrouver)</string>
+    <string name="load_error_message">Erreur de chargement.  Tirez pour rééssayer.</string>
 </resources>
