@@ -97,7 +97,7 @@ public class ConversationsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        /*contactsRegistration = mLoadQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
+        contactsRegistration = mLoadQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot querySnapshot, FirebaseFirestoreException e) {
                 Log.w("contactsRegistration", "querySnapshot=" + querySnapshot + " error=" + e);
@@ -106,7 +106,7 @@ public class ConversationsFragment extends Fragment {
                 else
                     __.showShortToast(getContext(), getString(R.string.load_error_message));
             }
-        });*/
+        });
     }
 
 

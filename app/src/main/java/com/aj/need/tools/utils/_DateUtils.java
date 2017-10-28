@@ -22,7 +22,7 @@ public class _DateUtils {
     //https://developer.android.com/reference/android/text/format/DateUtils.html#formatSameDayTime(long,%20long,%20int,%20int)
     //https://www.javatips.net/api/UnivrApp-master/src/com/cellasoft/univrapp/utils/DateUtils.java
     public static CharSequence since(Date date) {
-        return date == null ? "" : DateUtils.formatSameDayTime(date.getTime()
+        return date == null ? null : DateUtils.formatSameDayTime(date.getTime()
                 , new Timestamp(System.currentTimeMillis()).getTime()
                 , DateFormat.MEDIUM, DateFormat.SHORT);
     }

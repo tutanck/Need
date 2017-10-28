@@ -104,13 +104,8 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
             this.mContext = context;
             this.mOnClickListenerType = onClickListenerType;
 
-            usernameTV.setText(mUserProfile.getUsername());
-            userStatusFAB.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor
-                    (mContext, Avail.getColor(mUserProfile.getAvailability()))));
-
-            userReputationRBar.setRating(mUserProfile.getReputation());
-            messageTV.setText(mUserProfile.getLastMessage());
-            messageDateTV.setText(_DateUtils.since(mUserProfile.getLastMessageDate()));
+            setLastMessage();
+            setProfile();
 
             userProfileIV.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -125,12 +120,12 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
                 USERS.getUserRef(mUserProfile.get_id()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot userDoc) {
-                        Log.d("bindItem/", "UserProfilesRecyclerAdapter::onSuccess: data="+userDoc.getData());
-                        if (userDoc != null && userDoc.exists()) {
-                            usernameTV.setText(userDoc.getString(USERS.usernameKey));
-                            userReputationRBar.setRating(userDoc.getLong(USERS.avgRatingKey));
-                            userStatusFAB.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor
-                                    (mContext, Avail.getColor(userDoc.getLong(USERS.availabilityKey).intValue()))));
+                        Log.d("bindItem/", "UserProfilesRecyclerAdapter::onSuccess: data=" + userDoc.getData());
+                        if (userDoc.exists()) {
+                            mUserProfile.setAvailability(userDoc.getLong(USERS.availabilityKey).intValue());
+                            mUserProfile.setReputation(userDoc.getLong(USERS.avgRatingKey).intValue());
+                            mUserProfile.setUsername(userDoc.getString(USERS.usernameKey));
+                            setProfile();
                         }
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -154,6 +149,21 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
                                     .into(userProfileIV);
                         }
                     });
+        }
+
+
+        private void setProfile() {
+            usernameTV.setText(mUserProfile.getUsername());
+            userStatusFAB.setBackgroundTintList(
+                    ColorStateList.valueOf(ContextCompat.getColor
+                            (mContext, Avail.getColor(mUserProfile.getAvailability()))));
+            userReputationRBar.setRating(mUserProfile.getReputation());
+        }
+
+
+        private void setLastMessage() {
+            messageTV.setText(mUserProfile.getLastMessage());
+            messageDateTV.setText(_DateUtils.since(mUserProfile.getLastMessageDate()));
         }
 
 

@@ -76,14 +76,12 @@
                     android:layout_width="48dp"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="8dp"
-                    android:ellipsize="end"
                     android:maxLines="1"
                     android:textAlignment="viewEnd"
                     android:text="@string/sample_text"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"
                     android:textColor="@color/Gray"
                     android:textSize="12dp" />
-
 
             </LinearLayout>
 
