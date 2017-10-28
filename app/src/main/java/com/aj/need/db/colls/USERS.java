@@ -1,5 +1,6 @@
 package com.aj.need.db.colls;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aj.need.db.IO;
@@ -7,6 +8,9 @@ import com.aj.need.db.colls.itf.Coll;
 
 import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.tools.utils.__;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -34,8 +38,8 @@ public final class USERS implements Coll {
     public final static String typeKey = "type";
     public final static String usernameKey = "username";
     public final static String availabilityKey = "availability";
-    private final static String avgRatingKey = "avgRating";
-    private final static String nbVotersKey = "nbVoters";
+    public final static String avgRatingKey = "avgRating";
+    public final static String nbVotersKey = "nbVoters";
 
     public final static DocumentReference getUserRef(String id) {
         return IO.db.collection(coll).document(id);
@@ -56,10 +60,9 @@ public final class USERS implements Coll {
 
                 for (DocumentSnapshot contactDoc : result)
                     try {
-                        Log.d("22LOL22TR", contactDoc.getId() + " => " + contactDoc.getData());
+                        Log.d("computeUsersInfo", contactDoc.getId() + " => " + contactDoc.getData());
 
                         DocumentReference userRef = USERS.getUserRef(contactDoc.getId());
-
                         DocumentSnapshot userDoc = transaction.get(userRef);
 
                         //!important : each doc read in a transaction must be also wrote
@@ -86,6 +89,5 @@ public final class USERS implements Coll {
             }
         });
     }
-
 
 }

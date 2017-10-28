@@ -85,8 +85,8 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
                     mSwitch.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            ((UserKeywordsActivity) context)
-                                    .saveKeyword(mUserKeyword.getKeyword(), !mUserKeyword.isActive(), false);
+                            ((UserKeywordsActivity) context).saveKeyword
+                                    (mUserKeyword.getKeyword(), !mUserKeyword.isActive(), false, true);
                         }
                     });
 
@@ -96,7 +96,7 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
 
         void deleteKeyword() {
             if (mIsEditable)
-                ((UserKeywordsActivity) mContext).saveKeyword(mUserKeyword.getKeyword(), mUserKeyword.isActive(), true);
+                ((UserKeywordsActivity) mContext).saveKeyword(mUserKeyword.getKeyword(), mUserKeyword.isActive(), true, true);
         }
 
     }

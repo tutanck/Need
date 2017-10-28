@@ -73,9 +73,9 @@
 
                 <TextView
                     android:id="@+id/messageDateTV"
-                    android:layout_width="64dp"
+                    android:layout_width="48dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="16dp"
+                    android:layout_marginRight="8dp"
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:textAlignment="viewEnd"

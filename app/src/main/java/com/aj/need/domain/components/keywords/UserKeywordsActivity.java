@@ -3,7 +3,6 @@ package com.aj.need.domain.components.keywords;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -29,7 +28,6 @@ import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -46,7 +44,7 @@ public class UserKeywordsActivity extends AppCompatActivity {
 
     private String uid = null;
 
-    private List<UserKeyword> mUserKeywords = new ArrayList<>();
+    private List<UserKeyword> keywordList = new ArrayList<>();
 
     private RecyclerView mRecyclerView;
     private UserKeywordsRecyclerAdapter mAdapter;
@@ -76,7 +74,7 @@ public class UserKeywordsActivity extends AppCompatActivity {
         mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        mAdapter = new UserKeywordsRecyclerAdapter(UserKeywordsActivity.this, mUserKeywords, IO.isCurrentUser(uid));
+        mAdapter = new UserKeywordsRecyclerAdapter(UserKeywordsActivity.this, keywordList, IO.isCurrentUser(uid));
         mRecyclerView.setAdapter(mAdapter);
 
         mSwipeRefreshLayout = findViewById(R.id.recycler_view_SwipeRefreshLayout);
@@ -137,13 +135,13 @@ public class UserKeywordsActivity extends AppCompatActivity {
                     refreshUserKeywordsList(querySnapshot);
                 else
                     __.showShortToast(UserKeywordsActivity.this, getString(R.string.load_error_message));
-
             }
         });
     }
 
 
-    private synchronized void loadKeywords() {
+    private synchronized/*!important : sync access to shared attributes (isLoading, etc) */
+    void loadKeywords() {
         mLoadQuery.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -159,15 +157,16 @@ public class UserKeywordsActivity extends AppCompatActivity {
 
 
     private synchronized void refreshUserKeywordsList(QuerySnapshot querySnapshot) {
+        if (querySnapshot == null) return;
         lastQuerySnapshot = querySnapshot;
-        mUserKeywords.clear();
-        mUserKeywords.addAll(new Jarvis<UserKeyword>().tr(querySnapshot, new UserKeyword()));
-        indicationsLayout.setVisibility(mUserKeywords.size() == 0 ? View.VISIBLE : View.GONE);
+        keywordList.clear();
+        keywordList.addAll(new Jarvis<UserKeyword>().tr(querySnapshot, new UserKeyword()));
+        indicationsLayout.setVisibility(keywordList.size() == 0 ? View.VISIBLE : View.GONE);
         mAdapter.notifyDataSetChanged();
     }
 
 
-    void saveKeyword(String keyword, boolean active, boolean deleted) {
+    void saveKeyword(String keyword, boolean active, boolean deleted, boolean isUpadate) {
         if (isKeyword(keyword)) {
             USER_KEYWORDS.getCurrentUserKeywordsRef()
                     .document(keyword).set(new UserKeyword(keyword, active, deleted))
@@ -177,10 +176,9 @@ public class UserKeywordsActivity extends AppCompatActivity {
                             __.showShortToast(UserKeywordsActivity.this, getString(R.string.error_saving_keyword_message));
                         }
                     });
-            etKeyword.setText("");
+            if (!isUpadate) etKeyword.setText("");
         } else
             __.showLongSnack(btnAdd, getString(R.string.keyword_conformity_indication));
-
     }
 
 
@@ -188,7 +186,7 @@ public class UserKeywordsActivity extends AppCompatActivity {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveKeyword(etKeyword.getText().toString().trim(), true, false);
+                saveKeyword(etKeyword.getText().toString().trim(), true, false, false);
             }
         });
     }

@@ -36,13 +36,14 @@ public class Jarvis<T> {
 
     public List<T> tr(QuerySnapshot querySnapshot, ITranslatable<T> translatable) {
         List<T> list = new ArrayList<T>();
-        for (DocumentSnapshot documentSnapshot : querySnapshot) {
-            Log.d("Jarvis/tr", documentSnapshot.getData().toString());
-            T t = (T) translatable.tr(documentSnapshot);
+        if (querySnapshot != null)
+            for (DocumentSnapshot documentSnapshot : querySnapshot) {
+                Log.d("Jarvis/tr", documentSnapshot.getData().toString());
+                T t = (T) translatable.tr(documentSnapshot);
 
-            if (t == null) continue;
-            list.add(t);
-        }
+                if (t == null) continue;
+                list.add(t);
+            }
         return list;
     }
 }

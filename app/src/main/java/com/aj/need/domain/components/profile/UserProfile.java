@@ -1,6 +1,7 @@
 package com.aj.need.domain.components.profile;
 
 import com.aj.need.domain.entities.Entity;
+import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.ITranslatable;
 import com.google.firebase.firestore.DocumentSnapshot;
 
@@ -41,7 +42,17 @@ public class UserProfile extends Entity implements Serializable, ITranslatable<U
         this.username = username;
         this.reputation = reputation;
         this.availability = availability;
-        this.lastMessage = "";
+    }
+
+
+    protected /*!important : only for Contact class usage*/
+    UserProfile(
+            String _id
+            , String conversationID
+            , String lastMessage
+            , Date lastMessageDate
+    ) {
+        this(_id, null, 0, Avail.UNKNOWN, conversationID, lastMessage, lastMessageDate);
     }
 
 
@@ -69,12 +80,24 @@ public class UserProfile extends Entity implements Serializable, ITranslatable<U
         return username;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public int getReputation() {
         return reputation;
     }
 
+    public void setReputation(int reputation) {
+        this.reputation = reputation;
+    }
+
     public int getAvailability() {
         return availability;
+    }
+
+    public void setAvailability(int availability) {
+        this.availability = availability;
     }
 
     public String getLastMessage() {
@@ -96,7 +119,7 @@ public class UserProfile extends Entity implements Serializable, ITranslatable<U
 
         String objectID = json.optString("objectID");
         String username = json.optString("username");
-        int availability = json.optInt("availability", -1);
+        int availability = json.optInt("availability", Avail.UNKNOWN);
         int rating = json.optInt("rating", 0);
 
         if (objectID != null && username != null && availability >= 0)

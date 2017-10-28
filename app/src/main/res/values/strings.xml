@@ -50,4 +50,6 @@
     <string name="keyword_conformity_indication">Un mot-clé est composé d\'un seul mot (caractères alphanumériques sans accents).</string>
     <string name="activity_keywords_indic4">Aucun mot-clé à afficher</string>
     <string name="activity_keywords_indic3">Mot-clés de l\'activité</string>
+    <string name="fragment_conversation_indic2">Aucun message pour le moment</string>
+    <string name="fragment_conversation_indic1">Messages</string>
 </resources>

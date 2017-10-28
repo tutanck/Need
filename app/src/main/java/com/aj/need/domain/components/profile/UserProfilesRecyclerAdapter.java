@@ -3,9 +3,11 @@ package com.aj.need.domain.components.profile;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +16,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.aj.need.R;
+import com.aj.need.db.colls.USERS;
 import com.aj.need.domain.components.messages.MessagesActivity;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils._DateUtils;
@@ -21,7 +24,10 @@ import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 
@@ -100,7 +106,7 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
 
             usernameTV.setText(mUserProfile.getUsername());
             userStatusFAB.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor
-                    (context, Avail.getColor(mUserProfile.getAvailability()))));
+                    (mContext, Avail.getColor(mUserProfile.getAvailability()))));
 
             userReputationRBar.setRating(mUserProfile.getReputation());
             messageTV.setText(mUserProfile.getLastMessage());
@@ -112,6 +118,28 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
                     UtherProfileActivity.start(mContext, mUserProfile.get_id());
                 }
             });
+
+
+            if (mUserProfile.getUsername() == null || mUserProfile.getAvailability() == Avail.UNKNOWN) {
+                Log.d("bindItem/", "UserProfilesRecyclerAdapter::getUser");
+                USERS.getUserRef(mUserProfile.get_id()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot userDoc) {
+                        Log.d("bindItem/", "UserProfilesRecyclerAdapter::onSuccess: data="+userDoc.getData());
+                        if (userDoc != null && userDoc.exists()) {
+                            usernameTV.setText(userDoc.getString(USERS.usernameKey));
+                            userReputationRBar.setRating(userDoc.getLong(USERS.avgRatingKey));
+                            userStatusFAB.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor
+                                    (mContext, Avail.getColor(userDoc.getLong(USERS.availabilityKey).intValue()))));
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("bindItem/", "UserProfilesRecyclerAdapter::onFailure", e);
+                    }
+                });
+            }
 
             _Storage.loadRef(_Storage.getRef(userProfile.get_id()))
                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
@@ -136,7 +164,7 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
                     UtherProfileActivity.start(mContext, mUserProfile.get_id());
                     break;
                 case 1:
-                    MessagesActivity.start(mContext, mUserProfile.get_id(), mUserProfile.getUsername(),mUserProfile.getAvailability());
+                    MessagesActivity.start(mContext, mUserProfile.get_id(), mUserProfile.getUsername(), mUserProfile.getAvailability());
                     break;
                 default:
                     throw new RuntimeException("UserProfilesRecyclerAdapter/ViewHolder::onClick: Unknown mOnClickListenerType " + mOnClickListenerType);

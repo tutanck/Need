@@ -184,6 +184,7 @@ public class MessagesActivity extends AppCompatActivity {
 
 
     private synchronized void refreshMessageList(QuerySnapshot querySnapshot, boolean reset) {
+        if (querySnapshot == null) return;
         lastQuerySnapshot = querySnapshot;
         if (reset) messageList.clear();
         messageList.addAll(new Jarvis<Message>().tr(querySnapshot, new Message()));

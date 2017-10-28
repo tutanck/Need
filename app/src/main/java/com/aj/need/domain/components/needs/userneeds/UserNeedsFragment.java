@@ -139,15 +139,19 @@ public class UserNeedsFragment extends Fragment {
                             refreshUserNeedsList(querySnapshot, true);
                         else
                             __.showShortToast(getActivity(), getString(R.string.load_error_message));
-
                     }
                 });
     }
 
 
-    private synchronized void loadUserNeeds(final DocumentSnapshot offset) {
+    private synchronized/*!important : sync access to shared attributes (isLoading, etc) */
+    void loadUserNeeds(final DocumentSnapshot offset) {
+        if (isLoading)
+            return; //cancel concurrent manual reload is better.//TODO: 28/10/2017  test if it's useful or not
+
+        // TODO: 28/10/2017  test if it's useful or not
         isLoading = true;/*!important : must be 1st instruction and only this method should modify it*/
-        mSwipeRefreshLayout.setRefreshing(true);
+        mSwipeRefreshLayout.setRefreshing(true); //useful only for loadMore
 
         Query query = mLoadQuery;
 
@@ -174,6 +178,7 @@ public class UserNeedsFragment extends Fragment {
 
 
     private synchronized void refreshUserNeedsList(QuerySnapshot querySnapshot, boolean reset) {
+        if (querySnapshot == null) return;
         lastQuerySnapshot = querySnapshot;
         if (reset) needList.clear();
         needList.addAll(new Jarvis<UserNeed>().tr(querySnapshot, new UserNeed()));
