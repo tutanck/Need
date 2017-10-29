@@ -57,4 +57,6 @@
     <string name="user_need_empty_description_warning">La description doit être renseignée !</string>
     <string name="user_need_empty_title_warning">Le titre doit être renseigné !</string>
     <string name="an_error_occured">Une erreur s\'est produite</string>
+    <string name="update_sucessful_message">Mise à jour réussie !</string>
+    <string name="unsupported_operation">Votre appareil ne supporte pas cette opération!</string>
 </resources>

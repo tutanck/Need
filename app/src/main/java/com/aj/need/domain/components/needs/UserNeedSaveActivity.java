@@ -32,8 +32,6 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -118,9 +116,6 @@ public class UserNeedSaveActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 if (validState()) {
-                    //progressBarFragment.show();
-                    //fab.setEnabled(false); //update in progress
-
 
                     Map<String, Object> need = new HashMap<>();
 
@@ -134,47 +129,16 @@ public class UserNeedSaveActivity extends AppCompatActivity
                             need.put(key, formFields.get(key).getEtContent().getText().toString());
 
 
-                    OnFailureListener onFailureListener = new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            //fab.setEnabled(true);
-                            //progressBarFragment.hide();
-                        }
-                    };
+                    final CollectionReference userNeedsRef = USER_NEEDS.getCurrentUserNeedsRef();
+                    //!important : it would be a bug if docs were upserted on update mode (_id==null upsert iof update)
+                    final DocumentReference curUserNeedRef = (_id != null) ? userNeedsRef.document(_id) : userNeedsRef.document();
 
-
-                    CollectionReference userNeedsRef = USER_NEEDS.getCurrentUserNeedsRef();
-
-                    //it could lead to a bug if upserted docs on update mode (_id = null upsert / new doc iof update)
-                    if (_id == null)
-                        userNeedsRef.add(need);
-
-
-                          /*  .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                        @Override
-                        public void onSuccess(DocumentReference documentReference) {
-                            _id = documentReference.getId();
-
-                            close();
-                            progressBarFragment.hide();
-                            __.showShortToast(UserNeedSaveActivity.this, "Mise à jour réussie !");
-                            //finish(); // TODO: 04/10/2017 uncomment on prod mode
-                        }
-                    }).addOnFailureListener(onFailureListener);*/
-                    else
-                        userNeedsRef.document(_id).set(need);
+                    curUserNeedRef.set(need);
+                    _id = curUserNeedRef.getId(); //!important : avoid creating new needs if initial id==null
 
                     close();
-                    //finish(); // TODO: 04/10/2017 uncomment on prod mode
-                    /*.addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            close();
-                            progressBarFragment.hide();
-                            __.showShortToast(UserNeedSaveActivity.this, "Mise à jour réussie !");
-                            //finish(); // TODO: 04/10/2017 uncomment on prod mode
-                        }
-                    }).addOnFailureListener(onFailureListener);*/
+                    __.showShortToast(UserNeedSaveActivity.this, getString(R.string.update_sucessful_message));
+                    //finish(); //TODO: 04/10/2017 uncomment on prod mode
                 }
             }
         });
@@ -292,7 +256,7 @@ public class UserNeedSaveActivity extends AppCompatActivity
             apiAvailability.getErrorDialog(this, e.getConnectionStatusCode(), PLACE_PICKER_REQUEST).show();
         } catch (GooglePlayServicesNotAvailableException e) {
             e.printStackTrace();
-            __.showShortToast(this, "Votre appareil ne supporte pas cette opération!");
+            __.showShortToast(this, getString(R.string.unsupported_operation));
         }
     }
 
@@ -330,11 +294,11 @@ public class UserNeedSaveActivity extends AppCompatActivity
     }
 
     private void close() {
+        disableSaveBtn();//!important : should be the 1st instruction cause of uneditable fields (where/when)
         if (!isFormOpen) return;
         for (String key : formFields.keySet())
             if (isEditableField(key))
                 formFields.get(key).close();
-        disableSaveBtn();
         isFormOpen = false;
     }
 
@@ -370,9 +334,6 @@ public class UserNeedSaveActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         if (fab.getVisibility() == View.VISIBLE)
-            //if (!fab.isEnabled()) //updates in progress
-            //  __.showShortSnack(fab, "Des modifications sont en cours !");
-            // else
             Snackbar.make(fab, R.string.user_need_changes_will_be_lost_message, Snackbar.LENGTH_SHORT)
                     .setAction(R.string.ok, new View.OnClickListener() {
                         @Override
