@@ -82,6 +82,7 @@ public class __ {
         return new JSONArray();
     }
 
+
     public static void fatal(Throwable throwable) {
         throw new RuntimeException(throwable);
     }
@@ -90,7 +91,12 @@ public class __ {
         throw new RuntimeException(message);
     }
 
+
     public static void chill(String who) {
         Log.i("@" + who, "is chillin");
+    }
+
+    public static Object soften(Object o) {
+        return o == null ? null : o;
     }
 }

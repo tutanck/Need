@@ -14,16 +14,19 @@ import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.colls.USER_NEEDS;
 
+import com.aj.need.domain.components.needs.userneeds.UserNeed;
 import com.aj.need.tools.components.fragments.DatePickerFragment;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.fragments.FormField;
 import com.aj.need.tools.components.services.ComponentsServices;
 import com.aj.need.tools.components.services.FormFieldKindTranslator;
 
+import com.aj.need.tools.utils.Coord;
 import com.aj.need.tools.utils.JSONServices;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -31,11 +34,13 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.GeoPoint;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -65,6 +70,13 @@ public class UserNeedSaveActivity extends AppCompatActivity
     private Switch needSwitch;
 
     private FloatingActionButton fab;
+
+    private Place place;
+    private Calendar cal;
+
+
+
+    /*ACTIVITY LIFECYCLE*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +114,7 @@ public class UserNeedSaveActivity extends AppCompatActivity
             __.fatal(e);
         }
 
+
         needSwitch = findViewById(R.id.need_switch);
         needSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,31 +123,32 @@ public class UserNeedSaveActivity extends AppCompatActivity
             }
         });
 
+
         fab = findViewById(R.id.fab_save_need);
         disableSaveBtn();
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (validState()) {
-
-                    Map<String, Object> need = new HashMap<>();
-
-                    need.put(USER_NEEDS.activeKey, needSwitch.isChecked());
-                    need.put(USER_NEEDS.deletedKey, false);
-
-                    for (String key : formFields.keySet())
-                        if (!isEditableField(key))
-                            need.put(key, formFields.get(key).getTvContent().getText().toString());
-                        else
-                            need.put(key, formFields.get(key).getEtContent().getText().toString());
-
-
                     final CollectionReference userNeedsRef = USER_NEEDS.getCurrentUserNeedsRef();
+
                     //!important : it would be a bug if docs were upserted on update mode (_id==null upsert iof update)
                     final DocumentReference curUserNeedRef = (_id != null) ? userNeedsRef.document(_id) : userNeedsRef.document();
 
-                    curUserNeedRef.set(need);
-                    _id = curUserNeedRef.getId(); //!important : avoid creating new needs if initial id==null
+                    //!important : avoid creating new needs if initial id==null. Must be set bf creating the UserNeed object
+                    _id = curUserNeedRef.getId();
+
+                    curUserNeedRef.set(new UserNeed(_id
+                            , getFieldText(USER_NEEDS.searchKey)
+                            , getFieldText(USER_NEEDS.titleKey)
+                            , getFieldText(USER_NEEDS.descriptionKey)
+                            , getFieldText(USER_NEEDS.rewardKey)
+                            , getFieldText(USER_NEEDS.whereKey)
+                            , getFieldText(USER_NEEDS.whenKey)
+                            , getPlace()
+                            , getTime()
+                            , needSwitch.isChecked())
+                    );
 
                     close();
                     __.showShortToast(UserNeedSaveActivity.this, getString(R.string.update_sucessful_message));
@@ -185,30 +199,6 @@ public class UserNeedSaveActivity extends AppCompatActivity
     }
 
 
-    private boolean validState() {
-        EditText titleET = formFields.get(USER_NEEDS.titleKey).getEtContent();
-        EditText descriptionET = formFields.get(USER_NEEDS.descriptionKey).getEtContent();
-
-        if (TextUtils.isEmpty(titleET.getText())) {
-            String errStr = getString(R.string.user_need_empty_title_warning);
-            titleET.setError(errStr);
-            __.showShortToast(this, errStr);
-            return false;
-        }
-        titleET.setError(null);
-
-        if (TextUtils.isEmpty(descriptionET.getText())) {
-            String errStr = getString(R.string.user_need_empty_description_warning);
-            descriptionET.setError(errStr);
-            __.showShortToast(this, errStr);
-            return false;
-        }
-
-        descriptionET.setError(null);
-        return true;
-    }
-
-
     @Override
     public void onFormFieldCreated(String key, FormField formField) {
         View.OnClickListener onClickListener;
@@ -244,6 +234,10 @@ public class UserNeedSaveActivity extends AppCompatActivity
     }
 
 
+
+
+    /*WHERE*/
+
     private int PLACE_PICKER_REQUEST = 12;
 
     private void pickPlace() {
@@ -263,12 +257,19 @@ public class UserNeedSaveActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PLACE_PICKER_REQUEST)
             if (resultCode == RESULT_OK) {
-                Place place = PlacePicker.getPlace(this, data);
+                place = PlacePicker.getPlace(this, data);
                 formFields.get(USER_NEEDS.whereKey).setText(place.getAddress().toString());
                 enableSaveBtn();
             }
     }
 
+    private Coord getPlace() {
+        return place == null ? null : new Coord(place.getLatLng());
+    }
+
+
+
+    /*WHEN*/
 
     private void pickDate() {
         DatePickerFragment fragment = new DatePickerFragment();
@@ -277,12 +278,20 @@ public class UserNeedSaveActivity extends AppCompatActivity
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int day) {
-        Calendar cal = new GregorianCalendar(year, month, day);
+        cal = new GregorianCalendar(year, month, day);
         final DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
         formFields.get(USER_NEEDS.whenKey).setText(dateFormat.format(cal.getTime()));
         enableSaveBtn();
     }
 
+    private Long getTime() {
+        return cal == null ? null : cal.getTimeInMillis();
+    }
+
+
+
+
+    /*FORM TOGGLE*/
 
     private void open() {
         if (isFormOpen) return;
@@ -314,6 +323,10 @@ public class UserNeedSaveActivity extends AppCompatActivity
     }
 
 
+
+
+     /*FIELDS EDITION/VALIDATION*/
+
     private boolean isEditableField(String key) {
         return !(
                 key.equals(USER_NEEDS.searchKey)
@@ -322,6 +335,40 @@ public class UserNeedSaveActivity extends AppCompatActivity
         );
     }
 
+    private String getFieldText(String key) {
+        FormField ff = formFields.get(key);
+        TextView tvORet = isEditableField(key) ? ff.getEtContent() : ff.getTvContent();
+        return tvORet.getText().toString();
+    }
+
+
+    private boolean validState() {
+        EditText titleET = formFields.get(USER_NEEDS.titleKey).getEtContent();
+        EditText descriptionET = formFields.get(USER_NEEDS.descriptionKey).getEtContent();
+
+        if (TextUtils.isEmpty(titleET.getText())) {
+            String errStr = getString(R.string.user_need_empty_title_warning);
+            titleET.setError(errStr);
+            __.showShortToast(this, errStr);
+            return false;
+        }
+        titleET.setError(null);
+
+        if (TextUtils.isEmpty(descriptionET.getText())) {
+            String errStr = getString(R.string.user_need_empty_description_warning);
+            descriptionET.setError(errStr);
+            __.showShortToast(this, errStr);
+            return false;
+        }
+
+        descriptionET.setError(null);
+        return true;
+    }
+
+
+
+
+    /*ACTIVITY BOOT/EXIT*/
 
     public static void start(Activity activity, String str, boolean update) {
         Intent intent = new Intent(activity, UserNeedSaveActivity.class);
