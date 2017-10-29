@@ -32,7 +32,7 @@
     "kind": 1
   },
   "when": {
-    "label": "A partir de quand",
+    "label": "A partir du",
     "indication": "Précisez une date ou un moment",
     "indication2": "Quand en aurez vous besoin ?",
     "kind": 1

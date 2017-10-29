@@ -97,8 +97,8 @@ public class FormField extends Fragment {
     }
 
     public void open() {
-        if (isOpen)
-            return; //!important : if the field is already open, reopen it could override the field content
+        //!important : if the field is already open, reopen it could override the etContent's text
+        if (isOpen) return;
         etContent.setText(tvContent.getText());
         etContent.setVisibility(View.VISIBLE);
         tvContent.setVisibility(View.GONE);
@@ -108,6 +108,7 @@ public class FormField extends Fragment {
 
 
     public void close() {
+        //!important : if the field is already closed, close it could override the tvContent's text
         if (!isOpen) return;
         tvContent.setText(etContent.getText());
         etContent.setVisibility(View.GONE);

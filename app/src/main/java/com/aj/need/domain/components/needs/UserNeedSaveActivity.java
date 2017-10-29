@@ -35,6 +35,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
@@ -103,26 +104,22 @@ public class UserNeedSaveActivity extends AppCompatActivity
             __.fatal(e);
         }
 
-
         needSwitch = findViewById(R.id.need_switch);
         needSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                fab.setEnabled(true);
-                fab.setVisibility(View.VISIBLE);
+                enableSaveBtn();
             }
         });
 
-
         fab = findViewById(R.id.fab_save_need);
-        fab.setEnabled(false);
-        fab.setVisibility(View.GONE);
+        disableSaveBtn();
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (validState()) {
-                    progressBarFragment.show();
-                    fab.setEnabled(false); //update in progress
+                    //progressBarFragment.show();
+                    //fab.setEnabled(false); //update in progress
 
 
                     Map<String, Object> need = new HashMap<>();
@@ -140,36 +137,44 @@ public class UserNeedSaveActivity extends AppCompatActivity
                     OnFailureListener onFailureListener = new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            fab.setEnabled(true);
-                            progressBarFragment.hide();
+                            //fab.setEnabled(true);
+                            //progressBarFragment.hide();
                         }
                     };
 
 
+                    CollectionReference userNeedsRef = USER_NEEDS.getCurrentUserNeedsRef();
+
                     //it could lead to a bug if upserted docs on update mode (_id = null upsert / new doc iof update)
                     if (_id == null)
-                        USER_NEEDS.getCurrentUserNeedsRef().add(need)
-                                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                                    @Override
-                                    public void onSuccess(DocumentReference documentReference) {
-                                        _id = documentReference.getId();
+                        userNeedsRef.add(need);
 
-                                        close();
-                                        progressBarFragment.hide();
-                                        __.showShortToast(UserNeedSaveActivity.this, "Mise à jour réussie !");
-                                        //finish(); // TODO: 04/10/2017 uncomment on prod mode
-                                    }
-                                }).addOnFailureListener(onFailureListener);
+
+                          /*  .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            _id = documentReference.getId();
+
+                            close();
+                            progressBarFragment.hide();
+                            __.showShortToast(UserNeedSaveActivity.this, "Mise à jour réussie !");
+                            //finish(); // TODO: 04/10/2017 uncomment on prod mode
+                        }
+                    }).addOnFailureListener(onFailureListener);*/
                     else
-                        USER_NEEDS.getCurrentUserNeedsRef().document(_id).set(need).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                close();
-                                progressBarFragment.hide();
-                                __.showShortToast(UserNeedSaveActivity.this, "Mise à jour réussie !");
-                                //finish(); // TODO: 04/10/2017 uncomment on prod mode
-                            }
-                        }).addOnFailureListener(onFailureListener);
+                        userNeedsRef.document(_id).set(need);
+
+                    close();
+                    //finish(); // TODO: 04/10/2017 uncomment on prod mode
+                    /*.addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            close();
+                            progressBarFragment.hide();
+                            __.showShortToast(UserNeedSaveActivity.this, "Mise à jour réussie !");
+                            //finish(); // TODO: 04/10/2017 uncomment on prod mode
+                        }
+                    }).addOnFailureListener(onFailureListener);*/
                 }
             }
         });
@@ -181,56 +186,38 @@ public class UserNeedSaveActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
 
-        if (_id == null) {
-            needSwitch.setChecked(true);
-            formFields.get(USER_NEEDS.searchKey).setText(getIntent().getStringExtra(SEARCH_TEXT));
-        } else {
+        if (_id != null) {
             progressBarFragment.show();
             USER_NEEDS.getCurrentUserNeedsRef().document(_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if (task.isSuccessful()) {
                         DocumentSnapshot need = task.getResult();
-                        if (need != null) {
-                            Log.d("LOL/UserNeedSaveAct", "DocumentSnapshot data: " + task.getResult().getData());
+
+                        if (need != null && need.exists()) {
+                            Log.d("UserNeedSaveAct/onStart", "getCurrentUserNeeds::need : " + need.getData());
+
                             for (String key : formFields.keySet())
                                 formFields.get(key).setText(need.getString(key));
+
                             needSwitch.setChecked(need.getBoolean(USER_NEEDS.activeKey));
+
                             progressBarFragment.hide();
                         } else {
-                            __.fatal("UserNeedSaveActivity::Inconsistent database : need/" + _id + " should exist");
+                            Log.e("UserNeedSaveAct/onStart", "UserNeedSaveActivity::Inconsistent database : need/" + _id + " should exist");
+                            __.apologize(UserNeedSaveActivity.this, true);
                         }
+
                     } else {
-                        __.showShortToast(UserNeedSaveActivity.this, "Impossible de charger le besoin");
-                        //// TODO: 14/10/2017
+                        Log.e("UserNeedSaveAct/onStart", "Failed to load need/" + _id, task.getException());
+                        __.apologize(UserNeedSaveActivity.this, true);
                     }
                 }
             });
+        } else {
+            needSwitch.setChecked(true);
+            formFields.get(USER_NEEDS.searchKey).setText(getIntent().getStringExtra(SEARCH_TEXT));
         }
-    }
-
-
-    public static void start(Activity activity, String str, boolean update) {
-        Intent intent = new Intent(activity, UserNeedSaveActivity.class);
-        intent.putExtra(update ? _ID : SEARCH_TEXT, str);
-        activity.startActivity(intent);
-        activity.finish();
-    }
-
-
-    private void open() {
-        for (String key : formFields.keySet())
-            if (isEditableField(key))
-                formFields.get(key).open();
-        enableSaveBtn();
-        isFormOpen = true;
-    }
-
-    private void close() {
-        for (String key : formFields.keySet())
-            formFields.get(key).close();
-        disableSaveBtn();
-        isFormOpen = false;
     }
 
 
@@ -239,7 +226,7 @@ public class UserNeedSaveActivity extends AppCompatActivity
         EditText descriptionET = formFields.get(USER_NEEDS.descriptionKey).getEtContent();
 
         if (TextUtils.isEmpty(titleET.getText())) {
-            String errStr = "Le titre doit être renseigné !";
+            String errStr = getString(R.string.user_need_empty_title_warning);
             titleET.setError(errStr);
             __.showShortToast(this, errStr);
             return false;
@@ -247,7 +234,7 @@ public class UserNeedSaveActivity extends AppCompatActivity
         titleET.setError(null);
 
         if (TextUtils.isEmpty(descriptionET.getText())) {
-            String errStr = "La description doit être renseignée !";
+            String errStr = getString(R.string.user_need_empty_description_warning);
             descriptionET.setError(errStr);
             __.showShortToast(this, errStr);
             return false;
@@ -255,23 +242,6 @@ public class UserNeedSaveActivity extends AppCompatActivity
 
         descriptionET.setError(null);
         return true;
-    }
-
-
-    @Override
-    public void onBackPressed() {
-        if (fab.getVisibility() == View.VISIBLE)
-            if (!fab.isEnabled()) //updates in progress
-                __.showShortSnack(fab, "Des modifications sont en cours !");
-            else
-                Snackbar.make(fab, "Les modifications seront perdues !", Snackbar.LENGTH_SHORT)
-                        .setAction("OK", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                UserNeedSaveActivity.super.onBackPressed();
-                            }
-                        }).show();
-        else super.onBackPressed();
     }
 
 
@@ -300,7 +270,7 @@ public class UserNeedSaveActivity extends AppCompatActivity
                 onClickListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if (!isFormOpen) open();
+                        open();
                     }
                 };
                 break;
@@ -326,11 +296,10 @@ public class UserNeedSaveActivity extends AppCompatActivity
         }
     }
 
-
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PLACE_PICKER_REQUEST)
             if (resultCode == RESULT_OK) {
-                Place place = PlacePicker.getPlace(data, this);
+                Place place = PlacePicker.getPlace(this, data);
                 formFields.get(USER_NEEDS.whereKey).setText(place.getAddress().toString());
                 enableSaveBtn();
             }
@@ -342,13 +311,31 @@ public class UserNeedSaveActivity extends AppCompatActivity
         fragment.show(getSupportFragmentManager(), "Date dialog");
     }
 
-
     @Override
     public void onDateSet(DatePicker view, int year, int month, int day) {
         Calendar cal = new GregorianCalendar(year, month, day);
         final DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
         formFields.get(USER_NEEDS.whenKey).setText(dateFormat.format(cal.getTime()));
         enableSaveBtn();
+    }
+
+
+    private void open() {
+        if (isFormOpen) return;
+        for (String key : formFields.keySet())
+            if (isEditableField(key))
+                formFields.get(key).open();
+        enableSaveBtn();
+        isFormOpen = true;
+    }
+
+    private void close() {
+        if (!isFormOpen) return;
+        for (String key : formFields.keySet())
+            if (isEditableField(key))
+                formFields.get(key).close();
+        disableSaveBtn();
+        isFormOpen = false;
     }
 
 
@@ -369,6 +356,31 @@ public class UserNeedSaveActivity extends AppCompatActivity
                         || key.equals(USER_NEEDS.whereKey)
                         || key.equals(USER_NEEDS.whenKey)
         );
+    }
+
+
+    public static void start(Activity activity, String str, boolean update) {
+        Intent intent = new Intent(activity, UserNeedSaveActivity.class);
+        intent.putExtra(update ? _ID : SEARCH_TEXT, str);
+        activity.startActivity(intent);
+        activity.finish();
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        if (fab.getVisibility() == View.VISIBLE)
+            //if (!fab.isEnabled()) //updates in progress
+            //  __.showShortSnack(fab, "Des modifications sont en cours !");
+            // else
+            Snackbar.make(fab, R.string.user_need_changes_will_be_lost_message, Snackbar.LENGTH_SHORT)
+                    .setAction(R.string.ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            UserNeedSaveActivity.super.onBackPressed();
+                        }
+                    }).show();
+        else super.onBackPressed();
     }
 
 }

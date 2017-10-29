@@ -52,4 +52,9 @@
     <string name="activity_keywords_indic3">Mot-clés de l\'activité</string>
     <string name="fragment_conversation_indic2">Aucun message pour le moment</string>
     <string name="fragment_conversation_indic1">Messages</string>
+    <string name="user_need_changes_will_be_lost_message">Les modifications seront perdues !</string>
+    <string name="ok">OK</string>
+    <string name="user_need_empty_description_warning">La description doit être renseignée !</string>
+    <string name="user_need_empty_title_warning">Le titre doit être renseigné !</string>
+    <string name="an_error_occured">Une erreur s\'est produite</string>
 </resources>
