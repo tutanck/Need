@@ -3,9 +3,9 @@
     "search",
     "title",
     "description",
+    "reward",
     "where",
-    "when",
-    "reward"
+    "when"
   ],
   "search": {
     "label": "Mots-clés de la recherche",
@@ -14,7 +14,7 @@
     "kind": 1
   },
   "title": {
-    "label": "Titre du besoin",
+    "label": "Titre de l'annonce",
     "indication": "Donnez un titre à votre besoin",
     "indication2": "Entrez le titre de ce besoin",
     "kind": 1
@@ -26,13 +26,13 @@
     "kind": 0
   },
   "reward": {
-    "label": "Rémunération",
+    "label": "Récompense",
     "indication": "Précisez la récompense",
-    "indication2": "Quelle rémunération proposez vous ?",
+    "indication2": "Quelle rémunération ou récompense proposez vous ?",
     "kind": 1
   },
   "when": {
-    "label": "Moment du besoin",
+    "label": "A partir de quand",
     "indication": "Précisez une date ou un moment",
     "indication2": "Quand en aurez vous besoin ?",
     "kind": 1

@@ -16,7 +16,6 @@ public class _DateUtils {
 
     // This class should not be initialized
     private _DateUtils() {
-
     }
 
     //https://developer.android.com/reference/android/text/format/DateUtils.html#formatSameDayTime(long,%20long,%20int,%20int)

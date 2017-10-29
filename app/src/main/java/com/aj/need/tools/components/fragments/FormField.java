@@ -20,7 +20,6 @@ import com.aj.need.tools.utils.KeyboardServices;
 
 public class FormField extends Fragment {
 
-    private static final String ID = "ID";
     private static final String LAYOUT_ID = "LAYOUT_ID";
     private static final String KEY = "KEY";
     private static final String LABEL = "LABEL";
@@ -38,24 +37,16 @@ public class FormField extends Fragment {
 
     private String key;
 
-    private int id;
-
 
     //instance parameters
 
-    public static FormField newInstance(
-            int id
-            , String label
-            , String key
-            , int layoutID
-    ) {
+    public static FormField newInstance(String key, String label, int layoutID) {
         FormField fragment = new FormField();
 
         Bundle args = new Bundle();
-        args.putInt(ID, id);
         args.putString(KEY, key);
-        args.putInt(LAYOUT_ID, layoutID);
         args.putString(LABEL, label);
+        args.putInt(LAYOUT_ID, layoutID);
         fragment.setArguments(args);
 
         return fragment;
@@ -71,8 +62,6 @@ public class FormField extends Fragment {
         super.onCreateView(inflater, container, savedInstanceState);
 
         final Bundle args = getArguments();
-
-        id = args.getInt(ID);
 
         key = args.getString(KEY);
 
@@ -104,11 +93,12 @@ public class FormField extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mListener.onFormFieldCreated(id, this);
+        mListener.onFormFieldCreated(key, this);
     }
 
     public void open() {
-        if (isOpen) return; //!important : if the field is already open, reopen it could override the field content
+        if (isOpen)
+            return; //!important : if the field is already open, reopen it could override the field content
         etContent.setText(tvContent.getText());
         etContent.setVisibility(View.VISIBLE);
         tvContent.setVisibility(View.GONE);
@@ -166,24 +156,20 @@ public class FormField extends Fragment {
     }
 
 
+    public interface Listener {
+        void onFormFieldCreated(String key, FormField formField);
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof Listener)
-            mListener = (Listener) context;
-        else
-            throw new RuntimeException(context.toString()
-                    + " must implement FormField.Listener");
+        if (context instanceof Listener) mListener = (Listener) context;
+        else throw new RuntimeException(context.toString() + " must implement FormField.Listener");
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
-    }
-
-
-    public interface Listener {
-        void onFormFieldCreated(int id, FormField formField);
     }
 }

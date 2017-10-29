@@ -18,6 +18,10 @@ public final class USER_NEEDS implements Coll {
     public final static String titleKey = "title";
     public final static String searchKey = "search";
     public final static String descriptionKey = "description";
+    public final static String whereKey = "where";
+    public final static String whenKey = "when";
+    public final static String rewardKey = "reward";
+
 
 
     public final static CollectionReference getUserNeedsRef(String uid) {

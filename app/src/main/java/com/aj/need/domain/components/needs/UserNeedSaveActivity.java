@@ -1,6 +1,7 @@
 package com.aj.need.domain.components.needs;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,12 +11,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Switch;
 
 import com.aj.need.R;
 import com.aj.need.db.colls.USER_NEEDS;
 
+import com.aj.need.tools.components.fragments.DatePickerFragment;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.fragments.FormField;
 import com.aj.need.tools.components.services.ComponentsServices;
@@ -23,6 +26,11 @@ import com.aj.need.tools.components.services.FormFieldKindTranslator;
 
 import com.aj.need.tools.utils.JSONServices;
 import com.aj.need.tools.utils.__;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -34,11 +42,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
 
-public class UserNeedSaveActivity extends AppCompatActivity implements FormField.Listener {
+public class UserNeedSaveActivity extends AppCompatActivity
+        implements FormField.Listener, DatePickerDialog.OnDateSetListener {
 
     ProgressBarFragment progressBarFragment;
 
@@ -74,8 +86,10 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
 
                 JSONObject fieldParam = formParams.getJSONObject(key);
 
-                FormField formField = FormField.newInstance(i,
-                        fieldParam.getString("label"), key, FormFieldKindTranslator.tr(fieldParam.getInt("kind")));
+                FormField formField = FormField.newInstance(
+                        key, fieldParam.getString("label")
+                        , FormFieldKindTranslator.tr(fieldParam.getInt("kind"))
+                );
 
                 getSupportFragmentManager()
                         .beginTransaction()
@@ -90,7 +104,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
         }
 
 
-        needSwitch =  findViewById(R.id.need_switch);
+        needSwitch = findViewById(R.id.need_switch);
         needSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -100,7 +114,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
         });
 
 
-        fab =  findViewById(R.id.fab_save_need);
+        fab = findViewById(R.id.fab_save_need);
         fab.setEnabled(false);
         fab.setVisibility(View.GONE);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -117,7 +131,7 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
                     need.put(USER_NEEDS.deletedKey, false);
 
                     for (String key : formFields.keySet())
-                        if (key.equals(USER_NEEDS.searchKey))
+                        if (!isEditableField(key))
                             need.put(key, formFields.get(key).getTvContent().getText().toString());
                         else
                             need.put(key, formFields.get(key).getEtContent().getText().toString());
@@ -200,24 +214,22 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
         Intent intent = new Intent(activity, UserNeedSaveActivity.class);
         intent.putExtra(update ? _ID : SEARCH_TEXT, str);
         activity.startActivity(intent);
-        if (!update) activity.finish();
+        activity.finish();
     }
 
 
     private void open() {
         for (String key : formFields.keySet())
-            if (!key.equals(USER_NEEDS.searchKey))
+            if (isEditableField(key))
                 formFields.get(key).open();
-        fab.setEnabled(true);
-        fab.setVisibility(View.VISIBLE);
+        enableSaveBtn();
         isFormOpen = true;
     }
 
     private void close() {
         for (String key : formFields.keySet())
             formFields.get(key).close();
-        fab.setEnabled(false);
-        fab.setVisibility(View.GONE);
+        disableSaveBtn();
         isFormOpen = false;
     }
 
@@ -264,14 +276,99 @@ public class UserNeedSaveActivity extends AppCompatActivity implements FormField
 
 
     @Override
-    public void onFormFieldCreated(int id, FormField formField) {
-        ComponentsServices.setSelectable(
-                this, formField.getLayout(), new View.OnClickListener() {
+    public void onFormFieldCreated(String key, FormField formField) {
+        View.OnClickListener onClickListener;
+
+        switch (key) {
+            case USER_NEEDS.whereKey:
+                onClickListener = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        pickPlace();
+                    }
+                };
+                break;
+            case USER_NEEDS.whenKey:
+                onClickListener = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        pickDate();
+                    }
+                };
+                break;
+            default:
+                onClickListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         if (!isFormOpen) open();
                     }
-                }
+                };
+                break;
+        }
+
+        ComponentsServices.setSelectable(this, formField.getLayout(), onClickListener);
+    }
+
+
+    private int PLACE_PICKER_REQUEST = 12;
+
+    private void pickPlace() {
+        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+        try {
+            startActivityForResult(builder.build(this), PLACE_PICKER_REQUEST);
+        } catch (GooglePlayServicesRepairableException e) {
+            e.printStackTrace();
+            GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+            apiAvailability.getErrorDialog(this, e.getConnectionStatusCode(), PLACE_PICKER_REQUEST).show();
+        } catch (GooglePlayServicesNotAvailableException e) {
+            e.printStackTrace();
+            __.showShortToast(this, "Votre appareil ne supporte pas cette opération!");
+        }
+    }
+
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PLACE_PICKER_REQUEST)
+            if (resultCode == RESULT_OK) {
+                Place place = PlacePicker.getPlace(data, this);
+                formFields.get(USER_NEEDS.whereKey).setText(place.getAddress().toString());
+                enableSaveBtn();
+            }
+    }
+
+
+    private void pickDate() {
+        DatePickerFragment fragment = new DatePickerFragment();
+        fragment.show(getSupportFragmentManager(), "Date dialog");
+    }
+
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int month, int day) {
+        Calendar cal = new GregorianCalendar(year, month, day);
+        final DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
+        formFields.get(USER_NEEDS.whenKey).setText(dateFormat.format(cal.getTime()));
+        enableSaveBtn();
+    }
+
+
+    private void enableSaveBtn() {
+        fab.setEnabled(true);
+        fab.setVisibility(View.VISIBLE);
+    }
+
+    private void disableSaveBtn() {
+        fab.setEnabled(false);
+        fab.setVisibility(View.GONE);
+    }
+
+
+    private boolean isEditableField(String key) {
+        return !(
+                key.equals(USER_NEEDS.searchKey)
+                        || key.equals(USER_NEEDS.whereKey)
+                        || key.equals(USER_NEEDS.whenKey)
         );
     }
+
 }
