@@ -59,4 +59,6 @@
     <string name="an_error_occured">Une erreur s\'est produite</string>
     <string name="update_sucessful_message">Mise à jour réussie !</string>
     <string name="unsupported_operation">Votre appareil ne supporte pas cette opération!</string>
+    <string name="fail_to_upload_image_message">Echec de la mise à jour de l\'image.</string>
+    <string name="fail_to_retrieve_image_message">Erreur de récupération de l\'image!</string>
 </resources>

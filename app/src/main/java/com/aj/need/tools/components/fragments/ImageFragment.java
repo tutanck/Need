@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.aj.need.R;
+import com.aj.need.main.App;
 import com.aj.need.tools.utils.DatabaseHelper;
 import com.aj.need.tools.utils._Bitmap;
 import com.aj.need.tools.utils.__;
@@ -36,6 +37,8 @@ public class ImageFragment extends Fragment {
     private static final String DEFAULT_DRAWABLE_ID = "DEFAULT_DRAWABLE_ID";
     private static final String IMG_REF_STR = "IMG_REF_STR";
     private static final String EDITABLE = "EDITABLE";
+
+    private App app;
 
     private StorageReference imageRef;
 
@@ -68,6 +71,9 @@ public class ImageFragment extends Fragment {
             , ViewGroup container
             , Bundle savedInstanceState
     ) {
+
+        app = (App) (getActivity().getApplication());
+
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();
         imageRef = storageRef.child(getArguments().getString(IMG_REF_STR));
 
@@ -97,61 +103,63 @@ public class ImageFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null)
-            try {
-                Uri uri = data.getData();
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
-                upload(bitmap);
-            } catch (IOException e) {
-                __.showShortToast(getActivity(), "Erreur de récupération de l'image!");
-                e.printStackTrace();
-            }
+        if (requestCode == PICK_IMAGE_REQUEST)
+            if (resultCode == RESULT_OK && data != null && data.getData() != null)
+                upload(data.getData());
     }
 
 
-    private void upload(final Bitmap bitmap) {
+    //// TODO: 30/10/2017 redo 
+    //// TODO: 30/10/2017 @see https://futurestud.io/tutorials/glide-advanced-loading
+    private void upload(final Uri uri) {
+        try {
+            final Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+            UploadTask uploadTask = imageRef.putBytes(_Bitmap.getBytes(bitmap));
 
-        UploadTask uploadTask = imageRef.putBytes(_Bitmap.getBytes(bitmap));
-
-        progressBarFragment.show();
-
-        uploadTask.addOnFailureListener(getActivity()/*!important*/, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                progressBarFragment.hide();
-                __.showShortToast(getContext(), "Echec de la mise à jour de l'image.");
-            }
-        }).addOnSuccessListener(getActivity()/*!important*/, new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                imageView.setImageBitmap(bitmap);
-                progressBarFragment.hide();
-            }
-        });
-    }
-
-
-    // TODO: 09/10/2017 Optimize: shouldnt always reload img see how to store img locally : do it for all the ProfileFragment iof this fragment
-    private void refreshImg() {
             progressBarFragment.show();
-            imageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                @Override
-                public void onSuccess(byte[] bytes) {
-                    Bitmap bitmap = _Bitmap.getImage(bytes);
-                    imageView.setImageBitmap(bitmap);
-                    progressBarFragment.hide();
-                }
-            }).addOnFailureListener(new OnFailureListener() {
+
+            uploadTask.addOnFailureListener(getActivity()/*!important*/, new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
                     progressBarFragment.hide();
+                    __.showShortToast(getContext(), getString(R.string.fail_to_upload_image_message));
+                }
+            }).addOnSuccessListener(getActivity()/*!important*/, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    app.setImageUri(imageRef.toString(), uri);
+                    imageView.setImageBitmap(bitmap);
+                    progressBarFragment.hide();
+                }
+            });
+
+        } catch (IOException e) {
+            __.showShortToast(getActivity(), getString(R.string.fail_to_retrieve_image_message));
+            e.printStackTrace();
+        }
+    }
+
+    //// TODO: 30/10/2017 redo
+    // TODO: 09/10/2017 Optimize: shouldnt always reload img see how to store img locally : do it for all the ProfileFragment iof this fragment
+    private void refreshImg() {
+        progressBarFragment.show();
+        imageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                Bitmap bitmap = _Bitmap.getImage(bytes);
+                imageView.setImageBitmap(bitmap);
+                progressBarFragment.hide();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                progressBarFragment.hide();
                /* todo see what to do (could be abusive and disturbing for the user)
                int errCode = ((StorageException) exception).getErrorCode();
                 if (errCode != StorageException.ERROR_OBJECT_NOT_FOUND)
                     __.showShortToast(getContext(), "Erreur de chargement de l'image.");*/
-                }
-            });
+            }
+        });
     }
 
 
