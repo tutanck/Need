@@ -34,6 +34,10 @@ public final class USERS implements Coll {
 
     public final static String typeKey = "type";
     public final static String usernameKey = "username";
+    public final static String resumeKey = "resume";
+    public final static String tariffKey="tariff";
+
+
     public final static String availabilityKey = "availability";
     public final static String avgRatingKey = "avgRating";
     public final static String nbVotersKey = "nbVoters";

@@ -7,24 +7,32 @@ import android.support.design.widget.FloatingActionButton;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RatingBar;
+import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
+import com.aj.need.db.colls.USER_NEEDS;
 import com.aj.need.db.colls.USER_RATINGS;
 import com.aj.need.domain.components.keywords.UserKeywordsActivity;
 import com.aj.need.domain.components.messages.MessagesActivity;
+import com.aj.need.domain.components.needs.UserNeedSaveActivity;
+import com.aj.need.domain.components.needs.userneeds.UserNeed;
 import com.aj.need.main.MainActivity;
+import com.aj.need.tools.components.fragments.FormField;
 import com.aj.need.tools.components.fragments.IDKeyFormField;
 import com.aj.need.tools.components.fragments.ImageFragment;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
+import com.aj.need.tools.components.services.ComponentsServices;
 import com.aj.need.tools.components.services.FormFieldKindTranslator;
 import com.aj.need.tools.utils.JSONServices;
 import com.aj.need.tools.utils._Storage;
@@ -33,6 +41,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -44,7 +54,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends Fragment implements FormField.Listener.Delegate {
 
     private static final String EDITABLE = "EDITABLE";
 
@@ -52,13 +62,16 @@ public class ProfileFragment extends Fragment {
 
     private String uid = null;
 
+    private boolean isFormOpen = false;
+
     private boolean isEditable = false;
 
     private JSONObject formParams;
 
     private ProgressBarFragment progressBarFragment;
 
-    private Map<String, IDKeyFormField> formFields = new HashMap<>();
+    //private Map<String, IDKeyFormField> formFields = new HashMap<>();
+    private Map<String, FormField> formFields = new HashMap<>();
 
     private RadioGroup userTypeRG;
 
@@ -69,6 +82,8 @@ public class ProfileFragment extends Fragment {
     private int availability;
 
     private int completions = 0;
+
+    private FloatingActionButton fabSaveProfile;
 
 
     public static ProfileFragment newInstance(
@@ -156,9 +171,13 @@ public class ProfileFragment extends Fragment {
                     String key = orderedFieldsKeys.getString(i);
                     JSONObject fieldParam = formParams.getJSONObject(key);
 
-                    IDKeyFormField formField = IDKeyFormField.newInstance
+                   /* IDKeyFormField formField = IDKeyFormField.newInstance
                             (i, uid, fieldParam.getString("label"), key
-                                    , FormFieldKindTranslator.tr(fieldParam.getInt("kind")), isEditable);
+                                    , FormFieldKindTranslator.tr(fieldParam.getInt("kind")), isEditable);*/
+
+                    FormField formField = FormField.newInstance
+                            (key, fieldParam.getString("label")
+                                    , FormFieldKindTranslator.tr(fieldParam.getInt("kind")),/**todo*/1);
 
                     fragmentTransaction.add(R.id.form_layout, formField, key);
                     formFields.put(key, formField);
@@ -191,6 +210,27 @@ public class ProfileFragment extends Fragment {
                 }
             });
         else fabContact.setVisibility(View.GONE);
+
+
+        fabSaveProfile = fab = view.findViewById(R.id.fab_save_profile);
+        disableSaveBtn();
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (validState()) {
+
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put(USERS.usernameKey, getFieldText(USERS.usernameKey));
+                    updates.put(USERS.resumeKey, getFieldText(USERS.resumeKey));
+                    updates.put(USERS.tariffKey, getFieldText(USERS.tariffKey));
+
+                    USERS.getCurrentUserRef().update(updates);
+
+                    close();
+                    __.showShortToast(getContext(), getString(R.string.update_sucessful_message));
+                }
+            }
+        });
 
 
         return view;
@@ -253,7 +293,6 @@ public class ProfileFragment extends Fragment {
                             Log.d("getUserProfile", "get failed with ", task.getException());
                             __.showShortToast(getContext(), "Impossible de charger le profile"); //// TODO: 13/10/2017
                         }
-
                     }
                 }
         );
@@ -267,4 +306,78 @@ public class ProfileFragment extends Fragment {
             progressBarFragment.hide();
         completions++;
     }
+
+
+    @Override
+    public void onFormFieldCreated(final FormField formField) {
+        if (!isEditable) return;
+
+        View.OnClickListener onClickListener;
+        switch (formField.getKey()) {
+            default:
+                onClickListener = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        open();
+                    }
+                };
+                break;
+        }
+
+        ComponentsServices.setSelectable(getContext(), formField.getLayout(), onClickListener);
+    }
+
+
+
+    /*FORM TOGGLE*/
+
+    private void open() {
+        if (isFormOpen) return;
+        for (String key : formFields.keySet())
+            if (isEditableField(key))
+                formFields.get(key).open();
+        enableSaveBtn();
+        isFormOpen = true;
+    }
+
+    private void close() {
+        disableSaveBtn();//!important : should be the 1st instruction cause of uneditable fields (where/when)
+        if (!isFormOpen) return;
+        for (String key : formFields.keySet())
+            if (isEditableField(key))
+                formFields.get(key).close();
+        isFormOpen = false;
+    }
+
+
+    private void enableSaveBtn() {
+        fabSaveProfile.setEnabled(true);
+        fabSaveProfile.setVisibility(View.VISIBLE);
+    }
+
+    private void disableSaveBtn() {
+        fabSaveProfile.setEnabled(false);
+        fabSaveProfile.setVisibility(View.GONE);
+    }
+
+
+
+
+     /*FIELDS EDITION/VALIDATION*/
+
+    private boolean isEditableField(String key) {
+        return !(key.equals(USERS.usernameKey));
+    }
+
+    private String getFieldText(String key) {
+        FormField ff = formFields.get(key);
+        TextView tvORet = isEditableField(key) ? ff.getEtContent() : ff.getTvContent();
+        return tvORet.getText().toString();
+    }
+
+    private boolean validState() {
+        //@see UserNeedSaveActivity for inspiration if needed
+        return true;
+    }
+
 }

@@ -26,17 +26,25 @@ import com.aj.need.domain.components.ads.AdsFragment;
 import com.aj.need.domain.components.messages.ConversationsFragment;
 import com.aj.need.domain.components.needs.userneeds.UserNeedsFragment;
 import com.aj.need.domain.components.profile.ProfileFragment;
+import com.aj.need.tools.components.fragments.FormField;
 import com.aj.need.tools.utils.Avail;
+import com.aj.need.tools.utils.__;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity implements FormField.Listener {
 
     private int mAvailability = Avail.OFFLINE;
+
+    private PagerAdapter pagerAdapter;
 
     private FirebaseAuth.AuthStateListener authListener;
 
@@ -69,12 +77,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Get the ViewPager and set it's PagerAdapter so that it can display items
         ViewPager viewPager = findViewById(R.id.viewpager);
-        viewPager.setAdapter(
-                new PagerAdapter(
-                        getSupportFragmentManager()
-                        , MainActivity.this
-                )
-        );
+        pagerAdapter = new PagerAdapter(getSupportFragmentManager(), MainActivity.this);
+        viewPager.setAdapter(pagerAdapter);
 
         viewPager.setOffscreenPageLimit(3);
 
@@ -155,7 +159,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+
+    private void resetAvailabilityBtn(int availability) {
+        mAvailability = availability;
+        getSupportActionBar().setHomeAsUpIndicator(Avail.getDrawable(mAvailability));
+    }
+
+
+    @Override
+    public void onFormFieldCreated(FormField formField) {
+        ((FormField.Listener.Delegate) pagerAdapter
+                .getFragment(formField.getDelegateID())
+        ).onFormFieldCreated(formField);
+    }
+
+
     private static class PagerAdapter extends FragmentPagerAdapter {
+        private static final int ADS_FRAGMENT_ID = 0;
+        private static final int PROFILE_FRAGMENT_ID = 1;
+        private static final int USERNEEDS_FRAGMENT_ID = 2;
+        private static final int CONVERSATIONS_FRAGMENT_ID = 3;
+
+        private Map<Integer, Fragment> fragmentMap = new HashMap<>();
 
         private Context context;
 
@@ -169,14 +201,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public Fragment getItem(int position) {
             switch (position) {
-                case 0:
-                    return AdsFragment.newInstance();
-                case 1:
-                    return ProfileFragment.newInstance(IO.auth.getCurrentUser().getUid(), true);
-                case 2:
-                    return UserNeedsFragment.newInstance();
-                case 3:
-                    return ConversationsFragment.newInstance();
+                case ADS_FRAGMENT_ID:
+                    return registerFragment(position, AdsFragment.newInstance());
+                case PROFILE_FRAGMENT_ID:
+                    return registerFragment(position, ProfileFragment.newInstance(IO.auth.getCurrentUser().getUid(), true));
+                case USERNEEDS_FRAGMENT_ID:
+                    return registerFragment(position, UserNeedsFragment.newInstance());
+                case CONVERSATIONS_FRAGMENT_ID:
+                    return registerFragment(position, ConversationsFragment.newInstance());
                 default:
                     throw new RuntimeException("Unknown top level tab menu");
             }
@@ -191,21 +223,15 @@ public class MainActivity extends AppCompatActivity {
         public int getCount() {
             return TAB_TITLES.length;
         }
+
+        private Fragment registerFragment(int id, Fragment fragment) {
+            fragmentMap.put(id, fragment);
+            return fragment;
+        }
+
+        private Fragment getFragment(int id) {
+            return fragmentMap.get(id);
+        }
     }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
-
-    private void resetAvailabilityBtn(int availability) {
-        mAvailability = availability;
-        getSupportActionBar().setHomeAsUpIndicator(Avail.getDrawable(mAvailability));
-    }
-
 
 }

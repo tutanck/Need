@@ -99,7 +99,7 @@ public class UserNeedSaveActivity extends AppCompatActivity
 
                 FormField formField = FormField.newInstance(
                         key, fieldParam.getString("label")
-                        , FormFieldKindTranslator.tr(fieldParam.getInt("kind"))
+                        , FormFieldKindTranslator.tr(fieldParam.getInt("kind")), -9
                 );
 
                 getSupportFragmentManager()
@@ -200,10 +200,10 @@ public class UserNeedSaveActivity extends AppCompatActivity
 
 
     @Override
-    public void onFormFieldCreated(String key, FormField formField) {
+    public void onFormFieldCreated(FormField formField) {
         View.OnClickListener onClickListener;
 
-        switch (key) {
+        switch (formField.getKey()) {
             case USER_NEEDS.whereKey:
                 onClickListener = new View.OnClickListener() {
                     @Override
@@ -360,8 +360,8 @@ public class UserNeedSaveActivity extends AppCompatActivity
             __.showShortToast(this, errStr);
             return false;
         }
-
         descriptionET.setError(null);
+
         return true;
     }
 

@@ -67,4 +67,18 @@
         android:src="@drawable/ic_message_24dp"
         app:backgroundTint="@color/Gold" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_save_profile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/ic_done_24dp"
+        android:backgroundTint="@android:color/transparent"
+        android:elevation="8dp"
+        app:borderWidth="0dp"
+        app:pressedTranslationZ="6dp"
+        app:rippleColor="@android:color/transparent" />
+
+
 </android.support.design.widget.CoordinatorLayout>

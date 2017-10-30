@@ -1,5 +1,6 @@
 package com.aj.need.main;
 
+import com.aj.need.domain.entities.Entity;
 import com.aj.need.tools.utils.ITranslatable;
 import com.google.firebase.firestore.DocumentSnapshot;
 
@@ -11,7 +12,7 @@ import java.io.Serializable;
  * Created by joan on 13/10/2017.
  */
 
-public class User implements Serializable, ITranslatable<User> {
+public class User extends Entity implements Serializable, ITranslatable<User> {
 
     private String username;
     private int availability;

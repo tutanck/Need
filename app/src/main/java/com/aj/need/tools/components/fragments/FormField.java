@@ -20,9 +20,10 @@ import com.aj.need.tools.utils.KeyboardServices;
 
 public class FormField extends Fragment {
 
-    private static final String LAYOUT_ID = "LAYOUT_ID";
     private static final String KEY = "KEY";
     private static final String LABEL = "LABEL";
+    private static final String LAYOUT_ID = "LAYOUT_ID";
+    private static final String DELEGATE_ID = "DELEGATE_ID";
 
     private boolean isOpen = false;
 
@@ -32,21 +33,26 @@ public class FormField extends Fragment {
     private EditText etContent;
     private TextInputLayout textInputLayout;
     private TextView tvDescription;
+    private View divider;
 
     private Listener mListener;
 
     private String key;
+    private int delegateID;
 
 
     //instance parameters
 
-    public static FormField newInstance(String key, String label, int layoutID) {
+    public static FormField newInstance(
+            String key, String label, int layoutID, int delegateID
+    ) {
         FormField fragment = new FormField();
 
         Bundle args = new Bundle();
         args.putString(KEY, key);
         args.putString(LABEL, label);
         args.putInt(LAYOUT_ID, layoutID);
+        args.putInt(DELEGATE_ID, delegateID);
         fragment.setArguments(args);
 
         return fragment;
@@ -64,6 +70,7 @@ public class FormField extends Fragment {
         final Bundle args = getArguments();
 
         key = args.getString(KEY);
+        delegateID = args.getInt(DELEGATE_ID);
 
         View view = inflater.inflate(args.getInt(LAYOUT_ID), container, false);
 
@@ -85,7 +92,8 @@ public class FormField extends Fragment {
         tvContent = view.findViewById(R.id.tvContent);
         tvContent.setText("");
 
-        view.findViewById(R.id.divider).setVisibility(View.INVISIBLE);
+        divider = view.findViewById(R.id.divider);
+        divider.setVisibility(View.INVISIBLE);
 
         return view;
     }
@@ -93,7 +101,7 @@ public class FormField extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mListener.onFormFieldCreated(key, this);
+        mListener.onFormFieldCreated(this);
     }
 
     public void open() {
@@ -118,6 +126,11 @@ public class FormField extends Fragment {
         KeyboardServices.dismiss(getContext(), etContent);
     }
 
+
+    public void setText(String text) {
+        getEtContent().setText(text);
+        getTvContent().setText(text);
+    }
 
     public RelativeLayout getLayout() {
         return formFieldLayout;
@@ -147,18 +160,26 @@ public class FormField extends Fragment {
         return key;
     }
 
+    public int getDelegateID() {
+        return delegateID;
+    }
+
     public boolean isOpen() {
         return isOpen;
     }
 
-    public void setText(String text) {
-        getEtContent().setText(text);
-        getTvContent().setText(text);
+    public View getDivider() {
+        return divider;
     }
 
 
     public interface Listener {
-        void onFormFieldCreated(String key, FormField formField);
+        void onFormFieldCreated(FormField formField);
+
+        interface Delegate {
+            void onFormFieldCreated(FormField formField);
+        }
+
     }
 
     @Override
