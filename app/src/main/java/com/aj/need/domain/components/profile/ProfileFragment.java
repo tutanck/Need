@@ -7,12 +7,10 @@ import android.support.design.widget.FloatingActionButton;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RatingBar;
@@ -21,15 +19,10 @@ import android.widget.TextView;
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
-import com.aj.need.db.colls.USER_NEEDS;
 import com.aj.need.db.colls.USER_RATINGS;
 import com.aj.need.domain.components.keywords.UserKeywordsActivity;
 import com.aj.need.domain.components.messages.MessagesActivity;
-import com.aj.need.domain.components.needs.UserNeedSaveActivity;
-import com.aj.need.domain.components.needs.userneeds.UserNeed;
-import com.aj.need.main.MainActivity;
 import com.aj.need.tools.components.fragments.FormField;
-import com.aj.need.tools.components.fragments.IDKeyFormField;
 import com.aj.need.tools.components.fragments.ImageFragment;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.services.ComponentsServices;
@@ -38,13 +31,8 @@ import com.aj.need.tools.utils.JSONServices;
 import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,43 +44,29 @@ import java.util.Map;
 
 public class ProfileFragment extends Fragment implements FormField.Listener.Delegate {
 
-    private static final String EDITABLE = "EDITABLE";
-
-    private final static String UID = "UID";
-
+    private static final String EDITABLE = "EDITABLE", UID = "UID", DELEGATE_ID = "DELEGATE_ID";
     private String uid = null;
+    private boolean isFormOpen = false, isEditable = false;
 
-    private boolean isFormOpen = false;
-
-    private boolean isEditable = false;
-
-    private JSONObject formParams;
-
-    private ProgressBarFragment progressBarFragment;
-
-    //private Map<String, IDKeyFormField> formFields = new HashMap<>();
     private Map<String, FormField> formFields = new HashMap<>();
 
     private RadioGroup userTypeRG;
+    private RatingBar userRating, ratingControl;
 
-    private RatingBar userRating;
-
-    private RatingBar ratingControl;
-
-    private int availability;
-
-    private int completions = 0;
+    private int availability, completions = 0;
 
     private FloatingActionButton fabSaveProfile;
 
+    private ProgressBarFragment progressBarFragment;
+
 
     public static ProfileFragment newInstance(
-            String user_id,
-            boolean editable
+            String user_id, boolean editable, int delegateID
     ) {
         Bundle args = new Bundle();
         args.putBoolean(EDITABLE, editable);
         args.putString(UID, user_id);
+        args.putInt(DELEGATE_ID, delegateID);
         ProfileFragment fragment = new ProfileFragment();
         fragment.setArguments(args);
         return fragment;
@@ -141,7 +115,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
 
         try {
-            formParams = JSONServices.loadJsonFromAsset("form_params_user_profile.json", getContext());
+            JSONObject formParams = JSONServices.loadJsonFromAsset("form_params_user_profile.json", getContext());
             JSONArray orderedFieldsKeys = formParams.getJSONArray("ordered_fields_names");
 
             userTypeRG = view.findViewById(R.id.user_type_radio_group);
@@ -171,13 +145,8 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
                     String key = orderedFieldsKeys.getString(i);
                     JSONObject fieldParam = formParams.getJSONObject(key);
 
-                   /* IDKeyFormField formField = IDKeyFormField.newInstance
-                            (i, uid, fieldParam.getString("label"), key
-                                    , FormFieldKindTranslator.tr(fieldParam.getInt("kind")), isEditable);*/
-
-                    FormField formField = FormField.newInstance
-                            (key, fieldParam.getString("label")
-                                    , FormFieldKindTranslator.tr(fieldParam.getInt("kind")),/**todo*/1);
+                    FormField formField = FormField.newInstance(key, fieldParam.getString("label")
+                            , FormFieldKindTranslator.tr(fieldParam.getInt("kind")),args.getInt(DELEGATE_ID));
 
                     fragmentTransaction.add(R.id.form_layout, formField, key);
                     formFields.put(key, formField);

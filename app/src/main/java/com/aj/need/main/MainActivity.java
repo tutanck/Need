@@ -182,11 +182,6 @@ public class MainActivity extends AppCompatActivity implements FormField.Listene
 
 
     private static class PagerAdapter extends FragmentPagerAdapter {
-        private static final int ADS_FRAGMENT_ID = 0;
-        private static final int PROFILE_FRAGMENT_ID = 1;
-        private static final int USERNEEDS_FRAGMENT_ID = 2;
-        private static final int CONVERSATIONS_FRAGMENT_ID = 3;
-
         private Map<Integer, Fragment> fragmentMap = new HashMap<>();
 
         private Context context;
@@ -201,13 +196,13 @@ public class MainActivity extends AppCompatActivity implements FormField.Listene
         @Override
         public Fragment getItem(int position) {
             switch (position) {
-                case ADS_FRAGMENT_ID:
+                case 0:
                     return registerFragment(position, AdsFragment.newInstance());
-                case PROFILE_FRAGMENT_ID:
-                    return registerFragment(position, ProfileFragment.newInstance(IO.auth.getCurrentUser().getUid(), true));
-                case USERNEEDS_FRAGMENT_ID:
+                case 1:
+                    return registerFragment(position, ProfileFragment.newInstance(IO.getCurrentUserUid(), true, position));
+                case 2:
                     return registerFragment(position, UserNeedsFragment.newInstance());
-                case CONVERSATIONS_FRAGMENT_ID:
+                case 3:
                     return registerFragment(position, ConversationsFragment.newInstance());
                 default:
                     throw new RuntimeException("Unknown top level tab menu");

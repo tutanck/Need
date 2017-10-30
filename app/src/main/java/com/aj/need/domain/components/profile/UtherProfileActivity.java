@@ -29,7 +29,7 @@ public class UtherProfileActivity extends AppCompatActivity implements FormField
         uther_id = getIntent().getStringExtra(UTHER_ID);
 
         if (savedInstanceState == null) { //no duplicated fragments
-            profileFragment = ProfileFragment.newInstance(uther_id, false);
+            profileFragment = ProfileFragment.newInstance(uther_id, false, -9);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.profile_fragment_container
                             , profileFragment, "profile_fragment"
