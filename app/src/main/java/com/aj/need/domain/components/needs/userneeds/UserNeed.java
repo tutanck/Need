@@ -4,7 +4,6 @@ import com.aj.need.db.colls.USER_NEEDS;
 import com.aj.need.domain.entities.Entity;
 import com.aj.need.tools.utils.Coord;
 import com.aj.need.tools.utils.ITranslatable;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import org.json.JSONObject;

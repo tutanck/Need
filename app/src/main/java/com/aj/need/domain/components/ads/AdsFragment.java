@@ -1,7 +1,11 @@
 package com.aj.need.domain.components.ads;
 
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -41,7 +45,7 @@ public class AdsFragment extends Fragment {
             , ViewGroup container
             , Bundle savedInstanceState
     ) {
-        View view = inflater.inflate(R.layout.component_recycler_view, container, false);
+        View view = inflater.inflate(R.layout.fragment_recycler_view_with_fab, container, false);
 
         mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -64,6 +68,19 @@ public class AdsFragment extends Fragment {
 
         TextView indicationTV2 = view.findViewById(R.id.indicationTV2);
         indicationTV2.setText("Revenez un peu plus tard.");
+
+        FloatingActionButton fab = view.findViewById(R.id.fab_recycler_action);
+
+        fab.setBackgroundTintList(ColorStateList.valueOf
+                (ContextCompat.getColor(getContext(), R.color.Transparent))
+        );
+        fab.setImageResource(R.drawable.ic_save_gold_24dp);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+           //todo new act with  this frag as core
+            }
+        });
 
         return view;
     }

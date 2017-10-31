@@ -11,12 +11,12 @@
         layout="@layout/component_recycler_view"/>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_add_need"
+        android:id="@+id/fab_recycler_action"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_search_24dp"
+        android:src="@drawable/googleg_standard_color_18"
         app:backgroundTint="@color/Gold" />
 
 </FrameLayout>

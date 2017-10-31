@@ -73,7 +73,7 @@ public class UserNeedsFragment extends Fragment {
             , Bundle savedInstanceState
     ) {
 
-        View view = inflater.inflate(R.layout.fragment_user_needs, container, false);
+        View view = inflater.inflate(R.layout.fragment_recycler_view_with_fab, container, false);
 
         mRecyclerView = view.findViewById(R.id.recycler_view);
         linearLayoutManager = new LinearLayoutManager(getActivity());
@@ -104,7 +104,8 @@ public class UserNeedsFragment extends Fragment {
         indicationTV2.setText(R.string.fragment_user_need_indic2);
 
 
-        FloatingActionButton fab = view.findViewById(R.id.fab_add_need);
+        FloatingActionButton fab = view.findViewById(R.id.fab_recycler_action);
+        fab.setImageResource(R.drawable.ic_search_24dp);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
