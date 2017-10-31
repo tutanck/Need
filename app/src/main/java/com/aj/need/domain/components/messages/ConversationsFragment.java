@@ -97,6 +97,7 @@ public class ConversationsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        mSwipeRefreshLayout.setRefreshing(true);
         contactsRegistration = mLoadQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot querySnapshot, FirebaseFirestoreException e) {
@@ -105,6 +106,8 @@ public class ConversationsFragment extends Fragment {
                     refreshContactList(querySnapshot, true);
                 else
                     __.showShortToast(getContext(), getString(R.string.load_error_message));
+
+                mSwipeRefreshLayout.setRefreshing(false);
             }
         });
     }
@@ -113,6 +116,7 @@ public class ConversationsFragment extends Fragment {
     //// TODO: 28/10/2017 loadMore (offset)
     private synchronized /*!important : sync access to shared attributes (isLoading, etc)*/
     void loadContacts() {  //// TODO: 10/10/2017  redo
+        mSwipeRefreshLayout.setRefreshing(true); //useful only for loadMore
         mLoadQuery.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {

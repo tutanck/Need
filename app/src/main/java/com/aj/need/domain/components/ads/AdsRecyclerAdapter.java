@@ -1,30 +1,27 @@
 package com.aj.need.domain.components.ads;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.aj.need.R;
-import com.aj.need.db.IO;
 import com.aj.need.domain.components.needs.userneeds.UserNeed;
-import com.aj.need.domain.components.needs.userneeds.UserNeedsRecyclerAdapter;
-import com.aj.need.domain.components.profile.UtherProfileActivity;
 import com.aj.need.tools.components.fragments.DatePanelFragment;
-import com.aj.need.tools.components.fragments.DatePickerFragment;
 import com.aj.need.tools.components.services.ComponentsServices;
 import com.aj.need.tools.utils.Tagger;
+import com.aj.need.tools.utils._DateUtils;
 import com.aj.need.tools.utils._Storage;
-import com.aj.need.tools.utils.__;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -70,37 +67,41 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
 
         private Context mContext;
 
-        private LinearLayout ownerProfileLayout, detailsLayout;
-        private ImageView ownerIV;
-        private TextView mOwnerNameTV, mAdDateTV, mAdLocationTV, mDescriptionTV, mkeywordsTV;
+        private LinearLayout detailsLayout;
+        private ImageView ownerIV, startTimeIV, placeIV;
+        private Button pokeBtn;
+        private TextView mOwnerNameTV, mTitleTV, mAdDateTV, mDescriptionTV, mKeywordsTV;
 
         private UserNeed mAd;
 
 
         public ViewHolder(View v) {
             super(v);
-            ownerProfileLayout = v.findViewById(R.id.ownerProfileLayout);
             detailsLayout = v.findViewById(R.id.detailsLayout);
+
             ownerIV = v.findViewById(R.id.ownerIV);
+
             mOwnerNameTV = v.findViewById(R.id.ownerNameTV);
+            mTitleTV = v.findViewById(R.id.titleTV);
             mAdDateTV = v.findViewById(R.id.adDateTV);
-//            mAdLocationTV = v.findViewById(R.id.adLocationTV);
             mDescriptionTV = v.findViewById(R.id.descriptionTV);
-            mkeywordsTV = v.findViewById(R.id.keywordsTV);
+            mKeywordsTV = v.findViewById(R.id.keywordsTV);
+
+            startTimeIV = v.findViewById(R.id.startTimeIV);
+            placeIV = v.findViewById(R.id.placeIV);
+            pokeBtn = v.findViewById(R.id.pokeBtn);
         }
+
 
         public void bindItem(UserNeed ad, Context context) {
             this.mAd = ad;
             this.mContext = context;
 
-
-
-          /*  mOwnerNameTV.setText(ad.getOwnerID());
+            mOwnerNameTV.setText(ad.getOwnerID());
+            mTitleTV.setText(ad.getTitle());
             mAdDateTV.setText(_DateUtils.since(ad.getDate()));
-//            mAdLocationTV.setText(ad.getWhere());
             mDescriptionTV.setText(ad.getDescription());
-            mkeywordsTV.setText(Tagger.tags(ad.getSearch()));*/
-
+            mKeywordsTV.setText(Tagger.tags(ad.getSearch()));
 
             _Storage.loadRef(_Storage.getRef(mAd.getOwnerID()))
                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
@@ -116,43 +117,56 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                         }
                     });
 
-            ComponentsServices.setSelectable(mContext, ownerProfileLayout, new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    UtherProfileActivity.start(mContext, mAd.getOwnerID());
-                }
-            });
-
 
             ComponentsServices.setSelectable(mContext, detailsLayout, new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                    builder.setTitle(R.string.sample_text);
-                    builder.setMessage(mContext.getString(R.string.sample_text) + "\n\nMot-clés:\n" + Tagger.tags(mContext.getString(R.string.sample_text)));
-
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    builder.setTitle(mAd.getTitle());
+                    builder.setMessage(mAd.getDescription() + "\n\nMot-clés:\n" + Tagger.tags(mAd.getSearch()));
+                    builder.setPositiveButton("Retour", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                         }
                     });
-
                     builder.show();
                 }
             });
 
 
-            //// TODO: 31/10/2017 replace for the meta date if avail
-            ComponentsServices.setSelectable(mContext, mAdDateTV, new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (mAd.getMetaWhenTime() == null) return;
-                    DatePanelFragment fragment = DatePanelFragment.newFrozenInstance(mAd.getMetaWhenTime());
-                    fragment.show(((AppCompatActivity) mContext).getSupportFragmentManager(), "Date dialog");
-                }
-            });
+            if (mAd.getMetaWhenTime() != null)
+                ComponentsServices.setSelectable(mContext, startTimeIV, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        DatePanelFragment fragment = DatePanelFragment.newFrozenInstance(mAd.getMetaWhenTime());
+                        fragment.show(((AppCompatActivity) mContext).getSupportFragmentManager(), "Date dialog");
+                    }
+                });
+            else startTimeIV.setVisibility(View.GONE);
 
 
+            if (mAd.getMetaWhereCoord() != null && mAd.getWhere() != null && !TextUtils.isEmpty(mAd.getWhere()))
+                ComponentsServices.setSelectable(mContext, placeIV, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                        builder.setTitle("Lieu");
+                        builder.setMessage(mAd.getWhere());
+                        /*builder.setPositiveButton("Carte", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                            //todo later : map
+                            }
+                        });*/
+                        builder.setNegativeButton("Retour", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                            }
+                        });
+                        builder.show();
+                    }
+                });
+            else placeIV.setVisibility(View.GONE);
         }
 
     }

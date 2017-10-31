@@ -124,6 +124,7 @@ public class UserNeedsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        mSwipeRefreshLayout.setRefreshing(true);
         //initial load then follow
         needsRegistration = mLoadQuery.limit(BATCH_SIZE)
                 .addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
@@ -135,6 +136,8 @@ public class UserNeedsFragment extends Fragment {
                             refreshUserNeedsList(querySnapshot, true);
                         else
                             __.showShortToast(getActivity(), getString(R.string.load_error_message));
+
+                        mSwipeRefreshLayout.setRefreshing(false);
                     }
                 });
     }
