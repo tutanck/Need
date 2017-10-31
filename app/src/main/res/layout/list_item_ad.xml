@@ -11,6 +11,7 @@
     app:cardElevation="2dp">
 
     <LinearLayout
+        android:id="@+id/mainWrapperLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -52,12 +53,12 @@
 
 
         <LinearLayout
+            android:id="@+id/adWrapperLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="8dp"
             android:orientation="vertical">
-
 
             <LinearLayout
                 android:id="@+id/detailsLayout"
@@ -107,107 +108,84 @@
 
 
             <RelativeLayout
-                android:id="@+id/actionLayout"
-                android:layout_width="match_parent"
+                android:id="@+id/metaInfosLayout"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="2dp"
-                android:orientation="horizontal"
-                android:paddingLeft="2dp"
-                android:paddingRight="2dp">
+                android:orientation="horizontal">
 
-                <ImageView
-                    android:id="@+id/startTimeIV"
+                <LinearLayout
+                    android:id="@+id/publicationDateLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="24dp"
-                    android:src="@drawable/ic_access_time_24dp" />
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginRight="6dp"
+                    android:orientation="horizontal">
 
-                <ImageView
-                    android:id="@+id/placeIV"
+                    <TextView
+                        android:id="@+id/publishedTV"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Publié il y a "
+                        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                        android:textColor="@color/Gray"
+                        android:textSize="12dp" />
+
+                    <TextView
+                        android:id="@+id/adDateTV"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:maxWidth="100dp"
+                        android:text="@string/sample_text"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                        android:textColor="@color/CornflowerBlue"
+                        android:textSize="12dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/placeLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="24dp"
-                    android:layout_toRightOf="@+id/startTimeIV"
-                    android:src="@drawable/ic_place_24dp" />
+                    android:layout_alignParentBottom="true"
+                    android:layout_toRightOf="@+id/publicationDateLayout"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/placeIV"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_place_16dp_gray" />
+
+                    <TextView
+                        android:id="@+id/adDistanceTV"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 Km"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                        android:textColor="@color/CornflowerBlue"
+                        android:textSize="12dp" />
+
+                </LinearLayout>
 
                 <Button
                     android:id="@+id/pokeBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="24dp"
+                    android:layout_alignParentBottom="true"
                     android:layout_alignParentRight="true"
-                    android:layout_gravity="bottom"
-                    android:layout_marginRight="2dp"
-                    android:paddingLeft="4dp"
-                    android:paddingRight="4dp"
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:gravity="bottom|center_horizontal"
+                    android:paddingLeft="4dp"
+                    android:paddingRight="4dp"
                     android:text="Je me propose"
-                    android:textColor="@color/MsgBlue"
+                    android:textColor="@color/DodgerBlue"
                     android:textSize="14dp" />
 
             </RelativeLayout>
-
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Publié il y a "
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:textColor="@color/Gray"
-                    android:textSize="12dp" />
-
-                <TextView
-                    android:id="@+id/adDateTV"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/small"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:maxWidth="100dp"
-                    android:text="@string/sample_text"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:textColor="@color/LightSlateGray"
-                    android:textSize="12dp" />
-
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="| "
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:textColor="@color/Gray"
-                    android:textSize="12dp" />
-
-
-                <TextView
-                    android:id="@+id/adDistanceTV"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/small"
-                    android:text="0 Km"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:textColor="@color/LightSlateGray"
-                    android:textSize="12dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/small"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text="d'ici."
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:textColor="@color/Gray"
-                    android:textSize="12dp" />
-
-            </LinearLayout>
-
 
         </LinearLayout>
 

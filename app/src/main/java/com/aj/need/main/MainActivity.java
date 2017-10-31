@@ -1,7 +1,6 @@
 package com.aj.need.main;
 
 import android.app.Activity;
-import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,7 +17,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.DatePicker;
 
 import com.aj.need.R;
 
@@ -30,14 +28,12 @@ import com.aj.need.domain.components.needs.userneeds.UserNeedsFragment;
 import com.aj.need.domain.components.profile.ProfileFragment;
 import com.aj.need.tools.components.fragments.FormField;
 import com.aj.need.tools.utils.Avail;
-import com.aj.need.tools.utils.__;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 

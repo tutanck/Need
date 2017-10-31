@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,10 +66,10 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
 
         private Context mContext;
 
-        private LinearLayout detailsLayout;
-        private ImageView ownerIV, startTimeIV, placeIV;
+        private LinearLayout detailsLayout, placeLayout;
+        private ImageView ownerIV;
         private Button pokeBtn;
-        private TextView mOwnerNameTV, mTitleTV, mAdDateTV, mDescriptionTV, mKeywordsTV;
+        private TextView mOwnerNameTV, mTitleTV, mAdDateTV, adDistanceTV, mDescriptionTV, mKeywordsTV;
 
         private UserNeed mAd;
 
@@ -78,17 +77,18 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
         public ViewHolder(View v) {
             super(v);
             detailsLayout = v.findViewById(R.id.detailsLayout);
+            placeLayout = v.findViewById(R.id.placeLayout);
 
             ownerIV = v.findViewById(R.id.ownerIV);
 
             mOwnerNameTV = v.findViewById(R.id.ownerNameTV);
             mTitleTV = v.findViewById(R.id.titleTV);
-            mAdDateTV = v.findViewById(R.id.adDateTV);
             mDescriptionTV = v.findViewById(R.id.descriptionTV);
             mKeywordsTV = v.findViewById(R.id.keywordsTV);
 
-            startTimeIV = v.findViewById(R.id.startTimeIV);
-            placeIV = v.findViewById(R.id.placeIV);
+            mAdDateTV = v.findViewById(R.id.adDateTV);
+            adDistanceTV = v.findViewById(R.id.adDistanceTV);
+
             pokeBtn = v.findViewById(R.id.pokeBtn);
         }
 
@@ -134,39 +134,36 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
             });
 
 
-            if (mAd.getMetaWhenTime() != null)
-                ComponentsServices.setSelectable(mContext, startTimeIV, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        DatePanelFragment fragment = DatePanelFragment.newFrozenInstance(mAd.getMetaWhenTime());
-                        fragment.show(((AppCompatActivity) mContext).getSupportFragmentManager(), "Date dialog");
-                    }
-                });
-            else startTimeIV.setVisibility(View.GONE);
+            ComponentsServices.setSelectable(mContext, mAdDateTV, new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    DatePanelFragment fragment = DatePanelFragment.newFrozenInstance(mAd.getDate().getTime());
+                    fragment.show(((AppCompatActivity) mContext).getSupportFragmentManager(), "Date dialog");
+                }
+            });
 
 
-            if (mAd.getMetaWhereCoord() != null && mAd.getWhere() != null && !TextUtils.isEmpty(mAd.getWhere()))
-                ComponentsServices.setSelectable(mContext, placeIV, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                        builder.setTitle("Lieu");
-                        builder.setMessage(mAd.getWhere());
+            ComponentsServices.setSelectable(mContext, placeLayout, new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setTitle("Lieu");
+                    builder.setMessage(mAd.getWhere());
                         /*builder.setPositiveButton("Carte", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                             //todo later : map
                             }
                         });*/
-                        builder.setNegativeButton("Retour", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                            }
-                        });
-                        builder.show();
-                    }
-                });
-            else placeIV.setVisibility(View.GONE);
+                    builder.setNegativeButton("Retour", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                        }
+                    });
+                    builder.show();
+                }
+            });
+
         }
 
     }

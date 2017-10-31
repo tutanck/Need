@@ -21,12 +21,10 @@ import com.aj.need.domain.components.messages.MessagesActivity;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils._DateUtils;
 import com.aj.need.tools.utils._Storage;
-import com.aj.need.tools.utils.__;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
