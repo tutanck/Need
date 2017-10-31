@@ -17,6 +17,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.aj.need.R;
+import com.aj.need.db.IO;
 import com.aj.need.db.colls.USER_NEEDS;
 
 import com.aj.need.domain.components.needs.userneeds.UserNeed;
@@ -137,14 +138,18 @@ public class UserNeedSaveActivity extends AppCompatActivity
                     _id = curUserNeedRef.getId();
 
                     curUserNeedRef.set(new UserNeed(_id
+
+                            , IO.getCurrentUserUid()
                             , getFieldText(USER_NEEDS.searchKey)
                             , getFieldText(USER_NEEDS.titleKey)
                             , getFieldText(USER_NEEDS.descriptionKey)
                             , getFieldText(USER_NEEDS.rewardKey)
                             , getFieldText(USER_NEEDS.whereKey)
                             , getFieldText(USER_NEEDS.whenKey)
+
                             , getPlace()
                             , getTime()
+
                             , needSwitch.isChecked())
                     );
 

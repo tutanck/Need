@@ -10,6 +10,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -19,6 +20,7 @@ import java.util.HashMap;
 public class UserNeed extends Entity implements Serializable, ITranslatable<UserNeed> {
 
     private String _id;
+    private String ownerID;
 
     private String search;
     private String title;
@@ -38,6 +40,7 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
 
     public UserNeed(
             String _id
+            , String ownerID
 
             , String search
             , String title
@@ -52,6 +55,7 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
             , boolean active
     ) {
         this._id = _id;
+        this.ownerID = ownerID;
 
         this.search = search;
         this.title = title;
@@ -70,17 +74,27 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
     @Override
     public UserNeed tr(DocumentSnapshot need) {
         return new UserNeed(need.getId()
+                , need.getString(USER_NEEDS.ownerIDKey)
+
                 , need.getString(USER_NEEDS.searchKey)
                 , need.getString(USER_NEEDS.titleKey)
                 , need.getString(USER_NEEDS.descriptionKey)
                 , need.getString(USER_NEEDS.rewardKey)
                 , need.getString(USER_NEEDS.whereKey)
                 , need.getString(USER_NEEDS.whenKey)
+
                 , toCoord(need.get(USER_NEEDS.metaWhereCoordKey))
                 , need.getLong(USER_NEEDS.metaWhenTimeKey)
-                , need.getBoolean(USER_NEEDS.activeKey));
+
+                , need.getBoolean(USER_NEEDS.activeKey))
+                .setDate(need.getDate(USER_NEEDS.dateKey));
     }
 
+
+    private UserNeed setDate(Date date){
+        super.date = date;
+        return this;
+    }
 
     private Coord toCoord(Object o) {
         return o == null ? null : new Coord(
@@ -95,6 +109,9 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
         return _id;
     }
 
+    public String getOwnerID() {
+        return ownerID;
+    }
 
     public String getSearch() {
         return search;

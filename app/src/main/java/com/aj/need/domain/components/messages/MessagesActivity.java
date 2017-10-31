@@ -22,6 +22,7 @@ import com.aj.need.db.IO;
 import com.aj.need.db.colls.MESSAGES;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_CONTACTS;
+import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
 
@@ -59,7 +60,7 @@ public class MessagesActivity extends AppCompatActivity {
     private EditText chatboxET;
 
     private String contact_id, contact_name, conversation_id;
-    private Integer contactAvailability;
+    private int contactAvailability;
     private Bitmap contactImage;
 
     private Query mLoadQuery;
@@ -92,8 +93,7 @@ public class MessagesActivity extends AppCompatActivity {
 
         contact_id = getIntent().getStringExtra(CONTACT_ID);
         contact_name = getIntent().getStringExtra(CONTACT_NAME);
-        int tmp = getIntent().getIntExtra(CONTACT_AVAILABILITY, -9);
-        contactAvailability = tmp == -9 ? null : tmp;
+        contactAvailability = getIntent().getIntExtra(CONTACT_AVAILABILITY, Avail.UNKNOWN);
         conversation_id = __.ordered_concat(contact_id, IO.getCurrentUserUid());
 
         getSupportActionBar().setTitle(contact_name);
@@ -213,7 +213,7 @@ public class MessagesActivity extends AppCompatActivity {
         });
         // ||
         //initial load then follow
-        contactRegistration = USERS.getUserRef(contact_id).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+       /* contactRegistration = USERS.getUserRef(contact_id).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
@@ -223,7 +223,7 @@ public class MessagesActivity extends AppCompatActivity {
                     mAdapter.notifyDataSetChanged(); //// TODO: 25/10/2017 test with 2 devices
                 }
             }
-        });
+        });*/
 
     }
 
@@ -254,7 +254,7 @@ public class MessagesActivity extends AppCompatActivity {
         return (super.onOptionsItemSelected(menuItem));
     }
 
-    public Integer getContactAvailability() {
+    public int getContactAvailability() {
         return contactAvailability;
     }
 

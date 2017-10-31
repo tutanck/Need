@@ -65,10 +65,6 @@ public class UserNeedsFragment extends Fragment {
 
     private ListenerRegistration needsRegistration;
 
-    public static UserNeedsFragment newInstance() {
-        return new UserNeedsFragment();
-    }
-
 
     @Override
     public View onCreateView(
@@ -242,7 +238,6 @@ public class UserNeedsFragment extends Fragment {
                 builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-
                     }
                 });
 
@@ -257,5 +252,9 @@ public class UserNeedsFragment extends Fragment {
         super.onStop();
         if (needsRegistration != null)
             needsRegistration.remove();
+    }
+
+    public static UserNeedsFragment newInstance() {
+        return new UserNeedsFragment();
     }
 }

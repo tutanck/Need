@@ -34,11 +34,11 @@ public class UserNeedAdActivity extends AppCompatActivity {
 
         mUserNeed = (UserNeed) getIntent().getSerializableExtra(USER_NEED);
 
-        TextView needTitleTV = (TextView) findViewById(R.id.needTitleTV);
+        TextView needTitleTV = findViewById(R.id.needTitleTV);
         needTitleTV.setText(mUserNeed.getTitle());
 
         // Get the ViewPager and set it's PagerAdapter so that it can display items
-        ViewPager viewPager = (ViewPager) findViewById(R.id.user_need_results_viewpager);
+        ViewPager viewPager = findViewById(R.id.user_need_results_viewpager);
         viewPager.setAdapter(
                 new PagerAdapter(
                         getSupportFragmentManager()
@@ -47,11 +47,11 @@ public class UserNeedAdActivity extends AppCompatActivity {
         );
 
         // Give the TabLayout the ViewPager
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.user_need_results_sliding_tabs);
+        TabLayout tabLayout = findViewById(R.id.user_need_results_sliding_tabs);
         tabLayout.setupWithViewPager(viewPager);
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_open_need_save);
+        FloatingActionButton fab = findViewById(R.id.fab_open_need_save);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -76,7 +76,7 @@ public class UserNeedAdActivity extends AppCompatActivity {
 
         private Context mContext;
 
-        private String TAB_TITLES[] = new String[]{"DISPONIBLES NOW", "POKES RECUES"};
+        private String TAB_TITLES[] = new String[]{"PROFILS TROUVES", "POKES RECUES"};
 
         public PagerAdapter(FragmentManager fm, Context context) {
             super(fm);
@@ -91,7 +91,7 @@ public class UserNeedAdActivity extends AppCompatActivity {
                 case 1:
                     return NeedProfilesFragment.newInstance();
                 default:
-                    throw new RuntimeException("PagerAdapter's top level tab menu");
+                    throw new RuntimeException("UserNeedAdActivity/PagerAdapter::getItem : unknown top level tab menu");
             }
         }
 

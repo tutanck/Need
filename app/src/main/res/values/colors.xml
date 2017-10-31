@@ -148,7 +148,11 @@
     <color name="MediumBlue">#0000CD</color>
     <color name="DarkBlue">#00008B</color>
     <color name="Navy">#000080</color>
+    <color name="ClearBlack">#585858</color>
+    <color name="LightBlack">#484848</color>
+
     <color name="Black">#000000</color>
+    <color name="BlackM">#212121</color>
     <color name="DividerColor">#B6B6B6</color>
 
 

@@ -106,12 +106,12 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
         void bind(Message message) {
             messageText.setText(message.getMessage());
             timeText.setText(_DateUtils.since(message.getDate()));
-            Integer status = ((MessagesActivity) mContext).getContactAvailability();
-            if (status != null) {
-                statusFab.setBackgroundTintList(ColorStateList.valueOf(
-                        ContextCompat.getColor(mContext, Avail.getColor(status))));
-                statusFab.setVisibility(View.VISIBLE);
-            }
+            int contactAvailability = ((MessagesActivity) mContext).getContactAvailability();
+
+            statusFab.setBackgroundTintList(ColorStateList.valueOf(
+                    ContextCompat.getColor(mContext, Avail.getColor(contactAvailability))));
+            statusFab.setVisibility(View.VISIBLE);
+
 
             // Insert the profile image from the URL into the ImageView.
             //_DateUtils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUrl(), profileImage); // TODO: 29/09/2017

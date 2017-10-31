@@ -170,14 +170,12 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
         @Override
         public void onClick(View view) {
             switch (mOnClickListenerType) {
-                case 0:
-                    UtherProfileActivity.start(mContext, mUserProfile.get_id());
-                    break;
                 case 1:
                     MessagesActivity.start(mContext, mUserProfile.get_id(), mUserProfile.getUsername(), mUserProfile.getAvailability());
                     break;
-                default:
-                    throw new RuntimeException("UserProfilesRecyclerAdapter/ViewHolder::onClick: Unknown mOnClickListenerType " + mOnClickListenerType);
+                default: //case 0: default case
+                    UtherProfileActivity.start(mContext, mUserProfile.get_id());
+                    break;
             }
         }
     }

@@ -24,7 +24,7 @@
             android:ellipsize="end"
             android:text="@string/nothing_to_show"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textColor="#212121"
+            android:textColor="@color/Gray"
             android:textSize="16dp" />
 
         <TextView
@@ -35,7 +35,7 @@
             android:layout_marginBottom="@dimen/medium"
             android:text="@string/nothing_to_show"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
-            android:textColor="#212121"
+            android:textColor="@color/Gray"
             android:textSize="14dp" />
 
     </LinearLayout>

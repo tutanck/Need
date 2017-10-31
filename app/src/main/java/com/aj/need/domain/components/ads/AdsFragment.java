@@ -8,9 +8,16 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.aj.need.R;
-import com.aj.need.tools.utils.__;
+import com.aj.need.db.colls.USER_NEEDS;
+import com.aj.need.domain.components.needs.userneeds.UserNeed;
+import com.aj.need.tools.utils.Jarvis;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,16 +25,15 @@ import java.util.List;
 
 public class AdsFragment extends Fragment {
 
-    private List<Ad> mAds = new ArrayList<>();
+    private List<UserNeed> adList = new ArrayList<>();
 
     private RecyclerView mRecyclerView;
     private AdsRecyclerAdapter mAdapter;
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
-    public static AdsFragment newInstance() {
-        return new AdsFragment();
-    }
+    private LinearLayout indicationsLayout;
+
 
     @Override
     public View onCreateView(
@@ -40,7 +46,7 @@ public class AdsFragment extends Fragment {
         mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        mAdapter = new AdsRecyclerAdapter(getContext(), mAds);
+        mAdapter = new AdsRecyclerAdapter(getContext(), adList);
         mRecyclerView.setAdapter(mAdapter);
 
         mSwipeRefreshLayout = view.findViewById(R.id.recycler_view_SwipeRefreshLayout);
@@ -50,6 +56,14 @@ public class AdsFragment extends Fragment {
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
+
+        indicationsLayout = view.findViewById(R.id.component_recycler_indications_layout);
+
+        TextView indicationTV1 = view.findViewById(R.id.indicationTV1);
+        indicationTV1.setText("Aucune annonce autour de vous en ce moment.");
+
+        TextView indicationTV2 = view.findViewById(R.id.indicationTV2);
+        indicationTV2.setText("Revenez un peu plus tard.");
 
         return view;
     }
@@ -63,5 +77,25 @@ public class AdsFragment extends Fragment {
 
 
     private void load() {
+        mSwipeRefreshLayout.setRefreshing(true);
+        USER_NEEDS.getCurrentUserNeedsRef()
+                .whereEqualTo(USER_NEEDS.deletedKey, false)
+                .orderBy(USER_NEEDS.activeKey, Query.Direction.DESCENDING).get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot querySnapshot) {
+                        adList.clear();
+                        adList.addAll(new Jarvis<UserNeed>().tr(querySnapshot, new UserNeed()));
+                        indicationsLayout.setVisibility(adList.size() == 0 ? View.VISIBLE : View.GONE);
+                        mAdapter.notifyDataSetChanged();
+                        mRecyclerView.scrollToPosition(0);
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+                });
+    }
+
+
+    public static AdsFragment newInstance() {
+        return new AdsFragment();
     }
 }

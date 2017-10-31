@@ -14,7 +14,9 @@ public final class USER_NEEDS implements Coll {
     }
 
     private static String coll = "_NEEDS";
+
     public final static String activeKey = "active";
+    public final static String ownerIDKey = "ownerID";
     public final static String titleKey = "title";
     public final static String searchKey = "search";
     public final static String descriptionKey = "description";

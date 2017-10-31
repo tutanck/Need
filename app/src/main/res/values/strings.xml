@@ -6,7 +6,6 @@
     <string name="plus">+</string>
     <string name="title_activity_user_need">Besoin</string>
     <string name="title_activity_messages">Messages</string>
-    <string name="sample_text">Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi</string>
 
 
     <!--Auth-->
@@ -61,4 +60,29 @@
     <string name="unsupported_operation">Votre appareil ne supporte pas cette opération!</string>
     <string name="fail_to_upload_image_message">Echec de la mise à jour de l\'image.</string>
     <string name="fail_to_retrieve_image_message">Erreur de récupération de l\'image!</string>
+
+
+    <!--Sample-->
+    <string name="sample_text">
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+        Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
+    </string>
 </resources>
