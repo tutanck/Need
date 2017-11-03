@@ -1,18 +1,17 @@
 package com.aj.need.domain.components.needs;
 
 import android.app.Activity;
-import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -21,7 +20,7 @@ import com.aj.need.db.IO;
 import com.aj.need.db.colls.USER_NEEDS;
 
 import com.aj.need.domain.components.needs.userneeds.UserNeed;
-import com.aj.need.tools.components.fragments.DatePickerFragment;
+import com.aj.need.main.App;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.fragments.FormField;
 import com.aj.need.tools.components.services.ComponentsServices;
@@ -45,17 +44,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 public class UserNeedSaveActivity extends AppCompatActivity
-        implements FormField.Listener, DatePickerDialog.OnDateSetListener {
+        implements FormField.Listener/*, DatePickerDialog.OnDateSetListener */ {
 
-    ProgressBarFragment progressBarFragment;
+    private ProgressBarFragment progressBarFragment;
 
     private final static String _ID = "_ID";
     private final static String SEARCH_TEXT = "SEARCH_TEXT";
@@ -71,7 +69,8 @@ public class UserNeedSaveActivity extends AppCompatActivity
     private FloatingActionButton fab;
 
     private Place place;
-    private Calendar cal;
+
+    private Boolean isWhereVisible = false;
 
 
 
@@ -128,35 +127,36 @@ public class UserNeedSaveActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (validState()) {
-                    final CollectionReference userNeedsRef = USER_NEEDS.getCurrentUserNeedsRef();
+                if (!validState()) return;
 
-                    //!important : it would be a bug if docs were upserted on update mode (_id==null upsert iof update)
-                    final DocumentReference curUserNeedRef = (_id != null) ? userNeedsRef.document(_id) : userNeedsRef.document();
+                final CollectionReference userNeedsRef = USER_NEEDS.getCurrentUserNeedsRef();
 
-                    //!important : avoid creating new needs if initial id==null. Must be set bf creating the UserNeed object
-                    _id = curUserNeedRef.getId();
+                //!important : it would be a bug if docs were upserted on update mode (_id==null upsert iof update)
+                final DocumentReference curUserNeedRef = (_id != null) ? userNeedsRef.document(_id) : userNeedsRef.document();
 
-                    curUserNeedRef.set(new UserNeed(_id
+                //!important : avoid creating new needs if initial id==null. Must be set bf creating the UserNeed object
+                _id = curUserNeedRef.getId();
 
-                            , IO.getCurrentUserUid()
-                            , getFieldText(USER_NEEDS.searchKey)
-                            , getFieldText(USER_NEEDS.titleKey)
-                            , getFieldText(USER_NEEDS.descriptionKey)
-                            , getFieldText(USER_NEEDS.rewardKey)
-                            , getFieldText(USER_NEEDS.whereKey)
-                            , getFieldText(USER_NEEDS.whenKey)
+                curUserNeedRef.set(new UserNeed(_id
 
-                            , getPlace()
-                            , getTime()
+                        , IO.getCurrentUserUid()
+                        , ((App) getApplication()).getUserName()
 
-                            , needSwitch.isChecked())
-                    );
+                        , getFieldText(USER_NEEDS.searchKey)
+                        , getFieldText(USER_NEEDS.titleKey)
+                        , getFieldText(USER_NEEDS.descriptionKey)
+                        , getFieldText(USER_NEEDS.rewardKey)
+                        , getFieldText(USER_NEEDS.whereKey)
+                        , isWhereVisible
+                        , getPlace()
 
-                    close();
-                    __.showShortToast(UserNeedSaveActivity.this, getString(R.string.update_sucessful_message));
-                    //finish(); //TODO: 04/10/2017 uncomment on prod mode
-                }
+                        , needSwitch.isChecked())
+                );
+
+                close();
+                __.showShortToast(UserNeedSaveActivity.this, getString(R.string.update_sucessful_message));
+                //finish(); //TODO: 04/10/2017 uncomment on prod mode
+
             }
         });
 
@@ -215,14 +215,6 @@ public class UserNeedSaveActivity extends AppCompatActivity
                     }
                 };
                 break;
-            case USER_NEEDS.whenKey:
-                onClickListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        pickDate();
-                    }
-                };
-                break;
             default:
                 onClickListener = new View.OnClickListener() {
                     @Override
@@ -260,8 +252,33 @@ public class UserNeedSaveActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PLACE_PICKER_REQUEST)
             if (resultCode == RESULT_OK) {
+
                 place = PlacePicker.getPlace(this, data);
                 formFields.get(USER_NEEDS.whereKey).setText(place.getAddress().toString());
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(UserNeedSaveActivity.this);
+                builder.setCancelable(false);
+                builder.setTitle(R.string.sensitive_information);
+                builder.setMessage(getString(R.string.address_visibility_prompt_message));
+
+                builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        isWhereVisible = true;
+                        __.showShortToast(UserNeedSaveActivity.this, getString(R.string.addr_public_visibility_message));
+                    }
+                });
+
+                builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        isWhereVisible = false;
+                        __.showShortToast(UserNeedSaveActivity.this, getString(R.string.addr_private_visibility_message));
+                    }
+                });
+
+                builder.show();
+
                 enableSaveBtn();
             }
     }
@@ -270,26 +287,6 @@ public class UserNeedSaveActivity extends AppCompatActivity
         return place == null ? null : new Coord(place.getLatLng());
     }
 
-
-
-    /*WHEN*/
-
-    private void pickDate() {
-        DatePickerFragment fragment = new DatePickerFragment();
-        fragment.show(getSupportFragmentManager(), "Date dialog");
-    }
-
-    @Override
-    public void onDateSet(DatePicker view, int year, int month, int day) {
-        cal = new GregorianCalendar(year, month, day);
-        final DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
-        formFields.get(USER_NEEDS.whenKey).setText(dateFormat.format(cal.getTime()));
-        enableSaveBtn();
-    }
-
-    private Long getTime() {
-        return cal == null ? null : cal.getTimeInMillis();
-    }
 
 
 
@@ -330,42 +327,33 @@ public class UserNeedSaveActivity extends AppCompatActivity
 
      /*FIELDS EDITION/VALIDATION*/
 
+    private List<String> lockedKeys = Arrays.asList(new String[]
+            {USER_NEEDS.searchKey, USER_NEEDS.whereKey}
+    );
+
+
     private boolean isEditableField(String key) {
-        return !(
-                key.equals(USER_NEEDS.searchKey)
-                        || key.equals(USER_NEEDS.whereKey)
-                        || key.equals(USER_NEEDS.whenKey)
-        );
+        return !lockedKeys.contains(key);
+    }
+
+
+    private boolean validState() {
+        boolean valid = true;
+
+        for (Map.Entry<String, FormField> entry : formFields.entrySet())
+            if (TextUtils.isEmpty(getFieldText(entry.getKey()))) {
+                valid = false;
+                __.showShortToast(UserNeedSaveActivity.this, "Tous les champs sont obligatoires !");
+                break;
+            }
+
+        return valid;
     }
 
     private String getFieldText(String key) {
         FormField ff = formFields.get(key);
         TextView tvORet = isEditableField(key) ? ff.getEtContent() : ff.getTvContent();
         return tvORet.getText().toString();
-    }
-
-
-    private boolean validState() {
-        EditText titleET = formFields.get(USER_NEEDS.titleKey).getEtContent();
-        EditText descriptionET = formFields.get(USER_NEEDS.descriptionKey).getEtContent();
-
-        if (TextUtils.isEmpty(titleET.getText())) {
-            String errStr = getString(R.string.user_need_empty_title_warning);
-            titleET.setError(errStr);
-            __.showShortToast(this, errStr);
-            return false;
-        }
-        titleET.setError(null);
-
-        if (TextUtils.isEmpty(descriptionET.getText())) {
-            String errStr = getString(R.string.user_need_empty_description_warning);
-            descriptionET.setError(errStr);
-            __.showShortToast(this, errStr);
-            return false;
-        }
-        descriptionET.setError(null);
-
-        return true;
     }
 
 

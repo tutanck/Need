@@ -4,8 +4,7 @@
     "title",
     "description",
     "reward",
-    "where",
-    "when"
+    "where"
   ],
   "search": {
     "label": "Mots-clés de la recherche",

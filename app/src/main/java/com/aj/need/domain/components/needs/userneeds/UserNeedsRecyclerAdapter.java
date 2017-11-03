@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.colls.USER_NEEDS;
+import com.aj.need.tools.utils.Tagger;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnFailureListener;
 
@@ -79,7 +80,7 @@ public class UserNeedsRecyclerAdapter extends RecyclerView.Adapter<UserNeedsRecy
             this.mUserNeed = userNeed;
 
             mTitleTextView.setText(userNeed.getTitle());
-            mSearchTextView.setText(userNeed.getSearch());
+            mSearchTextView.setText(Tagger.tags(userNeed.getSearch()));
             fabNeedStatus.setBackgroundTintList(
                     ColorStateList.valueOf
                             (ContextCompat.getColor

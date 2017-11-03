@@ -8,10 +8,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+
 /**
  * App class with static util methods.
  */
-
 public class _DateUtils {
 
     // This class should not be initialized
@@ -26,6 +26,59 @@ public class _DateUtils {
                 , DateFormat.MEDIUM, DateFormat.SHORT);
     }
 
+
+
+
+
+
+    /*FROM GOOGLE @codebase: https://stackoverflow.com/questions/13018550/time-since-ago-library-for-android-java */
+
+    private static final int SECOND_MILLIS = 1000;
+    private static final int MINUTE_MILLIS = 60 * SECOND_MILLIS;
+    private static final int HOUR_MILLIS = 60 * MINUTE_MILLIS;
+    private static final int DAY_MILLIS = 24 * HOUR_MILLIS;
+
+
+    public static String ago(Date date) {
+        if (date == null) return null;
+
+        long time = date.getTime();
+        if (time < 1000000000000L) {
+            // if timestamp given in seconds, convert to millis
+            time *= 1000;
+        }
+
+        long now = System.currentTimeMillis(); //subject to improvement if possible @see https://stackoverflow.com/questions/5175728/how-to-get-the-current-date-time-in-java
+        if (time > now || time <= 0) {
+            return null;
+        }
+
+        String ago = "il y a ";
+
+        // TODO: localize
+        final long diff = now - time;
+        if (diff < MINUTE_MILLIS) return "à l'instant";
+
+        else if (diff < 2 * MINUTE_MILLIS) return ago + "1 minute";
+
+        else if (diff < 50 * MINUTE_MILLIS) return ago + (diff / MINUTE_MILLIS) + " minutes";
+
+        else if (diff < 90 * MINUTE_MILLIS) return ago + "1 heure";
+
+        else if (diff < 24 * HOUR_MILLIS) return ago + (diff / HOUR_MILLIS) + " heures";
+
+        else if (diff < 48 * HOUR_MILLIS) return "hier";
+
+        else return ago + (diff / DAY_MILLIS) + " jours";
+
+    }
+
+
+
+
+
+
+    /*FROM SEND-BIRD @codebase:  https://github.com/smilefam/SendBird-Android/blob/master/app/src/main/java/com/sendbird/android/sample/utils/DateUtils.java */
 
     /**
      * Gets timestamp in millis and converts it to HH:mm (e.g. 16:44).

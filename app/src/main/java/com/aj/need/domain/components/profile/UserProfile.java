@@ -88,8 +88,9 @@ public class UserProfile extends Entity implements Serializable, ITranslatable<U
         return reputation;
     }
 
-    public void setReputation(int reputation) {
-        this.reputation = reputation;
+    public void setReputation(Long reputation) {
+
+        this.reputation = reputation != null ? reputation.intValue() : 0;
     }
 
     public int getAvailability() {

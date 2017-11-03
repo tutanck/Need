@@ -121,8 +121,8 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
                         Log.d("bindItem/", "UserProfilesRecyclerAdapter::onSuccess: data=" + userDoc.getData());
                         if (userDoc.exists()) {
                             mUserProfile.setAvailability(userDoc.getLong(USERS.availabilityKey).intValue());
-                            mUserProfile.setReputation(userDoc.getLong(USERS.avgRatingKey).intValue());
                             mUserProfile.setUsername(userDoc.getString(USERS.usernameKey));
+                            mUserProfile.setReputation(userDoc.getLong(USERS.avgRatingKey));
                             setProfile();
                         }
                     }

@@ -66,7 +66,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
 
         private Context mContext;
 
-        private LinearLayout detailsLayout, placeLayout;
+        private LinearLayout detailsLayout, publicationDateLayout, placeLayout;
         private ImageView ownerIV;
         private Button pokeBtn;
         private TextView mOwnerNameTV, mTitleTV, mAdDateTV, adDistanceTV, mDescriptionTV, mKeywordsTV;
@@ -78,6 +78,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
             super(v);
             detailsLayout = v.findViewById(R.id.detailsLayout);
             placeLayout = v.findViewById(R.id.placeLayout);
+            publicationDateLayout = v.findViewById(R.id.publicationDateLayout);
 
             ownerIV = v.findViewById(R.id.ownerIV);
 
@@ -97,9 +98,9 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
             this.mAd = ad;
             this.mContext = context;
 
-            mOwnerNameTV.setText(ad.getOwnerID());
+            mOwnerNameTV.setText(ad.getOwnerName());
             mTitleTV.setText(ad.getTitle());
-            mAdDateTV.setText(_DateUtils.since(ad.getDate()));
+            mAdDateTV.setText(_DateUtils.ago(ad.getDate()));
             mDescriptionTV.setText(ad.getDescription());
             mKeywordsTV.setText(Tagger.tags(ad.getSearch()));
 
@@ -134,7 +135,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
             });
 
 
-            ComponentsServices.setSelectable(mContext, mAdDateTV, new View.OnClickListener() {
+            ComponentsServices.setSelectable(mContext, publicationDateLayout, new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     DatePanelFragment fragment = DatePanelFragment.newFrozenInstance(mAd.getDate().getTime());
@@ -148,14 +149,8 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                 public void onClick(View view) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle("Lieu");
-                    builder.setMessage(mAd.getWhere());
-                        /*builder.setPositiveButton("Carte", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                            //todo later : map
-                            }
-                        });*/
-                    builder.setNegativeButton("Retour", new DialogInterface.OnClickListener() {
+                    builder.setMessage(mAd.isMetaIsWhereVisible()? mAd.getWhere(): mContext.getString(R.string.adr_is_not_visible_msg));
+                    builder.setNegativeButton(R.string.back, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                         }

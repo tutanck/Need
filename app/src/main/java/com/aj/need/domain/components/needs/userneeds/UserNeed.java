@@ -20,16 +20,16 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
 
     private String _id;
     private String ownerID;
+    private String ownerName;
 
     private String search;
     private String title;
     private String description;
     private String reward;
     private String where; //!important : should be the string not a position (no conversion to apply )
-    private String when; //!important : should be the string not a date (no conversion to apply )
 
+    private boolean metaIsWhereVisible;
     private Coord metaWhereCoord;
-    private Long metaWhenTime;//!important : do not use for now : unreliable inter-devices
 
     private boolean active;
     private final boolean deleted = false; //make no sense to instantiate (nor to retrieve) a deleted need
@@ -40,31 +40,30 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
     public UserNeed(
             String _id
             , String ownerID
+            , String ownerName
 
             , String search
             , String title
             , String description
             , String reward
             , String where
-            , String when
-
+            , boolean metaIsWhereVisible
             , Coord metaWhereCoord
-            , Long metaWhenTime
 
             , boolean active
     ) {
         this._id = _id;
         this.ownerID = ownerID;
+        this.ownerName = ownerName;
 
         this.search = search;
         this.title = title;
         this.description = description;
         this.reward = reward;
         this.where = where;
-        this.when = when;
 
+        this.metaIsWhereVisible = metaIsWhereVisible;
         this.metaWhereCoord = metaWhereCoord;
-        this.metaWhenTime = metaWhenTime;
 
         this.active = active;
     }
@@ -74,23 +73,23 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
     public UserNeed tr(DocumentSnapshot need) {
         return new UserNeed(need.getId()
                 , need.getString(USER_NEEDS.ownerIDKey)
+                ,need.getString(USER_NEEDS.ownerNameKey)
 
                 , need.getString(USER_NEEDS.searchKey)
                 , need.getString(USER_NEEDS.titleKey)
                 , need.getString(USER_NEEDS.descriptionKey)
                 , need.getString(USER_NEEDS.rewardKey)
                 , need.getString(USER_NEEDS.whereKey)
-                , need.getString(USER_NEEDS.whenKey)
 
+                , need.getBoolean(USER_NEEDS.metaIsWhereVisibleKey)
                 , toCoord(need.get(USER_NEEDS.metaWhereCoordKey))
-                , need.getLong(USER_NEEDS.metaWhenTimeKey)
 
                 , need.getBoolean(USER_NEEDS.activeKey))
                 .setDate(need.getDate(USER_NEEDS.dateKey));
     }
 
 
-    private UserNeed setDate(Date date){
+    private UserNeed setDate(Date date) {
         super.date = date;
         return this;
     }
@@ -110,6 +109,10 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
 
     public String getOwnerID() {
         return ownerID;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
     }
 
     public String getSearch() {
@@ -132,19 +135,13 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
         return where;
     }
 
-    public String getWhen() {
-        return when;
+    public boolean isMetaIsWhereVisible() {
+        return metaIsWhereVisible;
     }
-
 
     public Coord getMetaWhereCoord() {
         return metaWhereCoord;
     }
-
-    public Long getMetaWhenTime() {
-        return metaWhenTime;
-    }
-
 
     public boolean isActive() {
         return active;

@@ -29,9 +29,9 @@ public class ResetPasswordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reset_password);
 
-        inputEmail = (EditText) findViewById(R.id.email);
-        btnReset = (Button) findViewById(R.id.btn_reset_password);
-        btnBack = (Button) findViewById(R.id.btn_back);
+        inputEmail = findViewById(R.id.email);
+        btnReset = findViewById(R.id.btn_reset_password);
+        btnBack = findViewById(R.id.btn_back);
         progressBarFragment = (ProgressBarFragment) getSupportFragmentManager().findFragmentById(R.id.waiter_modal_fragment);
 
 
@@ -52,7 +52,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
                 if (!validateForm(email)) return;
 
-                KeyboardServices.dismiss(ResetPasswordActivity.this,inputEmail);
+                KeyboardServices.dismiss(ResetPasswordActivity.this, inputEmail);
                 progressBarFragment.show();
                 auth.sendPasswordResetEmail(email)
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -62,8 +62,11 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                     progressBarFragment.hide();
                                     __.showLongToast(ResetPasswordActivity.this, "Echec de la réinitialisation du mot de passe!");
                                     Log.d("FirebaseAuth", "" + task.getException());//// TODO: 01/10/2017 check what exc and swow the right msg error
-                                } else
+                                } else {
+                                    progressBarFragment.hide();
                                     __.showLongToast(ResetPasswordActivity.this, "Nous vous avons envoyé des instructions pour réinitialiser votre mot de passe!");
+                                    finish();
+                                }
                             }
                         });
             }

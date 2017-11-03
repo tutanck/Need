@@ -28,6 +28,7 @@ import com.aj.need.domain.components.needs.userneeds.UserNeedsFragment;
 import com.aj.need.domain.components.profile.ProfileFragment;
 import com.aj.need.tools.components.fragments.FormField;
 import com.aj.need.tools.utils.Avail;
+import com.aj.need.tools.utils.__;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -94,10 +95,16 @@ public class MainActivity extends AppCompatActivity implements FormField.Listene
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
-                if (e == null && snapshot != null && snapshot.exists()) {
+                if (e != null) __.apologize(MainActivity.this, true);
+
+                else if (snapshot != null && snapshot.exists()) {
                     Log.d("AvailabilityListener: ", "Current data: " + snapshot.getData().toString());
-                    resetAvailabilityBtn(((Long) snapshot.getData().get(USERS.availabilityKey)).intValue());
-                }
+                    String userName = snapshot.getString(USERS.usernameKey);
+                    int userAvail = (snapshot.getLong(USERS.availabilityKey)).intValue();
+                    ((App) getApplication()).updateUser(new User(userName, userAvail));
+                    resetAvailabilityBtn(userAvail);
+                } else
+                    __.fatal("Inconsistent database/auth : unknown current user");
             }
         });
 

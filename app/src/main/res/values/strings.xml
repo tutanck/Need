@@ -85,4 +85,13 @@
         Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
         Lorem ipsum toggle bol regarde toi et longue vie au roi fou de lui on ne sait que trop bien la loi
     </string>
+    <string name="sensitive_information">Information sensible !</string>
+    <string name="yes">OUI</string>
+    <string name="no">NON</string>
+    <string name="address_visibility_prompt_message">Voulez vous que l\'adresse soit visible dans l\'annonce ?</string>
+    <string name="addr_private_visibility_message">Vous seul pouvez voir l\'adresse.</string>
+    <string name="addr_public_visibility_message">L\'adresse sera visible dans l\'annonce.</string>
+    <string name="adr_is_not_visible_msg">L\'adresse est masquée !</string>
+    <string name="back">Retour</string>
+    <string name="just_now">à l\'instant</string>
 </resources>
