@@ -20,6 +20,7 @@ import com.aj.need.tools.components.fragments.DatePanelFragment;
 import com.aj.need.tools.components.services.ComponentsServices;
 import com.aj.need.tools.utils.Tagger;
 import com.aj.need.tools.utils._DateUtils;
+import com.aj.need.tools.utils._PlaceUtils;
 import com.aj.need.tools.utils._Storage;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -69,7 +70,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
         private LinearLayout detailsLayout, publicationDateLayout, placeLayout;
         private ImageView ownerIV;
         private Button pokeBtn;
-        private TextView mOwnerNameTV, mTitleTV, mAdDateTV, adDistanceTV, mDescriptionTV, mKeywordsTV;
+        private TextView mOwnerNameTV, mTitleTV, mAdDateTV, mAdDistanceTV, mDescriptionTV, mKeywordsTV;
 
         private UserNeed mAd;
 
@@ -88,7 +89,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
             mKeywordsTV = v.findViewById(R.id.keywordsTV);
 
             mAdDateTV = v.findViewById(R.id.adDateTV);
-            adDistanceTV = v.findViewById(R.id.adDistanceTV);
+            mAdDistanceTV = v.findViewById(R.id.adDistanceTV);
 
             pokeBtn = v.findViewById(R.id.pokeBtn);
         }
@@ -101,6 +102,11 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
             mOwnerNameTV.setText(ad.getOwnerName());
             mTitleTV.setText(ad.getTitle());
             mAdDateTV.setText(_DateUtils.ago(ad.getDate()));
+            mAdDistanceTV.setText(_PlaceUtils.distance(
+                    ad.getMetaWhereCoord().getLatitude()
+                    ,ad.getMetaWhereCoord().getLongitude()
+                    ,0,0
+            ));
             mDescriptionTV.setText(ad.getDescription());
             mKeywordsTV.setText(Tagger.tags(ad.getSearch()));
 

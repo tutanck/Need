@@ -3,7 +3,7 @@ package com.aj.need.tools.utils;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.Serializable;
-import java.util.HashMap;
+
 
 /**
  * Created by joan on 29/10/2017.
@@ -13,13 +13,9 @@ public class Coord implements Serializable {
     private final double latitude;
     private final double longitude;
 
-    public Coord(double var1, double var2) {
-        this.latitude = var1;
-        this.longitude = var2;
-    }
-
-    public Coord(LatLng latLng) {
-        this(latLng.latitude, latLng.longitude);
+    public Coord(double lat, double lng) {
+        this.latitude = lat;
+        this.longitude = lng;
     }
 
 
@@ -32,9 +28,13 @@ public class Coord implements Serializable {
     }
 
     public String toString() {
-        double var1 = this.latitude;
-        double var3 = this.longitude;
-        return (new StringBuilder()).append("GeoPt { latitude=").append(var1).append(", longitude=").append(var3).append(" }").toString();
+        double lat = this.latitude;
+        double lng = this.longitude;
+        return (new StringBuilder()).append("GeoPt { latitude=").append(lat).append(", longitude=").append(lng).append(" }").toString();
+    }
+
+    public LatLng toLatLng() {
+        return new LatLng(this.getLatitude(), this.getLongitude());
     }
 
 }

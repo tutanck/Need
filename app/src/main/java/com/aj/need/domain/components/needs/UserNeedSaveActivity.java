@@ -34,6 +34,7 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
@@ -284,7 +285,12 @@ public class UserNeedSaveActivity extends AppCompatActivity
     }
 
     private Coord getPlace() {
-        return place == null ? null : new Coord(place.getLatLng());
+        if (place == null) return null;
+
+        LatLng latLng = place.getLatLng();
+        if (latLng == null) return null;
+
+        return new Coord(latLng.latitude, latLng.longitude);
     }
 
 
