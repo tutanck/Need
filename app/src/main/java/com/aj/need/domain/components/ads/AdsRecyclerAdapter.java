@@ -1,5 +1,6 @@
 package com.aj.need.domain.components.ads;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
@@ -15,7 +16,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.aj.need.R;
+import com.aj.need.db.IO;
+import com.aj.need.db.colls.APPLICANTS;
 import com.aj.need.domain.components.needs.userneeds.UserNeed;
+import com.aj.need.main.App;
 import com.aj.need.tools.components.fragments.DatePanelFragment;
 import com.aj.need.tools.components.services.ComponentsServices;
 import com.aj.need.tools.utils.Tagger;
@@ -104,8 +108,8 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
             mAdDateTV.setText(_DateUtils.ago(ad.getDate()));
             mAdDistanceTV.setText(_PlaceUtils.distance(
                     ad.getMetaWhereCoord().getLatitude()
-                    ,ad.getMetaWhereCoord().getLongitude()
-                    ,0,0
+                    , ad.getMetaWhereCoord().getLongitude()
+                    , 0, 0
             ));
             mDescriptionTV.setText(ad.getDescription());
             mKeywordsTV.setText(Tagger.tags(ad.getSearch()));
@@ -155,10 +159,34 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                 public void onClick(View view) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle("Lieu");
-                    builder.setMessage(mAd.isMetaIsWhereVisible()? mAd.getWhere(): mContext.getString(R.string.adr_is_not_visible_msg));
+                    builder.setMessage(mAd.isMetaIsWhereVisible() ? mAd.getWhere() : mContext.getString(R.string.adr_is_not_visible_msg));
                     builder.setNegativeButton(R.string.back, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
+                        }
+                    });
+                    builder.show();
+                }
+            });
+
+
+            pokeBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setTitle("Proposition de services");
+                    builder.setMessage("Vous souhaitez proposer vos services pour l'annonce : \n'"+mAd.getTitle()+"'.");
+                    builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                        }
+                    });
+                    builder.setPositiveButton("Confirmer", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            App app = ((App) ((Activity) mContext).getApplication());
+                            APPLICANTS.getAdApplicantsRef(mAd.getOwnerID(), mAd.get_id())
+                                    .document(IO.getCurrentUserUid()).set(app.getUser());
                         }
                     });
                     builder.show();

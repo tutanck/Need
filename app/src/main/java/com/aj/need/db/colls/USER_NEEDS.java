@@ -31,9 +31,9 @@ public final class USER_NEEDS implements Coll {
         return USERS.getUserRef(uid).collection(coll);
     }
 
+
     public final static CollectionReference getCurrentUserNeedsRef() {
         return USERS.getCurrentUserRef().collection(coll);
     }
-
 
 }

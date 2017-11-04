@@ -20,7 +20,7 @@ import com.aj.need.domain.components.needs.userneeds.UserNeed;
 /**
  * Created by joan on 04/10/2017.
  */
-public class UserNeedAdActivity extends AppCompatActivity {
+public class UserNeedActivity extends AppCompatActivity {
 
     private final static String USER_NEED = "USER_NEED";
 
@@ -42,7 +42,7 @@ public class UserNeedAdActivity extends AppCompatActivity {
         viewPager.setAdapter(
                 new PagerAdapter(
                         getSupportFragmentManager()
-                        , UserNeedAdActivity.this
+                        , UserNeedActivity.this
                 )
         );
 
@@ -55,28 +55,28 @@ public class UserNeedAdActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                UserNeedSaveActivity.start(UserNeedAdActivity.this, mUserNeed.get_id(), true);
+                UserNeedSaveActivity.start(UserNeedActivity.this, mUserNeed.get_id(), true);
             }
         });
     }
 
 
     public static void start(Context context, UserNeed userNeed) {
-        Intent intent = new Intent(context, UserNeedAdActivity.class);
+        Intent intent = new Intent(context, UserNeedActivity.class);
         intent.putExtra(USER_NEED, userNeed);
         context.startActivity(intent);
     }
 
 
     public static void start(Context context) {
-        context.startActivity(new Intent(context, UserNeedAdActivity.class));
+        context.startActivity(new Intent(context, UserNeedActivity.class));
     }
 
-    private static class PagerAdapter extends FragmentPagerAdapter {
+    private /*static*/ class PagerAdapter extends FragmentPagerAdapter {
 
         private Context mContext;
 
-        private String TAB_TITLES[] = new String[]{"PROFILS TROUVES", "POKES RECUES"};
+        private String TAB_TITLES[] = new String[]{"PROPOSITIONS","PROFILS TROUVES"};
 
         public PagerAdapter(FragmentManager fm, Context context) {
             super(fm);
@@ -87,11 +87,11 @@ public class UserNeedAdActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return NeedProfilesFragment.newInstance();
+                    return NeedProfilesFragment.newInstance(position, mUserNeed);
                 case 1:
-                    return NeedProfilesFragment.newInstance();
+                    return NeedProfilesFragment.newInstance(position, mUserNeed);
                 default:
-                    throw new RuntimeException("UserNeedAdActivity/PagerAdapter::getItem : unknown top level tab menu");
+                    throw new RuntimeException("UserNeedActivity/PagerAdapter::getItem : unknown top level tab menu");
             }
         }
 

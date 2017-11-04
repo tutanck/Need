@@ -20,7 +20,7 @@ import android.widget.TextView;
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USER_NEEDS;
-import com.aj.need.domain.components.needs.UserNeedAdActivity;
+import com.aj.need.domain.components.needs.UserNeedActivity;
 import com.aj.need.domain.components.needs.UserNeedNewSearchActivity;
 
 import com.aj.need.tools.components.others._Recycler;
@@ -220,7 +220,7 @@ public class UserNeedsFragment extends Fragment {
 
             @Override
             public void onClick(RecyclerView.ViewHolder viewHolder, int position) {
-                UserNeedAdActivity.start(getContext()
+                UserNeedActivity.start(getContext()
                         , ((UserNeedsRecyclerAdapter.ViewHolder) viewHolder).getUserNeed());
             }
 

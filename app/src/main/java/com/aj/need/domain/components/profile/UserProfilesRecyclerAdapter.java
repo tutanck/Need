@@ -113,6 +113,7 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
             });
 
 
+            //// TODO: 04/11/2017 change that by a boolean lazy loading in the UserProfilesRecyclerAdapter
             if (mUserProfile.getUsername() == null || mUserProfile.getAvailability() == Avail.UNKNOWN) {
                 Log.d("bindItem/", "UserProfilesRecyclerAdapter::getUser");
                 USERS.getUserRef(mUserProfile.get_id()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {

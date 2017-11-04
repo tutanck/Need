@@ -80,6 +80,7 @@ public class AdsFragment extends Fragment {
            //todo new act with  this frag as core
             }
         });
+        fab.setVisibility(View.GONE);
 
         return view;
     }

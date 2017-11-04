@@ -1,5 +1,6 @@
 package com.aj.need.domain.components.profile;
 
+import com.aj.need.db.colls.USERS;
 import com.aj.need.domain.entities.Entity;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.ITranslatable;
@@ -31,7 +32,7 @@ public class UserProfile extends Entity implements Serializable, ITranslatable<U
     }
 
 
-    private UserProfile(
+    protected UserProfile(
             String _id
             , String username
             , int reputation
@@ -129,8 +130,9 @@ public class UserProfile extends Entity implements Serializable, ITranslatable<U
         return null;
     }
 
+
     @Override
-    public UserProfile tr(DocumentSnapshot documentSnapshot) {
+    public UserProfile tr(DocumentSnapshot profile) {
         return null;
     }
 }

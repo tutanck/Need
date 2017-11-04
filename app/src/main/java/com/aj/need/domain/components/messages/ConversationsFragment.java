@@ -14,8 +14,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.aj.need.R;
-import com.aj.need.db.colls.MESSAGES;
-import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_CONTACTS;
 import com.aj.need.domain.components.profile.Contact;
 import com.aj.need.domain.components.profile.UserProfile;
@@ -23,10 +21,7 @@ import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -121,7 +116,7 @@ public class ConversationsFragment extends Fragment {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 //!important : useful log for index issues tracking, etc.
-                Log.d("Convt_/loadContacts", "querySnapshot=" + task.getResult() + " e=", task.getException());
+                Log.d("ConversationsFragment", "loadContacts/onComplete::querySnapshot=" + task.getResult() + " e=", task.getException());
 
                 if (task.isSuccessful())
                     refreshContactList(task.getResult(), true);

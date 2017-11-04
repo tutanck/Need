@@ -39,7 +39,7 @@
 
 
         <activity
-            android:name=".domain.components.needs.UserNeedAdActivity"
+            android:name=".domain.components.needs.UserNeedActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 

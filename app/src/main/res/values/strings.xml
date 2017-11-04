@@ -94,4 +94,7 @@
     <string name="adr_is_not_visible_msg">L\'adresse est masquée !</string>
     <string name="back">Retour</string>
     <string name="just_now">à l\'instant</string>
+    <string name="cancel">Annuler</string>
+    <string name="fragment_need_profiles_indic1">Aucun profil ne correspond</string>
+    <string name="fragment_need_profiles_indic2">Aucune proposition reçue pour le moment</string>
 </resources>
