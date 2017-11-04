@@ -134,7 +134,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                 public void onClick(View view) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle(mAd.getTitle());
-                    builder.setMessage(mAd.getDescription() + "\n\nMot-clés:\n" + Tagger.tags(mAd.getSearch()));
+                    builder.setMessage("Description:\n" +mAd.getDescription() + "\n\nRécompense:\n" + mAd.getReward() + "\n\nMot-clés:\n" + Tagger.tags(mAd.getSearch()));
                     builder.setPositiveButton("Retour", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
@@ -175,7 +175,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                 public void onClick(View view) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle("Proposition de services");
-                    builder.setMessage("Vous souhaitez proposer vos services pour l'annonce : \n'"+mAd.getTitle()+"'.");
+                    builder.setMessage("Vous souhaitez proposer vos services pour l'annonce : \n'" + mAd.getTitle() + "'.");
                     builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
