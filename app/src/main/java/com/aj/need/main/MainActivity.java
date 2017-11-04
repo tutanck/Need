@@ -24,7 +24,7 @@ import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.domain.components.ads.AdsFragment;
 import com.aj.need.domain.components.messages.ConversationsFragment;
-import com.aj.need.domain.components.needs.userneeds.UserNeedsFragment;
+import com.aj.need.domain.components.needs.UserNeedsFragment;
 import com.aj.need.domain.components.profile.ProfileFragment;
 import com.aj.need.tools.components.fragments.FormField;
 import com.aj.need.tools.utils.Avail;

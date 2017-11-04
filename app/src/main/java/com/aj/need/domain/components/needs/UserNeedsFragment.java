@@ -1,4 +1,4 @@
-package com.aj.need.domain.components.needs.userneeds;
+package com.aj.need.domain.components.needs;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -20,8 +20,6 @@ import android.widget.TextView;
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USER_NEEDS;
-import com.aj.need.domain.components.needs.UserNeedActivity;
-import com.aj.need.domain.components.needs.UserNeedNewSearchActivity;
 
 import com.aj.need.tools.components.others._Recycler;
 import com.aj.need.tools.utils.Jarvis;

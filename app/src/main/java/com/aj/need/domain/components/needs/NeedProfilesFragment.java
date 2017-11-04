@@ -16,7 +16,6 @@ import android.widget.TextView;
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.APPLICANTS;
-import com.aj.need.domain.components.needs.userneeds.UserNeed;
 import com.aj.need.domain.components.profile.Applicant;
 import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;

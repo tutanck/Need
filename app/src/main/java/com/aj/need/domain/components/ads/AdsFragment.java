@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.colls.USER_NEEDS;
-import com.aj.need.domain.components.needs.userneeds.UserNeed;
+import com.aj.need.domain.components.needs.UserNeed;
 import com.aj.need.tools.utils.Jarvis;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.Query;

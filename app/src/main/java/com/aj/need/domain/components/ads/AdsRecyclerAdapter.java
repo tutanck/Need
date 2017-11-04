@@ -18,7 +18,7 @@ import android.widget.TextView;
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.APPLICANTS;
-import com.aj.need.domain.components.needs.userneeds.UserNeed;
+import com.aj.need.domain.components.needs.UserNeed;
 import com.aj.need.main.App;
 import com.aj.need.tools.components.fragments.DatePanelFragment;
 import com.aj.need.tools.components.services.ComponentsServices;

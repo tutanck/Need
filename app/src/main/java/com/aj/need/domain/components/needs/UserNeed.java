@@ -1,4 +1,4 @@
-package com.aj.need.domain.components.needs.userneeds;
+package com.aj.need.domain.components.needs;
 
 import com.aj.need.db.colls.USER_NEEDS;
 import com.aj.need.domain.entities.Entity;
@@ -94,7 +94,7 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
         return this;
     }
 
-    private Coord toCoord(Object o) {
+    public static Coord toCoord(Object o) {
         return o == null ? null : new Coord(
                 ((HashMap<Double, Double>) o).get("latitude")
                 , ((HashMap<Double, Double>) o).get("longitude")

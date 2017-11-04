@@ -19,7 +19,6 @@ import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USER_NEEDS;
 
-import com.aj.need.domain.components.needs.userneeds.UserNeed;
 import com.aj.need.main.App;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.fragments.FormField;
@@ -50,6 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.aj.need.domain.components.needs.UserNeed.toCoord;
+
 
 public class UserNeedSaveActivity extends AppCompatActivity
         implements FormField.Listener/*, DatePickerDialog.OnDateSetListener */ {
@@ -69,7 +70,7 @@ public class UserNeedSaveActivity extends AppCompatActivity
 
     private FloatingActionButton fab;
 
-    private Place place;
+    private Coord whereCoord;
 
     private Boolean isWhereVisible = false;
 
@@ -124,43 +125,8 @@ public class UserNeedSaveActivity extends AppCompatActivity
 
 
         fab = findViewById(R.id.fab_save_need);
+        setSubmitBehaviour();
         disableSaveBtn();
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!validState()) return;
-
-                final CollectionReference userNeedsRef = USER_NEEDS.getCurrentUserNeedsRef();
-
-                //!important : it would be a bug if docs were upserted on update mode (_id==null upsert iof update)
-                final DocumentReference curUserNeedRef = (_id != null) ? userNeedsRef.document(_id) : userNeedsRef.document();
-
-                //!important : avoid creating new needs if initial id==null. Must be set bf creating the UserNeed object
-                _id = curUserNeedRef.getId();
-
-                curUserNeedRef.set(new UserNeed(_id
-
-                        , IO.getCurrentUserUid()
-                        , ((App) getApplication()).getUserName()
-
-                        , getFieldText(USER_NEEDS.searchKey)
-                        , getFieldText(USER_NEEDS.titleKey)
-                        , getFieldText(USER_NEEDS.descriptionKey)
-                        , getFieldText(USER_NEEDS.rewardKey)
-                        , getFieldText(USER_NEEDS.whereKey)
-                        , isWhereVisible
-                        , getPlace()
-
-                        , needSwitch.isChecked())
-                );
-
-                close();
-                __.showShortToast(UserNeedSaveActivity.this, getString(R.string.update_sucessful_message));
-                //finish(); //TODO: 04/10/2017 uncomment on prod mode
-
-            }
-        });
-
     }
 
 
@@ -183,6 +149,8 @@ public class UserNeedSaveActivity extends AppCompatActivity
                                 formFields.get(key).setText(need.getString(key));
 
                             needSwitch.setChecked(need.getBoolean(USER_NEEDS.activeKey));
+                            isWhereVisible = need.getBoolean(USER_NEEDS.metaIsWhereVisibleKey);
+                            whereCoord = toCoord(need.get(USER_NEEDS.metaWhereCoordKey));
 
                             progressBarFragment.hide();
                         } else {
@@ -254,8 +222,15 @@ public class UserNeedSaveActivity extends AppCompatActivity
         if (requestCode == PLACE_PICKER_REQUEST)
             if (resultCode == RESULT_OK) {
 
-                place = PlacePicker.getPlace(this, data);
+                Place place = PlacePicker.getPlace(this, data);
+
+                if (place == null) {
+                    __.showShortToast(this, getString(R.string.an_error_occured) + "\n Impossible d'identifier le lieu.");
+                    return;
+                }
+
                 formFields.get(USER_NEEDS.whereKey).setText(place.getAddress().toString());
+                whereCoord = new Coord(place.getLatLng().latitude, place.getLatLng().longitude);
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(UserNeedSaveActivity.this);
                 builder.setCancelable(false);
@@ -283,16 +258,6 @@ public class UserNeedSaveActivity extends AppCompatActivity
                 enableSaveBtn();
             }
     }
-
-    private Coord getPlace() {
-        if (place == null) return null;
-
-        LatLng latLng = place.getLatLng();
-        if (latLng == null) return null;
-
-        return new Coord(latLng.latitude, latLng.longitude);
-    }
-
 
 
 
@@ -333,15 +298,48 @@ public class UserNeedSaveActivity extends AppCompatActivity
 
      /*FIELDS EDITION/VALIDATION*/
 
+    private void setSubmitBehaviour() {
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!validState()) return;
+
+                final CollectionReference userNeedsRef = USER_NEEDS.getCurrentUserNeedsRef();
+
+                //!important : it would be a bug if docs were upserted on update mode (_id==null upsert iof update)
+                final DocumentReference curUserNeedRef = (_id != null) ? userNeedsRef.document(_id) : userNeedsRef.document();
+
+                //!important : avoid creating new needs if initial id==null. Must be set bf creating the UserNeed object
+                _id = curUserNeedRef.getId();
+
+                curUserNeedRef.set(new UserNeed(_id
+                        , IO.getCurrentUserUid()
+                        , ((App) getApplication()).getUserName()
+                        , getFieldText(USER_NEEDS.searchKey)
+                        , getFieldText(USER_NEEDS.titleKey)
+                        , getFieldText(USER_NEEDS.descriptionKey)
+                        , getFieldText(USER_NEEDS.rewardKey)
+                        , getFieldText(USER_NEEDS.whereKey)
+                        , isWhereVisible
+                        , whereCoord
+                        , needSwitch.isChecked())
+                );
+
+                close();
+                __.showShortToast(UserNeedSaveActivity.this, getString(R.string.update_sucessful_message));
+                //finish(); //TODO: 04/10/2017 uncomment on prod mode
+            }
+        });
+    }
+
+
     private List<String> lockedKeys = Arrays.asList(new String[]
             {USER_NEEDS.searchKey, USER_NEEDS.whereKey}
     );
 
-
     private boolean isEditableField(String key) {
         return !lockedKeys.contains(key);
     }
-
 
     private boolean validState() {
         boolean valid = true;

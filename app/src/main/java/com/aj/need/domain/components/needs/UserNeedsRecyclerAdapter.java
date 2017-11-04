@@ -1,4 +1,4 @@
-package com.aj.need.domain.components.needs.userneeds;
+package com.aj.need.domain.components.needs;
 
 import android.app.Activity;
 import android.content.Context;
