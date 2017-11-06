@@ -31,7 +31,7 @@ import java.util.ArrayList;
 
 public class NeedProfilesFragment extends Fragment {
 
-    private final static String POS = "POS", NEED = "NEED";
+    private final static String POS = "POS", NEED_ID = "NEED_ID";
 
 
     private ArrayList<UserProfile> profileList = new ArrayList<>();
@@ -47,10 +47,10 @@ public class NeedProfilesFragment extends Fragment {
     private QuerySnapshot lastQuerySnapshot;
 
 
-    public static NeedProfilesFragment newInstance(int pos, UserNeed userNeed) {
+    public static NeedProfilesFragment newInstance(int pos, String needID) {
         Bundle args = new Bundle();
         args.putInt(POS, pos);
-        args.putSerializable(NEED,userNeed);
+        args.putString(NEED_ID, needID);
         NeedProfilesFragment fragment = new NeedProfilesFragment();
         fragment.setArguments(args);
         return fragment;
@@ -88,9 +88,12 @@ public class NeedProfilesFragment extends Fragment {
                 R.string.fragment_need_profiles_indic1 :
                 R.string.fragment_need_profiles_indic2);
 
-        UserNeed userNeed = ((UserNeed) getArguments().getSerializable(NEED));
+        String needID = getArguments().getString(NEED_ID);
 
-        mLoadQuery = APPLICANTS.getAdApplicantsRef(IO.getCurrentUserUid(),userNeed.get_id() );
+        if(needID == null)
+            __.fatal("NeedProfilesFragment: needID == null !");
+
+        mLoadQuery = APPLICANTS.getAdApplicantsRef(IO.getCurrentUserUid(), needID);
         //// TODO: 28/10/2017  limit and orderBy date and vu !important
 
         return view;

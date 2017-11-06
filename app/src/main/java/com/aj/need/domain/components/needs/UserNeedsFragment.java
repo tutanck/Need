@@ -192,6 +192,8 @@ public class UserNeedsFragment extends Fragment {
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
+                //__.showShortToast(getContext(), "setRecyclerViewScrollListener=");
+
                 if (lastQuerySnapshot == null /*the initial load is required to load more*/
                         || lastQuerySnapshot.isEmpty() /*no more content to load*/
                         || isLoading /*load in progress*/) return;
@@ -218,8 +220,8 @@ public class UserNeedsFragment extends Fragment {
 
             @Override
             public void onClick(RecyclerView.ViewHolder viewHolder, int position) {
-                UserNeedActivity.start(getContext()
-                        , ((UserNeedsRecyclerAdapter.ViewHolder) viewHolder).getUserNeed());
+                UserNeed userNeed = ((UserNeedsRecyclerAdapter.ViewHolder) viewHolder).getUserNeed();
+                UserNeedActivity.start(getContext(),userNeed.get_id(),userNeed.getTitle());
             }
 
             @Override

@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.aj.need.R;
+import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.utils.Avail;
@@ -84,6 +85,7 @@ public class LoginActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
                                     USERS.getCurrentUserRef().update(USERS.availabilityKey, Avail.AVAILABLE);
+                                    USERS.getCurrentUserRef().update(USERS.instanceIDTokenKey, IO.getInstanceIDToken());
                                     MainActivity.start(LoginActivity.this);
                                 }else {
                                     progressBarFragment.hide();

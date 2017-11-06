@@ -32,15 +32,18 @@ public final class USERS implements Coll {
 
     private final static String coll = "USERS";
 
+    public final static String instanceIDTokenKey = "instanceIDToken";
+
     public final static String typeKey = "type";
     public final static String usernameKey = "username";
     public final static String resumeKey = "resume";
-    public final static String tariffKey="tariff";
+    public final static String tariffKey = "tariff";
 
 
     public final static String availabilityKey = "availability";
     public final static String avgRatingKey = "avgRating";
     public final static String nbVotersKey = "nbVoters";
+
 
     public final static DocumentReference getUserRef(String id) {
         return IO.db.collection(coll).document(id);

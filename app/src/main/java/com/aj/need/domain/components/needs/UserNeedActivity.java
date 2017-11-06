@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -21,9 +22,11 @@ import com.aj.need.R;
  */
 public class UserNeedActivity extends AppCompatActivity {
 
-    private final static String USER_NEED = "USER_NEED";
+    private final static String NEED_ID = "NEED_ID";
+    private final static String NEED_TITLE = "NEED_TITLE";
 
-    private UserNeed mUserNeed;
+    private String needID;
+    private String needTitle;
 
 
     @Override
@@ -31,10 +34,16 @@ public class UserNeedActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_need_ad);
 
-        mUserNeed = (UserNeed) getIntent().getSerializableExtra(USER_NEED);
+        Log.d("_UserNeedActivityExtra", getIntent().getExtras().toString());
+
+        needID = getIntent().getStringExtra(NEED_ID);
+        needTitle = getIntent().getStringExtra(NEED_TITLE);
+
+
+        /*THESE INSTRUCTIONS MUST BE AFTER SETTING needID VALUE CAUSE THEY USE IT*/
 
         TextView needTitleTV = findViewById(R.id.needTitleTV);
-        needTitleTV.setText(mUserNeed.getTitle());
+        needTitleTV.setText(needTitle);
 
         // Get the ViewPager and set it's PagerAdapter so that it can display items
         ViewPager viewPager = findViewById(R.id.user_need_results_viewpager);
@@ -49,20 +58,21 @@ public class UserNeedActivity extends AppCompatActivity {
         TabLayout tabLayout = findViewById(R.id.user_need_results_sliding_tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-
         FloatingActionButton fab = findViewById(R.id.fab_open_need_save);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                UserNeedSaveActivity.start(UserNeedActivity.this, mUserNeed.get_id(), true);
+                UserNeedSaveActivity.start(UserNeedActivity.this, needID, true);
             }
         });
     }
 
 
-    public static void start(Context context, UserNeed userNeed) {
+    public static void start(Context context, String needID, String needTitle) {
         Intent intent = new Intent(context, UserNeedActivity.class);
-        intent.putExtra(USER_NEED, userNeed);
+        intent.putExtra(NEED_ID, needID);
+        intent.putExtra(NEED_TITLE, needTitle);
         context.startActivity(intent);
     }
 
@@ -75,7 +85,7 @@ public class UserNeedActivity extends AppCompatActivity {
 
         private Context mContext;
 
-        private String TAB_TITLES[] = new String[]{"PROPOSITIONS","PROFILS TROUVES"};
+        private String TAB_TITLES[] = new String[]{"PROPOSITIONS", "PROFILS TROUVES"};
 
         public PagerAdapter(FragmentManager fm, Context context) {
             super(fm);
@@ -86,9 +96,9 @@ public class UserNeedActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return NeedProfilesFragment.newInstance(position, mUserNeed);
+                    return NeedProfilesFragment.newInstance(position, needID);
                 case 1:
-                    return NeedProfilesFragment.newInstance(position, mUserNeed);
+                    return NeedProfilesFragment.newInstance(position, needID);
                 default:
                     throw new RuntimeException("UserNeedActivity/PagerAdapter::getItem : unknown top level tab menu");
             }
