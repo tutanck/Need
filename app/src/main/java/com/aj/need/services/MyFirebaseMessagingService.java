@@ -4,19 +4,28 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.aj.need.R;
+import com.aj.need.domain.components.messages.MessagesActivity;
+import com.aj.need.domain.components.needs.UserNeedActivity;
 import com.aj.need.main.MainActivity;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import static com.aj.need.domain.components.needs.UserNeedActivity.APPLICANT_ID;
+import static com.aj.need.domain.components.needs.UserNeedActivity.APPLICANT_NAME;
+import static com.aj.need.domain.components.needs.UserNeedActivity.NEED_ID;
+import static com.aj.need.domain.components.needs.UserNeedActivity.NEED_TITLE;
+
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseMsgService";
+    private static final int MyFirebaseMessagingServiceRequestCode = 0;
+    private static int notificationID = 0;
+    private static final String USER_NEED_ACTIVITY = ".domain.components.needs.UserNeedActivity";
+    private static final String MESSAGES_ACTIVITY = ".domain.components.messages.MessagesActivity";
 
     /**
      * Called when message is received.
@@ -49,7 +58,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 scheduleJob();
             } else {
                 // Handle message within 10 seconds
-                handleNow();
+                handleNow(remoteMessage);
             }
 
         }
@@ -61,6 +70,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
+
+       // sendNotification(remoteMessage); //not trusted : // TODO: 07/11/2017  redo #later
+        //todo https://developer.android.com/guide/topics/ui/notifiers/notifications.html
+        //todo https://github.com/firebase/quickstart-android/tree/master/messaging/app/src/main/java/com/google/firebase/quickstart/fcm
     }
     // [END receive_message]
 
@@ -74,35 +87,66 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     /**
      * Handle time allotted to BroadcastReceivers.
      */
-    private void handleNow() {
+    private void handleNow(RemoteMessage remoteMessage) {
         Log.d(TAG, "Short lived task is done.");
     }
 
     /**
      * Create and show a simple notification containing the received FCM message.
      *
-     * @param messageBody FCM message body received.
+     * @param remoteMessage FCM message body received.
      */
-    private void sendNotification(String messageBody) {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
+    private void sendNotification(RemoteMessage remoteMessage) {
 
-        String channelId = "getString(R.string.default_notification_channel_id);";//// TODO: 06/11/2017  rem or uncom
-        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Intent intent = selectIntent(remoteMessage);
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this
+                , MyFirebaseMessagingServiceRequestCode /* Request code */
+                , intent,
+                PendingIntent.FLAG_ONE_SHOT
+        );
+
+        String channelId = getString(R.string.default_notification_channel_id);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
-                //.setSmallIcon(R.drawable.ic_stat_ic_notification)
-                .setContentTitle("FCM Message")
-                .setContentText(messageBody)
-                .setAutoCancel(true)
-                .setSound(defaultSoundUri)
-                .setContentIntent(pendingIntent);
+                        .setSmallIcon(R.drawable.ic_person_24dp) //// TODO: 07/11/2017 app icon
+                        .setContentTitle(remoteMessage.getNotification().getTitle())
+                        .setContentText(remoteMessage.getNotification().getBody())
+                        .setAutoCancel(true)
+                        .setContentIntent(pendingIntent);
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        notificationManager.notify(getNotificationID()/* ID of notification */, notificationBuilder.build());
+    }
+
+
+    private Intent selectIntent(RemoteMessage remoteMessage) {
+        String clickActionURI = remoteMessage.getNotification().getClickAction();
+        if (clickActionURI != null)
+            switch (clickActionURI) {
+                case USER_NEED_ACTIVITY:
+                    Intent intent_u = new Intent(this, UserNeedActivity.class);
+                    intent_u.putExtra(NEED_ID, remoteMessage.getData().get(NEED_ID));
+                    intent_u.putExtra(NEED_TITLE, remoteMessage.getData().get(NEED_TITLE));
+                    intent_u.putExtra(APPLICANT_ID, remoteMessage.getData().get(APPLICANT_ID));
+                    intent_u.putExtra(APPLICANT_NAME, remoteMessage.getData().get(APPLICANT_NAME));
+                    return intent_u;
+                case MESSAGES_ACTIVITY:
+                    Intent intent_m = new Intent(this, MessagesActivity.class);
+                    return intent_m;
+                default:
+                    return new Intent(this, MainActivity.class);
+            }
+
+        return new Intent(this, MainActivity.class);
+    }
+
+
+    private int getNotificationID() {
+        return ((notificationID++) % 16); //Maximum 16 notifications at a time
     }
 }

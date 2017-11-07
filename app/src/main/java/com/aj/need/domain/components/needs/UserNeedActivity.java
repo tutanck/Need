@@ -24,6 +24,8 @@ public class UserNeedActivity extends AppCompatActivity {
 
     private final static String NEED_ID = "NEED_ID";
     private final static String NEED_TITLE = "NEED_TITLE";
+    private final static String APPLICANT_ID = "APPLICANT_ID";
+    private final static String APPLICANT_NAME = "APPLICANT_NAME";
 
     private String needID;
 
