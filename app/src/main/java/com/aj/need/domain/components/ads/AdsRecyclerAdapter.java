@@ -26,6 +26,7 @@ import com.aj.need.tools.utils.Tagger;
 import com.aj.need.tools.utils._DateUtils;
 import com.aj.need.tools.utils._PlaceUtils;
 import com.aj.need.tools.utils._Storage;
+import com.aj.need.tools.utils.__;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -186,7 +187,9 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                         public void onClick(DialogInterface dialogInterface, int i) {
                             App app = ((App) ((Activity) mContext).getApplication());
                             APPLICANTS.getAdApplicantsRef(mAd.getOwnerID(), mAd.get_id())
-                                    .document(IO.getCurrentUserUid()).set(app.getUser());
+                                    .document(IO.getCurrentUserUid())
+                                    .set(new Apply(app.getUserName(),mAd.getTitle()));
+                            __.showShortToast(mContext,mContext.getString(R.string.request_taken_into_consideration_msg));
                         }
                     });
                     builder.show();

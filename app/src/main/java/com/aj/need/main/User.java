@@ -15,7 +15,6 @@ import java.io.Serializable;
 
 public class User extends Entity implements Serializable, ITranslatable<User> {
 
-    //// TODO: 06/11/2017 test with new user creation
     private String instanceIDToken = FirebaseInstanceId.getInstance().getToken();
     private String username;
     private int availability;

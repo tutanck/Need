@@ -32,4 +32,15 @@ public class ComponentsServices {
         view.setOnClickListener(listenner);
     }
 
+
+    public static void setSelectable(
+            Context context
+            , View view
+    ) {
+        view.setClickable(true);
+        TypedValue outValue = new TypedValue();
+        context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+        view.setBackgroundResource(outValue.resourceId);
+    }
+
 }

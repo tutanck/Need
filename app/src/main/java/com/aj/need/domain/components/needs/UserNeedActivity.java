@@ -26,7 +26,6 @@ public class UserNeedActivity extends AppCompatActivity {
     private final static String NEED_TITLE = "NEED_TITLE";
 
     private String needID;
-    private String needTitle;
 
 
     @Override
@@ -37,10 +36,10 @@ public class UserNeedActivity extends AppCompatActivity {
         Log.d("_UserNeedActivityExtra", getIntent().getExtras().toString());
 
         needID = getIntent().getStringExtra(NEED_ID);
-        needTitle = getIntent().getStringExtra(NEED_TITLE);
+        String needTitle = getIntent().getStringExtra(NEED_TITLE);
 
 
-        /*THESE INSTRUCTIONS MUST BE AFTER SETTING needID VALUE CAUSE THEY USE IT*/
+        /*THESE INSTRUCTIONS MUST BE AFTER SETTING needID CAUSE THEY USE ITS VALUE*/
 
         TextView needTitleTV = findViewById(R.id.needTitleTV);
         needTitleTV.setText(needTitle);

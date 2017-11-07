@@ -11,8 +11,10 @@
     app:cardElevation="2dp">
 
     <LinearLayout
+        android:id="@+id/needWrapperLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="1dp"
         android:background="?attr/selectableItemBackground"
         android:orientation="vertical">
 
@@ -22,7 +24,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/need_title_textview"
+                android:id="@+id/need_title_tv"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="@dimen/medium"
@@ -53,7 +55,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/need_search_textview"
+                android:id="@+id/need_search_tv"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="@dimen/medium"
@@ -67,25 +69,25 @@
                 android:textSize="12dp" />
 
             <TextView
-                android:id="@+id/need_nb_pokes_textview"
+                android:id="@+id/need_nb_pokes_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:text="0"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textColor="@color/Black"
+                android:textColor="@color/DarkGray"
                 android:textSize="12dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+
+            <ImageView
+                android:id="@+id/need_nb_pokes_IV"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginTop="2dp"
                 android:layout_marginLeft="@dimen/small"
                 android:layout_marginRight="@dimen/medium"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="propositions"
-                android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textColor="@color/Black"
-                android:textSize="12dp" />
+                android:background="@drawable/circle"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_person_24dp" />
 
         </LinearLayout>
 
