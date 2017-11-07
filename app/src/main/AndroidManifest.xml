@@ -56,7 +56,12 @@
         <activity
             android:name=".domain.components.messages.MessagesActivity"
             android:label="@string/title_activity_messages"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name=".domain.components.messages.MessagesActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".main.SignupActivity"
