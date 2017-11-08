@@ -19,6 +19,7 @@ import android.widget.EditText;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
+import com.aj.need.db.colls.CONTACTS_READS;
 import com.aj.need.db.colls.MESSAGES;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_CONTACTS;
@@ -29,6 +30,7 @@ import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -36,6 +38,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Transaction;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
@@ -56,15 +59,18 @@ public class MessagesActivity extends AppCompatActivity {
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
-    private Button chatboxSendBtn;
     private EditText chatboxET;
 
-    private String contact_id, contact_name, conversation_id;
+    private String contact_id;
+    private String conversation_id;
     private int contactAvailability;
     private Bitmap contactImage;
 
     private Query mLoadQuery;
     private QuerySnapshot lastQuerySnapshot;
+
+    private CollectionReference messagesRef;
+    private DocumentReference userContactRef, userAsContactRef;
 
 
     private ListenerRegistration conversationRegistration, contactRegistration;
@@ -92,11 +98,16 @@ public class MessagesActivity extends AppCompatActivity {
         });
 
         contact_id = getIntent().getStringExtra(CONTACT_ID);
-        contact_name = getIntent().getStringExtra(CONTACT_NAME);
+        String contact_name = getIntent().getStringExtra(CONTACT_NAME);
         contactAvailability = getIntent().getIntExtra(CONTACT_AVAILABILITY, Avail.UNKNOWN);
         conversation_id = __.ordered_concat(contact_id, IO.getCurrentUserUid());
 
-        getSupportActionBar().setTitle(contact_name);
+        messagesRef = MESSAGES.getMESSAGESRef();
+        userContactRef = USER_CONTACTS.getCurrentUserContactsRef().document(contact_id);
+        userAsContactRef = USER_CONTACTS.getUserContactsRef(contact_id).document(IO.getCurrentUserUid());
+
+        if (contact_name != null) setContactNameAsBarTitle(contact_name);
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
@@ -109,7 +120,7 @@ public class MessagesActivity extends AppCompatActivity {
             }
         });
 
-        chatboxSendBtn = findViewById(R.id.chatbox_send_btn);
+        Button chatboxSendBtn = findViewById(R.id.chatbox_send_btn);
         chatboxSendBtn.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -129,17 +140,15 @@ public class MessagesActivity extends AppCompatActivity {
 
 
     private void sendMessage(String text) {
+        DocumentReference msgRef = messagesRef.document();
 
-        Message msg = new Message(text, IO.getCurrentUserUid(), contact_id, conversation_id);
-
-        final DocumentReference msgRef = MESSAGES.getMESSAGESRef().document();
-        final DocumentReference senderUcRef = USER_CONTACTS.getCurrentUserContactsRef().document(contact_id);
-        final DocumentReference recipientUcRef = USER_CONTACTS.getUserContactsRef(contact_id).document(IO.getCurrentUserUid());
+        Message msg = new Message
+                (text, IO.getCurrentUserUid(), contact_id, conversation_id, msgRef.getId());
 
         WriteBatch batch = IO.db.batch();
         batch.set(msgRef, msg);
-        batch.set(senderUcRef, msg);
-        batch.set(recipientUcRef, msg);
+        batch.set(userContactRef, msg);
+        batch.set(userAsContactRef, msg);
 
         batch.commit().addOnFailureListener(
                 this, new OnFailureListener() {
@@ -188,6 +197,40 @@ public class MessagesActivity extends AppCompatActivity {
         lastQuerySnapshot = querySnapshot;
         if (reset) messageList.clear();
         messageList.addAll(new Jarvis<Message>().tr(querySnapshot, new Message()));
+
+        if (!messageList.isEmpty()) {
+            final Message mostRecentMsg = messageList.get(0);
+
+            if (mostRecentMsg.getFrom().equals(contact_id)) {//not a sender'message
+
+                //update and store the last message read offset independently of the transaction
+                CONTACTS_READS.getCurrentUserContactReadOffsetRef(contact_id)
+                        .document(MESSAGES.lastReadKey)
+                        .set(new LastRead(mostRecentMsg.getMessageID()));
+
+                // ||
+
+                //run the real-time transaction in an fallible context
+                IO.db.runTransaction(new Transaction.Function<Void>() {
+                    @Override
+                    public Void apply(Transaction transaction) throws FirebaseFirestoreException {
+                        DocumentSnapshot snapshot = transaction.get(userContactRef);
+                        String msgID = snapshot.getString(MESSAGES.messageIDKey);
+                        if (msgID.equals(mostRecentMsg.getMessageID())) {
+                            Boolean read = snapshot.getBoolean(MESSAGES.readKey);
+                            if (read == null || !read) {
+                                transaction.update(userContactRef, MESSAGES.readKey, true);
+                                return null;
+                            }
+                        }
+                        transaction.update(userContactRef, MESSAGES.readKey, false); //each doc read should be wrote
+                        return null; // Success
+                    }
+                });
+
+            }
+        }
+
         Log.i("messageList", messageList.toString());
         mAdapter.notifyDataSetChanged();
         if (reset) mRecyclerView.scrollToPosition(0);
@@ -208,22 +251,22 @@ public class MessagesActivity extends AppCompatActivity {
                     refreshMessageList(querySnapshot, true);
                 else
                     __.showShortToast(MessagesActivity.this, getString(R.string.load_error_message));
-
             }
         });
         // ||
         //initial load then follow
-       /* contactRegistration = USERS.getUserRef(contact_id).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        contactRegistration = USERS.getUserRef(contact_id).addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
                 if (e == null && snapshot != null && snapshot.exists()) {
                     Log.d("MessagesActivity", "contactRegistration's snapshot : " + snapshot.getData().toString());
-                    contactAvailability = ((Long) snapshot.getData().get(USERS.availabilityKey)).intValue();
-                    mAdapter.notifyDataSetChanged(); //// TODO: 25/10/2017 test with 2 devices
+                    setContactNameAsBarTitle(snapshot.getString(USERS.usernameKey));
+                    resetContactAvail(snapshot.getLong(USERS.availabilityKey));
+                    mAdapter.notifyDataSetChanged();
                 }
             }
-        });*/
+        });
 
     }
 
@@ -252,6 +295,15 @@ public class MessagesActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         this.onBackPressed();
         return (super.onOptionsItemSelected(menuItem));
+    }
+
+
+    private void setContactNameAsBarTitle(String contactName) {
+        if (contactName != null) getSupportActionBar().setTitle(contactName);
+    }
+
+    private void resetContactAvail(Long avail) {
+        contactAvailability = (avail == null ? Avail.UNKNOWN : avail.intValue());
     }
 
     public int getContactAvailability() {

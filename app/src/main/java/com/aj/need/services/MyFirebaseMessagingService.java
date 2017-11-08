@@ -14,10 +14,6 @@ import com.aj.need.main.MainActivity;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import static com.aj.need.domain.components.needs.UserNeedActivity.APPLICANT_ID;
-import static com.aj.need.domain.components.needs.UserNeedActivity.APPLICANT_NAME;
-import static com.aj.need.domain.components.needs.UserNeedActivity.NEED_ID;
-import static com.aj.need.domain.components.needs.UserNeedActivity.NEED_TITLE;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -130,10 +126,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             switch (clickActionURI) {
                 case USER_NEED_ACTIVITY:
                     Intent intent_u = new Intent(this, UserNeedActivity.class);
-                    intent_u.putExtra(NEED_ID, remoteMessage.getData().get(NEED_ID));
+                   /* intent_u.putExtra(NEED_ID, remoteMessage.getData().get(NEED_ID));
                     intent_u.putExtra(NEED_TITLE, remoteMessage.getData().get(NEED_TITLE));
                     intent_u.putExtra(APPLICANT_ID, remoteMessage.getData().get(APPLICANT_ID));
-                    intent_u.putExtra(APPLICANT_NAME, remoteMessage.getData().get(APPLICANT_NAME));
+                    intent_u.putExtra(APPLICANT_NAME, remoteMessage.getData().get(APPLICANT_NAME));*/
                     return intent_u;
                 case MESSAGES_ACTIVITY:
                     Intent intent_m = new Intent(this, MessagesActivity.class);

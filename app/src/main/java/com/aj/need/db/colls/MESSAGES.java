@@ -20,7 +20,9 @@ public final class MESSAGES implements Coll {
     public final static String toKey = "to";
     public final static String messageKey = "message";
     public final static String conversationIDKey = "conversationID";
-    public final static String openKey = "open";
+    public final static String messageIDKey = "messageID";
+    public final static String lastReadKey = "lastRead";
+    public final static String readKey = "read";
 
 
     public final static CollectionReference getMESSAGESRef() {

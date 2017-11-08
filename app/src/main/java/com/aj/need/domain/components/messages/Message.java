@@ -18,17 +18,19 @@ public class Message extends Entity implements Serializable, ITranslatable<Messa
     private String from;
     private String to;
     private String conversationID;
+    private String messageID;
     private boolean isPending = false;
 
 
     public Message() {
     }
 
-    public Message(String message, String from, String to, String conversationID) {
+    public Message(String message, String from, String to, String conversationID, String messageID) {
         this.message = message.trim();
         this.from = from;
         this.to = to;
         this.conversationID = conversationID;
+        this.messageID = messageID;
     }
 
 
@@ -46,6 +48,10 @@ public class Message extends Entity implements Serializable, ITranslatable<Messa
 
     public String getConversationID() {
         return conversationID;
+    }
+
+    public String getMessageID() {
+        return messageID;
     }
 
     public boolean isPending() {
@@ -74,7 +80,8 @@ public class Message extends Entity implements Serializable, ITranslatable<Messa
                 _message.getString(MESSAGES.messageKey)
                 , _message.getString(MESSAGES.fromKey)
                 , _message.getString(MESSAGES.toKey)
-                , _message.getString(MESSAGES.conversationIDKey))
+                , _message.getString(MESSAGES.conversationIDKey)
+                , _message.getString(MESSAGES.messageIDKey))
                 .setDate(_message.getDate(MESSAGES.dateKey))
                 .setPending(_message.getMetadata().hasPendingWrites());
 

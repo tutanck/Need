@@ -146,7 +146,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
                     JSONObject fieldParam = formParams.getJSONObject(key);
 
                     FormField formField = FormField.newInstance(key, fieldParam.getString("label")
-                            , FormFieldKindTranslator.tr(fieldParam.getInt("kind")),args.getInt(DELEGATE_ID));
+                            , FormFieldKindTranslator.tr(fieldParam.getInt("kind")), args.getInt(DELEGATE_ID));
 
                     fragmentTransaction.add(R.id.form_layout, formField, key);
                     formFields.put(key, formField);
@@ -216,7 +216,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
         if (!isEditable)
             USER_RATINGS.getUserRatingsRef(uid).document(IO.getCurrentUserUid()).get()
-                    .addOnCompleteListener(
+                    .addOnCompleteListener(getActivity(),
                             new OnCompleteListener<DocumentSnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -225,14 +225,16 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
                                         ratingControl.setRating((ratingDoc != null && ratingDoc.exists()) ? ratingDoc.getLong(USER_RATINGS.ratingKey) : 0);
                                         hideProgressBar();
                                     } else
-                                        __.showShortToast(getContext(), "Impossible de charger la note que vous avez attribuée"); //// TODO: 13/10/2017
-
+                                        __.showShortToast(getContext(), "Impossible de charger la note que vous avez attribuée");
+                                     /*TODO: 13/10/2017 rem or test if the addiction of getActivity() in addOnCompleteListener is ok and then add to other activities/frag. Error(test with wifi not working)
+                                     todo : java.lang.NullPointerException: Attempt to invoke virtual method 'android.content.res.Resources android.content.Context.getResources()' on a null object reference
+                                      */
                                 }
                             }
                     );
 
 
-        USERS.getUserRef(uid).get().addOnCompleteListener(
+        USERS.getUserRef(uid).get().addOnCompleteListener(getActivity(),
                 new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
