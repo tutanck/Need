@@ -1,6 +1,5 @@
 package com.aj.need.domain.components.profile;
 
-import com.aj.need.db.colls.USERS;
 import com.aj.need.domain.entities.Entity;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.ITranslatable;
@@ -9,12 +8,12 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import org.json.JSONObject;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * Created by joan on 21/09/2017.
  */
 
+//DB READ ONLY OBJECT
 public class UserProfile extends Entity implements Serializable, ITranslatable<UserProfile> {
 
     private String _id;
@@ -22,10 +21,6 @@ public class UserProfile extends Entity implements Serializable, ITranslatable<U
     private String username;
     private int reputation;
     private int availability;
-
-    private String conversationID;
-    private String lastMessage;
-    private Date lastMessageDate;
 
 
     public UserProfile() {
@@ -46,33 +41,6 @@ public class UserProfile extends Entity implements Serializable, ITranslatable<U
     }
 
 
-    protected /*!important : only for Contact class usage*/
-    UserProfile(
-            String _id
-            , String conversationID
-            , String lastMessage
-            , Date lastMessageDate
-    ) {
-        this(_id, null, 0, Avail.UNKNOWN, conversationID, lastMessage, lastMessageDate);
-    }
-
-
-    public UserProfile(
-            String _id
-            , String username
-            , int reputation
-            , int availability
-            , String conversationID
-            , String lastMessage
-            , Date lastMessageDate
-    ) {
-        this(_id, username, reputation, availability);
-        this.conversationID = conversationID;
-        this.lastMessage = lastMessage;
-        this.lastMessageDate = lastMessageDate;
-    }
-
-
     public String get_id() {
         return _id;
     }
@@ -90,7 +58,6 @@ public class UserProfile extends Entity implements Serializable, ITranslatable<U
     }
 
     public void setReputation(Long reputation) {
-
         this.reputation = reputation != null ? reputation.intValue() : 0;
     }
 
@@ -102,17 +69,7 @@ public class UserProfile extends Entity implements Serializable, ITranslatable<U
         this.availability = availability;
     }
 
-    public String getLastMessage() {
-        return lastMessage;
-    }
-
-    public Date getLastMessageDate() {
-        return lastMessageDate;
-    }
-
-    public String getConversationID() {
-        return conversationID;
-    }
+    public boolean isIncomplete(){return getUsername() == null || getAvailability() == Avail.UNKNOWN;}
 
 
     @Override

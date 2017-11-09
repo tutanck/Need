@@ -2,6 +2,7 @@ package com.aj.need.domain.components.profile;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -16,6 +17,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.aj.need.R;
+import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.domain.components.messages.MessagesActivity;
 import com.aj.need.tools.utils.Avail;
@@ -113,8 +115,7 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
             });
 
 
-            //// TODO: 04/11/2017 change that by a boolean lazy loading in the UserProfilesRecyclerAdapter
-            if (mUserProfile.getUsername() == null || mUserProfile.getAvailability() == Avail.UNKNOWN) {
+            if (mUserProfile.isIncomplete()) {
                 Log.d("bindItem/", "UserProfilesRecyclerAdapter::getUser");
                 USERS.getUserRef(mUserProfile.get_id()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
@@ -161,8 +162,24 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
 
 
         private void setLastMessage() {
-            messageTV.setText(mUserProfile.getLastMessage());
-            messageDateTV.setText(_DateUtils.since(mUserProfile.getLastMessageDate()));
+            if (!(mUserProfile instanceof Contact)) return;
+
+            Contact mContact = (Contact) mUserProfile;
+            messageTV.setText(mContact.getMessage());
+            messageDateTV.setText(_DateUtils.since(mContact.getDate()));
+
+            boolean toRead = ((!mContact.getFrom().equals(IO.getCurrentUserUid())) && (!mContact.isRead()));
+            int txtColor = ContextCompat.getColor(mContext, toRead ? R.color.Black : R.color.Silver);
+            int txtTypeFace = toRead ? Typeface.BOLD_ITALIC : Typeface.NORMAL;
+
+            messageTV.setTypeface(messageTV.getTypeface(), txtTypeFace);
+            messageTV.setTextColor(txtColor);
+
+            messageDateTV.setTypeface(messageDateTV.getTypeface(), txtTypeFace);
+            messageDateTV.setTextColor(txtColor);
+
+            usernameTV.setTypeface(usernameTV.getTypeface(), txtTypeFace);
+            usernameTV.setTextColor(txtColor);
         }
 
 

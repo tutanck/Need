@@ -54,7 +54,7 @@ public final class USERS implements Coll {
     }
 
 
-    public static Task<List<UserProfile>> computeUsersInfo(final QuerySnapshot result) {
+    /*public static Task<List<UserProfile>> computeUsersInfo(final QuerySnapshot result) {
 
         return db.runTransaction(new Transaction.Function<List<UserProfile>>() {
             @Override
@@ -92,6 +92,6 @@ public final class USERS implements Coll {
                 return contacts;
             }
         });
-    }
+    }*/
 
 }

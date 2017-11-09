@@ -200,7 +200,24 @@ public class MessagesActivity extends AppCompatActivity {
 
         messageList.addAll(new Jarvis<Message>().tr(querySnapshot, new Message()));
 
-        if (reset) markLastReceiptAsRead();
+        final Message mostRecentMsg = messageList.get(0);
+        if (reset) //!important : do not re-run on loadMore
+            if (mostRecentMsg.getFrom().equals(contact_id)) //not a sender'message //// TODO: 09/11/2017 if !read
+                IO.db.runTransaction(new Transaction.Function<Void>() {//run the real-time transaction in an fallible context
+                    @Override
+                    public Void apply(Transaction transaction) throws FirebaseFirestoreException {
+                        DocumentSnapshot snapshot = transaction.get(userContactRef);
+                        String msgID = snapshot.getString(MESSAGES.messageIDKey);
+                        boolean read = msgID.equals(mostRecentMsg.getMessageID());
+
+                        transaction.update(userContactRef, MESSAGES.readKey, read);
+
+                        DocumentReference msgRef = messagesRef.document(mostRecentMsg.getMessageID());
+                        transaction.update(msgRef, MESSAGES.readKey, read);
+
+                        return null; // Success
+                    }
+                });
 
         Log.i("messageList", messageList.toString());
         mAdapter.notifyDataSetChanged();
@@ -245,39 +262,6 @@ public class MessagesActivity extends AppCompatActivity {
                     }
                 });
 
-    }
-
-    private synchronized void markLastReceiptAsRead() {
-        final Message mostRecentMsg = messageList.get(0);
-
-        if (mostRecentMsg.getFrom().equals(contact_id)) {//not a sender'message //// TODO: 09/11/2017 if !read
-
-            // TODO: 09/11/2017 rem if !needed
-            //update and store the last message read offset independently of the transaction
-              /*  CONTACTS_READS.getCurrentUserContactReadOffsetRef(contact_id)
-                        .document(MESSAGES.lastReadKey)
-                        .set(new LastRead(mostRecentMsg.getMessageID()));
-              */
-
-
-            //run the real-time transaction in an fallible context
-            IO.db.runTransaction(new Transaction.Function<Void>() {
-                @Override
-                public Void apply(Transaction transaction) throws FirebaseFirestoreException {
-                    DocumentSnapshot snapshot = transaction.get(userContactRef);
-                    String msgID = snapshot.getString(MESSAGES.messageIDKey);
-                    boolean read = msgID.equals(mostRecentMsg.getMessageID());
-
-                    transaction.update(userContactRef, MESSAGES.readKey, read);
-
-                    DocumentReference msgRef = messagesRef.document(mostRecentMsg.getMessageID());
-                    transaction.update(msgRef, MESSAGES.readKey, read);
-
-                    return null; // Success
-                }
-            });
-
-        }
     }
 
 
