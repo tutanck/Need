@@ -124,7 +124,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
-                            //@see https://github.com/bumptech/glide/issues/803 
+                            //@see https://github.com/bumptech/glide/issues/803
                             glide.load(uri)
                                     .apply(RequestOptions.circleCropTransform())
                                     .into(ownerIV);
