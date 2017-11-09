@@ -14,12 +14,8 @@ import java.util.Date;
 
 public class Message extends Entity implements Serializable, ITranslatable<Message> {
 
-    private String message;
-    private String from;
-    private String to;
-    private String conversationID;
-    private String messageID;
-    private boolean isPending = false;
+    private String conversationID, messageID, message, from, to;
+    private boolean isPending = false, read = false;
 
 
     public Message() {
@@ -58,6 +54,11 @@ public class Message extends Entity implements Serializable, ITranslatable<Messa
         return isPending;
     }
 
+    public boolean isRead() {
+        return read;
+    }
+
+
     private Message setDate(Date date) {
         super.date = date;
         return this;
@@ -68,6 +69,12 @@ public class Message extends Entity implements Serializable, ITranslatable<Messa
         return this;
     }
 
+    public Message setRead(boolean read) {
+        this.read = read;
+        return this;
+    }
+
+
     @Override
     public String toString() {
         return message + " " + from + " " + to + " " + conversationID + " " + date;
@@ -76,6 +83,9 @@ public class Message extends Entity implements Serializable, ITranslatable<Messa
     @Override
     public Message tr(DocumentSnapshot _message) {
         Log.d("loadMessages", _message.getId() + " => " + _message.getData());
+
+        Boolean readObj = _message.getBoolean(MESSAGES.readKey);
+
         return new Message(
                 _message.getString(MESSAGES.messageKey)
                 , _message.getString(MESSAGES.fromKey)
@@ -83,8 +93,8 @@ public class Message extends Entity implements Serializable, ITranslatable<Messa
                 , _message.getString(MESSAGES.conversationIDKey)
                 , _message.getString(MESSAGES.messageIDKey))
                 .setDate(_message.getDate(MESSAGES.dateKey))
-                .setPending(_message.getMetadata().hasPendingWrites());
-
+                .setPending(_message.getMetadata().hasPendingWrites())
+                .setRead((readObj == null ? false : readObj));
     }
 
     @Override
