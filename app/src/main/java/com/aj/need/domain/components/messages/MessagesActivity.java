@@ -195,41 +195,12 @@ public class MessagesActivity extends AppCompatActivity {
     private synchronized void refreshMessageList(QuerySnapshot querySnapshot, boolean reset) {
         if (querySnapshot == null) return;
         lastQuerySnapshot = querySnapshot;
+
         if (reset) messageList.clear();
+
         messageList.addAll(new Jarvis<Message>().tr(querySnapshot, new Message()));
 
-        if (!messageList.isEmpty()) {
-            final Message mostRecentMsg = messageList.get(0);
-
-            if (mostRecentMsg.getFrom().equals(contact_id)) {//not a sender'message
-
-                //update and store the last message read offset independently of the transaction
-                CONTACTS_READS.getCurrentUserContactReadOffsetRef(contact_id)
-                        .document(MESSAGES.lastReadKey)
-                        .set(new LastRead(mostRecentMsg.getMessageID()));
-
-                // ||
-
-                //run the real-time transaction in an fallible context
-                IO.db.runTransaction(new Transaction.Function<Void>() {
-                    @Override
-                    public Void apply(Transaction transaction) throws FirebaseFirestoreException {
-                        DocumentSnapshot snapshot = transaction.get(userContactRef);
-                        String msgID = snapshot.getString(MESSAGES.messageIDKey);
-                        if (msgID.equals(mostRecentMsg.getMessageID())) {
-                            Boolean read = snapshot.getBoolean(MESSAGES.readKey);
-                            if (read == null || !read) {
-                                transaction.update(userContactRef, MESSAGES.readKey, true);
-                                return null;
-                            }
-                        }
-                        transaction.update(userContactRef, MESSAGES.readKey, false); //each doc read should be wrote
-                        return null; // Success
-                    }
-                });
-
-            }
-        }
+        if (reset) markLastReceiptAsRead();
 
         Log.i("messageList", messageList.toString());
         mAdapter.notifyDataSetChanged();
@@ -241,33 +212,72 @@ public class MessagesActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         //initial load then follow
-        conversationRegistration = mLoadQuery.limit(BATCH_SIZE).addSnapshotListener(this, new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(
-                    @Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException e
-            ) {
-                Log.w("MessagesActivity", "conversationRegistration : querySnapshot=" + querySnapshot + " error=" + e);
-                if (e == null && querySnapshot != null)
-                    refreshMessageList(querySnapshot, true);
-                else
-                    __.showShortToast(MessagesActivity.this, getString(R.string.load_error_message));
-            }
-        });
+        conversationRegistration = mLoadQuery.limit(BATCH_SIZE)
+                .addSnapshotListener(this, new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(
+                            @Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException e
+                    ) {
+                        Log.w("MessagesActivity", "conversationRegistration : querySnapshot=" + querySnapshot + " error=" + e);
+
+                        if (e != null || querySnapshot == null) {
+                            __.showShortToast(MessagesActivity.this, getString(R.string.load_error_message));
+                            return;
+                        }
+                        if (querySnapshot.isEmpty()) return;
+
+                        refreshMessageList(querySnapshot, true);
+                    }
+                });
         // ||
         //initial load then follow
-        contactRegistration = USERS.getUserRef(contact_id).addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                @Nullable FirebaseFirestoreException e) {
-                if (e == null && snapshot != null && snapshot.exists()) {
-                    Log.d("MessagesActivity", "contactRegistration's snapshot : " + snapshot.getData().toString());
-                    setContactNameAsBarTitle(snapshot.getString(USERS.usernameKey));
-                    resetContactAvail(snapshot.getLong(USERS.availabilityKey));
-                    mAdapter.notifyDataSetChanged();
-                }
-            }
-        });
+        contactRegistration = USERS.getUserRef(contact_id).
+                addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e == null && snapshot != null && snapshot.exists()) {
+                            Log.d("MessagesActivity", "contactRegistration's snapshot : " + snapshot.getData().toString());
+                            setContactNameAsBarTitle(snapshot.getString(USERS.usernameKey));
+                            resetContactAvail(snapshot.getLong(USERS.availabilityKey));
+                            mAdapter.notifyDataSetChanged();
+                        }
+                    }
+                });
 
+    }
+
+    private synchronized void markLastReceiptAsRead() {
+        final Message mostRecentMsg = messageList.get(0);
+
+        if (mostRecentMsg.getFrom().equals(contact_id)) {//not a sender'message //// TODO: 09/11/2017 if !read
+
+            // TODO: 09/11/2017 rem if !needed
+            //update and store the last message read offset independently of the transaction
+              /*  CONTACTS_READS.getCurrentUserContactReadOffsetRef(contact_id)
+                        .document(MESSAGES.lastReadKey)
+                        .set(new LastRead(mostRecentMsg.getMessageID()));
+              */
+
+
+            //run the real-time transaction in an fallible context
+            IO.db.runTransaction(new Transaction.Function<Void>() {
+                @Override
+                public Void apply(Transaction transaction) throws FirebaseFirestoreException {
+                    DocumentSnapshot snapshot = transaction.get(userContactRef);
+                    String msgID = snapshot.getString(MESSAGES.messageIDKey);
+                    boolean read = msgID.equals(mostRecentMsg.getMessageID());
+
+                    transaction.update(userContactRef, MESSAGES.readKey, read);
+
+                    DocumentReference msgRef = messagesRef.document(mostRecentMsg.getMessageID());
+                    transaction.update(msgRef, MESSAGES.readKey, read);
+
+                    return null; // Success
+                }
+            });
+
+        }
     }
 
 
