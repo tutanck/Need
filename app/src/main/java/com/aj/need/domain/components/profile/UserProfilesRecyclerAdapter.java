@@ -162,7 +162,11 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
 
 
         private void setLastMessage() {
-            if (!(mUserProfile instanceof Contact)) return;
+            if (!(mUserProfile instanceof Contact)) {
+                messageTV.setText(null);
+                messageDateTV.setText(null);
+                return;
+            }
 
             Contact mContact = (Contact) mUserProfile;
             messageTV.setText(mContact.getMessage());
