@@ -3,6 +3,7 @@ package com.aj.need.domain.components.messages;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +17,11 @@ import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils._DateUtils;
+import com.aj.need.tools.utils._Storage;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.List;
 
@@ -25,17 +31,25 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
 
     private String sentMessageReadOffsetID;
+    private Uri contactImageUri;
 
     private Activity mContext;
     private List<Message> mMessageList;
+    private RequestManager glide;
 
-    public MessageRecyclerAdapter(Context context, List<Message> messageList) {
-        mContext = (Activity) context;
-        mMessageList = messageList;
+    public MessageRecyclerAdapter(Context context, List<Message> messageList, RequestManager glide) {
+        this.mContext = (Activity) context;
+        this.mMessageList = messageList;
+        this.glide = glide;
     }
 
     public void setSentMessageReadOffset(String messageID) {
         this.sentMessageReadOffsetID = messageID;
+    }
+
+    public void setContactImageUri(Uri contactImageUri) {
+        this.contactImageUri = contactImageUri;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -95,7 +109,9 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
 
             if (message.getMessageID().equals(sentMessageReadOffsetID)) {
                 profileImage.setVisibility(View.VISIBLE);
-                profileImage.setImageResource(R.drawable.ic_save_24dp);
+                glide.load(contactImageUri)
+                        .apply(RequestOptions.circleCropTransform())
+                        .into(profileImage);
             }
 
         }
@@ -125,8 +141,11 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
             statusFab.setVisibility(View.VISIBLE);
 
 
-            // Insert the profile image from the URL into the ImageView.
-            //_DateUtils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUrl(), profileImage); // TODO: 29/09/2017
+            //performance issues check : @see https://stackoverflow.com/questions/40301389/imageview-content-loading-from-to-another-imageview
+            if (contactImageUri != null)
+                glide.load(contactImageUri)
+                        .apply(RequestOptions.circleCropTransform())
+                        .into(profileImageIV);
         }
     }
 }

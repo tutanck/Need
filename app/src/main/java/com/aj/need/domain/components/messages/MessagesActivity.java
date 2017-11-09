@@ -2,7 +2,7 @@ package com.aj.need.domain.components.messages;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,16 +19,19 @@ import android.widget.EditText;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
-import com.aj.need.db.colls.CONTACTS_READS;
 import com.aj.need.db.colls.MESSAGES;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_CONTACTS;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.Jarvis;
+import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -64,7 +67,6 @@ public class MessagesActivity extends AppCompatActivity {
     private String contact_id;
     private String conversation_id;
     private int contactAvailability;
-    private Bitmap contactImage;
 
     private Query mLoadQuery;
     private QuerySnapshot lastQuerySnapshot;
@@ -86,7 +88,7 @@ public class MessagesActivity extends AppCompatActivity {
         linearLayoutManager.setReverseLayout(true);
         mRecyclerView.setLayoutManager(linearLayoutManager);
 
-        mAdapter = new MessageRecyclerAdapter(this, messageList);
+        mAdapter = new MessageRecyclerAdapter(this, messageList, Glide.with(this));
         mRecyclerView.setAdapter(mAdapter);
 
         mSwipeRefreshLayout = findViewById(R.id.message_list_SwipeRefreshLayout);
@@ -132,6 +134,14 @@ public class MessagesActivity extends AppCompatActivity {
                     }
                 });
 
+
+        _Storage.loadRef(_Storage.getRef(contact_id))
+                .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        mAdapter.setContactImageUri(uri);
+                    }
+                });
 
         mLoadQuery = MESSAGES.getMESSAGESRef()
                 .whereEqualTo(MESSAGES.conversationIDKey, conversation_id)
@@ -203,7 +213,6 @@ public class MessagesActivity extends AppCompatActivity {
         for (Message message : messageList)
             if (message.getFrom().equals(contact_id)) break;
             else if (message.getTo().equals(contact_id) && message.isRead()) {
-                __.showShortToast(this, message.getMessage());
                 mAdapter.setSentMessageReadOffset(message.getMessageID());
                 break;
             }
@@ -311,9 +320,5 @@ public class MessagesActivity extends AppCompatActivity {
 
     public int getContactAvailability() {
         return contactAvailability;
-    }
-
-    public Bitmap getContactImage() {
-        return contactImage;
     }
 }
