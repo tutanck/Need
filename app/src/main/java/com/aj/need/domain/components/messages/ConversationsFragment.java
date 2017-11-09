@@ -20,6 +20,7 @@ import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.EventListener;
@@ -64,7 +65,7 @@ public class ConversationsFragment extends Fragment {
         mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        mAdapter = new UserProfilesRecyclerAdapter(getContext(), contactList, 1);
+        mAdapter = new UserProfilesRecyclerAdapter(getContext(), contactList, 1, Glide.with(this));
         mRecyclerView.setAdapter(mAdapter);
 
         mSwipeRefreshLayout = view.findViewById(R.id.recycler_view_SwipeRefreshLayout);
@@ -148,40 +149,4 @@ public class ConversationsFragment extends Fragment {
             contactsRegistration.remove();
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //// TODO: 28/10/2017 rem
-    /*private synchronized void compute(QuerySnapshot querySnapshot) {
-        USERS.computeUsersInfo(querySnapshot)
-                .addOnSuccessListener(new OnSuccessListener<List<UserProfile>>() {
-                    @Override
-                    public void onSuccess(List<UserProfile> result) {
-                        Log.d("TRonSuccess", "Transaction success: " + result);
-
-                        contactList.clear();
-                        for (UserProfile contact : result)
-                            contactList.add(contact);
-
-                        indicationsLayout.setVisibility(contactList.size() == 0 ? View.VISIBLE : View.GONE);
-                        mAdapter.notifyDataSetChanged();
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w("TRonFailure", "Transaction failure.", e); //// TODO: 15/10/2017
-                    }
-                });
-    }*/
 }

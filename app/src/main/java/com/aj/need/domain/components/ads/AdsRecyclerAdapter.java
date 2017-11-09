@@ -28,6 +28,7 @@ import com.aj.need.tools.utils._PlaceUtils;
 import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
@@ -41,12 +42,16 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
     private List<UserNeed> mAdList;
     private Context mContext;
 
+    private RequestManager glide;
+
     public AdsRecyclerAdapter(
             Context context,
-            List<UserNeed> adList
+            List<UserNeed> adList,
+            RequestManager glide
     ) {
-        mContext = context;
-        mAdList = adList;
+        this.mContext = context;
+        this.mAdList = adList;
+        this.glide = glide;
     }
 
     @Override
@@ -68,7 +73,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
     }
 
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         private Context mContext;
 
@@ -119,11 +124,8 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
-                            //todo @see https://github.com/bumptech/glide/issues/803 and try @AllanWang sol if pb : init Glide with the mContext asap (in the UserProfilesRecyclerAdapter's constructor of if possible even sooner)
-                            //I faced the same issue .. i fixed it like that :Glide.with(mContext.getApplicationContext()) //activity.getApplicationContext()
-                            //from @AllanWang : @tutanck I think that removes the whole life cycle handling. Best I initialize it with the activity context on creation or validate beforehand
-                            Glide.with(mContext.getApplicationContext()/*!important*/) //fix of : Glide's Fatal Exception: java.lang.IllegalArgumentException: You cannot start a load for a destroyed activity
-                                    .load(uri)
+                            //@see https://github.com/bumptech/glide/issues/803 
+                            glide.load(uri)
                                     .apply(RequestOptions.circleCropTransform())
                                     .into(ownerIV);
                         }
@@ -135,7 +137,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                 public void onClick(View view) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle(mAd.getTitle());
-                    builder.setMessage("Description:\n" +mAd.getDescription() + "\n\nRécompense:\n" + mAd.getReward() + "\n\nMot-clés:\n" + Tagger.tags(mAd.getSearch()));
+                    builder.setMessage("Description:\n" + mAd.getDescription() + "\n\nRécompense:\n" + mAd.getReward() + "\n\nMot-clés:\n" + Tagger.tags(mAd.getSearch()));
                     builder.setPositiveButton("Retour", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
@@ -188,8 +190,8 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                             App app = ((App) ((Activity) mContext).getApplication());
                             APPLICANTS.getAdApplicantsRef(mAd.getOwnerID(), mAd.get_id())
                                     .document(IO.getCurrentUserUid())
-                                    .set(new Apply(app.getUserName(),mAd.getTitle()));
-                            __.showShortToast(mContext,mContext.getString(R.string.request_taken_into_consideration_msg));
+                                    .set(new Apply(app.getUserName(), mAd.getTitle()));
+                            __.showShortToast(mContext, mContext.getString(R.string.request_taken_into_consideration_msg));
                         }
                     });
                     builder.show();

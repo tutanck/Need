@@ -21,6 +21,7 @@ import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.Query;
@@ -68,7 +69,7 @@ public class NeedProfilesFragment extends Fragment {
         mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        mAdapter = new UserProfilesRecyclerAdapter(getContext(), profileList, 0);
+        mAdapter = new UserProfilesRecyclerAdapter(getContext(), profileList, 0, Glide.with(this));
         mRecyclerView.setAdapter(mAdapter);
 
         mSwipeRefreshLayout = view.findViewById(R.id.recycler_view_SwipeRefreshLayout);

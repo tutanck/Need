@@ -24,6 +24,7 @@ import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils._DateUtils;
 import com.aj.need.tools.utils._Storage;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -40,14 +41,18 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
     private Context mContext;
     private int mOnClickListenerType;
 
+    private RequestManager glide;
+
     public UserProfilesRecyclerAdapter(
             Context context,
             ArrayList<UserProfile> profiles,
-            int onClickListenerType
+            int onClickListenerType,
+            RequestManager glide
     ) {
-        mContext = context;
-        mProfiles = profiles;
-        mOnClickListenerType = onClickListenerType;
+        this.mContext = context;
+        this.mProfiles = profiles;
+        this.mOnClickListenerType = onClickListenerType;
+        this.glide = glide;
     }
 
     @Override
@@ -69,7 +74,7 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
     }
 
 
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private ImageView userProfileIV;
         private TextView usernameTV;
@@ -140,11 +145,8 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
-                            //todo @see https://github.com/bumptech/glide/issues/803 and try @AllanWang sol if pb : init Glide with the mContext asap (in the UserProfilesRecyclerAdapter's constructor of if possible even sooner)
-                            //I faced the same issue .. i fixed it like that :Glide.with(mContext.getApplicationContext()) //activity.getApplicationContext()
-                            //from @AllanWang : @tutanck I think that removes the whole life cycle handling. Best I initialize it with the activity context on creation or validate beforehand
-                            Glide.with(mContext.getApplicationContext()/*!important*/) //fix of : Glide's Fatal Exception: java.lang.IllegalArgumentException: You cannot start a load for a destroyed activity
-                                    .load(uri)
+                            //@see https://github.com/bumptech/glide/issues/803
+                            glide.load(uri)
                                     .apply(RequestOptions.circleCropTransform())
                                     .into(userProfileIV);
                         }

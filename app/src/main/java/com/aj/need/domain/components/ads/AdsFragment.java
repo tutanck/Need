@@ -18,6 +18,7 @@ import com.aj.need.R;
 import com.aj.need.db.colls.USER_NEEDS;
 import com.aj.need.domain.components.needs.UserNeed;
 import com.aj.need.tools.utils.Jarvis;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -49,7 +50,7 @@ public class AdsFragment extends Fragment {
         mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        mAdapter = new AdsRecyclerAdapter(getContext(), adList);
+        mAdapter = new AdsRecyclerAdapter(getContext(), adList, Glide.with(this));
         mRecyclerView.setAdapter(mAdapter);
 
         mSwipeRefreshLayout = view.findViewById(R.id.recycler_view_SwipeRefreshLayout);
@@ -77,7 +78,7 @@ public class AdsFragment extends Fragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-           //todo new act with  this frag as core
+                //todo new act with  this frag as core
             }
         });
         fab.setVisibility(View.GONE);

@@ -27,6 +27,7 @@ import com.algolia.search.saas.Client;
 import com.algolia.search.saas.CompletionHandler;
 import com.algolia.search.saas.Index;
 import com.algolia.search.saas.Query;
+import com.bumptech.glide.Glide;
 
 import org.json.JSONObject;
 
@@ -68,7 +69,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
         // Bind UI components.
         mRecyclerView = findViewById(R.id.found_profiles_recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new UserProfilesRecyclerAdapter(this, mProfiles, 0);
+        mAdapter = new UserProfilesRecyclerAdapter(this, mProfiles, 0, Glide.with(this));
         mRecyclerView.setAdapter(mAdapter);
 
 
