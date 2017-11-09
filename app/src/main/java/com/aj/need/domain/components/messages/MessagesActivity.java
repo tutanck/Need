@@ -200,6 +200,15 @@ public class MessagesActivity extends AppCompatActivity {
 
         messageList.addAll(new Jarvis<Message>().tr(querySnapshot, new Message()));
 
+        for (Message message : messageList)
+            if (message.getFrom().equals(contact_id)) break;
+            else if (message.getTo().equals(contact_id) && message.isRead()) {
+                __.showShortToast(this, message.getMessage());
+                mAdapter.setSentMessageReadOffset(message.getMessageID());
+                break;
+            }
+
+
         final Message mostRecentMsg = messageList.get(0);
         if (reset) //!important : do not re-run on loadMore
             if (mostRecentMsg.getFrom().equals(contact_id)) //not a sender'message //// TODO: 09/11/2017 if !read
