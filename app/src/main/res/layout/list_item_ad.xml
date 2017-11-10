@@ -183,7 +183,7 @@
                     android:paddingLeft="4dp"
                     android:paddingRight="4dp"
                     android:text="SE PROPOSER"
-                    android:textColor="@color/DodgerBlue"
+                    android:textColor="@color/DarkBlue"
                     android:textSize="14dp" />
 
             </RelativeLayout>
