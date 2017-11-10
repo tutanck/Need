@@ -5,10 +5,22 @@
     android:background="@color/Gold" >
 
     <ImageView
+        android:visibility="gone"
         android:id="@+id/imgLogo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:src="@drawable/ic_email_black" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="48dp"
+        android:layout_centerInParent="true"
+        android:textColor="@color/WhiteSmoke"
+        android:textStyle="italic"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
 
 </RelativeLayout>
