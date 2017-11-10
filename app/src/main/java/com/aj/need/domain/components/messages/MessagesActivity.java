@@ -220,7 +220,7 @@ public class MessagesActivity extends AppCompatActivity {
 
         final Message mostRecentMsg = messageList.get(0);
         if (reset) //!important : do not re-run on loadMore
-            if (mostRecentMsg.getFrom().equals(contact_id)) //not a sender'message //// TODO: 09/11/2017 if !read
+            if ((!mostRecentMsg.isRead()/*Optimization*/) && mostRecentMsg.getFrom().equals(contact_id)/*not a sender'message*/)
                 IO.db.runTransaction(new Transaction.Function<Void>() {//run the real-time transaction in an fallible context
                     @Override
                     public Void apply(Transaction transaction) throws FirebaseFirestoreException {

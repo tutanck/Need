@@ -171,10 +171,16 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
             }
 
             Contact mContact = (Contact) mUserProfile;
-            messageTV.setText(mContact.getMessage());
+
+            String msgTxt = mContact.getMessage();
+
+            if (IO.isCurrentUser(mContact.getFrom()))
+                msgTxt = "Vous: " + msgTxt;
+
+            messageTV.setText(msgTxt);
             messageDateTV.setText(_DateUtils.since(mContact.getDate()));
 
-            boolean toRead = ((!mContact.getFrom().equals(IO.getCurrentUserUid())) && (!mContact.isRead()));
+            boolean toRead = (!IO.isCurrentUser(mContact.getFrom()) && !mContact.isRead());
             int txtColor = ContextCompat.getColor(mContext, toRead ? R.color.Black : R.color.Silver);
             int txtTypeFace = toRead ? Typeface.BOLD_ITALIC : Typeface.NORMAL;
 

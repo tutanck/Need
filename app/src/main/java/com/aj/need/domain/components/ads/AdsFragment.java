@@ -64,10 +64,10 @@ public class AdsFragment extends Fragment {
         indicationsLayout = view.findViewById(R.id.component_recycler_indications_layout);
 
         TextView indicationTV1 = view.findViewById(R.id.indicationTV1);
-        indicationTV1.setText("Aucune annonce autour de vous en ce moment.");
+        indicationTV1.setText(R.string.no_ads_for_now);
 
         TextView indicationTV2 = view.findViewById(R.id.indicationTV2);
-        indicationTV2.setText("Revenez un peu plus tard.");
+        indicationTV2.setText(R.string.come_back_later);
 
         FloatingActionButton fab = view.findViewById(R.id.fab_recycler_action);
 

@@ -19,7 +19,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.aj.need.R;
-
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.domain.components.ads.AdsFragment;
@@ -58,17 +57,6 @@ public class MainActivity extends AppCompatActivity implements FormField.Listene
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-
-
-
-
-        /* todo ggl play services  : @see https://firebase.google.com/docs/cloud-messaging/android/client
-        todo : consider doing this in the splash activity iof
-        Apps that rely on the Play Services SDK should always check the device for a compatible Google Play services APK before accessing Google Play services features. It is recommended to do this in two places: in the main activity's onCreate() method, and in its onResume() method. The check in onCreate() ensures that the app can't be used without a successful check. The check in onResume() ensures that if the user returns to the running app through some other means, such as through the back button, the check is still performed.
-        If the device doesn't have a compatible version of Google Play services, your app can call GoogleApiAvailability.makeGooglePlayServicesAvailable() to allow users to download Google Play services from the Play Store. */
-
-
         super.onCreate(savedInstanceState);
 
         authListener = new FirebaseAuth.AuthStateListener() {

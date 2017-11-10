@@ -115,4 +115,7 @@
     <string name="default_notification_channel_name" translatable="true">Notifications</string>
     <string name="default_notification_channel_description"><![CDATA[Notifications & messages]]></string>
     <string name="image_upload_in_progress">Upload de l\'image en cours.</string>
+    <string name="no_ads_for_now">Aucune annonce autour de vous en ce moment.</string>
+    <string name="come_back_later">Revenez un peu plus tard.</string>
+    <string name="location_required">Votre localisation est requise!</string>
 </resources>
