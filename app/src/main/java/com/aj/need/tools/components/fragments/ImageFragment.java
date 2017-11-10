@@ -2,11 +2,14 @@ package com.aj.need.tools.components.fragments;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +22,12 @@ import com.aj.need.tools.utils.DatabaseHelper;
 import com.aj.need.tools.utils._Bitmap;
 import com.aj.need.tools.utils.__;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
@@ -39,6 +48,8 @@ public class ImageFragment extends Fragment {
     private static final String EDITABLE = "EDITABLE";
 
     private App app;
+
+    private RequestManager glide;
 
     private StorageReference imageRef;
 
@@ -71,6 +82,7 @@ public class ImageFragment extends Fragment {
             , ViewGroup container
             , Bundle savedInstanceState
     ) {
+        glide = Glide.with(this);
 
         app = (App) (getActivity().getApplication());
 
@@ -96,6 +108,7 @@ public class ImageFragment extends Fragment {
                         }
                     }
             );
+
         return layout;
     }
 
@@ -109,15 +122,12 @@ public class ImageFragment extends Fragment {
     }
 
 
-    //// TODO: 30/10/2017 redo 
-    //// TODO: 30/10/2017 @see https://futurestud.io/tutorials/glide-advanced-loading
-    private void upload(final Uri uri) {
+    private void upload(final Uri localUri) {
         try {
-            final Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
-            UploadTask uploadTask = imageRef.putBytes(_Bitmap.getBytes(bitmap));
+            final Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), localUri);
 
             progressBarFragment.show();
-
+            UploadTask uploadTask = imageRef.putBytes(_Bitmap.getBytes(bitmap));
             uploadTask.addOnFailureListener(getActivity()/*!important*/, new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
@@ -127,9 +137,12 @@ public class ImageFragment extends Fragment {
             }).addOnSuccessListener(getActivity()/*!important*/, new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    app.setImageUri(imageRef.toString(), uri);
-                    imageView.setImageBitmap(bitmap);
-                    progressBarFragment.hide();
+                    Uri remoteUri = taskSnapshot.getDownloadUrl();
+                    app.setImageUri(imageRef.toString(), remoteUri);
+                    loadImg(localUri); //less secure (unsafe uri) but can use the same transforms used to reload the image.
+
+                    //imageView.setImageBitmap(bitmap);  //more secure (safe existing img) but can use the same transform used to reload the image.
+                    // progressBarFragment.hide();
                 }
             });
 
@@ -139,10 +152,61 @@ public class ImageFragment extends Fragment {
         }
     }
 
-    //// TODO: 30/10/2017 redo
+
+    private void loadImg(Uri uri) {
+        glide.load(uri).listener(
+                new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        progressBarFragment.hide();
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        progressBarFragment.hide();
+                        return false;
+                    }
+                }
+        ).into(imageView);
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        refreshImg();
+    }
+
+
     // TODO: 09/10/2017 Optimize: shouldnt always reload img see how to store img locally : do it for all the ProfileFragment iof this fragment
     private void refreshImg() {
         progressBarFragment.show();
+        Uri storedUri = app.getImageUri(imageRef.toString());
+        if (storedUri == null) {
+            imageRef.getDownloadUrl()
+                    .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            loadImg(uri);
+                            app.setImageUri(imageRef.toString(), uri);
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            progressBarFragment.hide();
+                        }
+                    });
+            Log.d("ImageFragment", "use of the retrieved uri.");
+        } else {
+            loadImg(storedUri);
+            Log.d("ImageFragment", "use of the stored uri=" + storedUri);
+        }
+
+
+        //// TODO: 10/11/2017  rem after deciding if usefull to show progressbar
+        /*progressBarFragment.show();
         imageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
@@ -158,14 +222,9 @@ public class ImageFragment extends Fragment {
                int errCode = ((StorageException) exception).getErrorCode();
                 if (errCode != StorageException.ERROR_OBJECT_NOT_FOUND)
                     __.showShortToast(getContext(), "Erreur de chargement de l'image.");*/
-            }
-        });
+        /*    }
+        });*/
     }
 
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        refreshImg();
-    }
 }

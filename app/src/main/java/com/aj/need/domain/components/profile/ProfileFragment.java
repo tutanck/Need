@@ -137,7 +137,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
                 FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
 
-                fragmentTransaction.add(R.id.profile_image_layout, ImageFragment.newInstance( //todo bug : no view found for "profile_image"
+                fragmentTransaction.add(R.id.profile_image_layout, ImageFragment.newInstance(
                         _Storage.getRef(uid), R.drawable.ic_person_profile_large, isEditable), "profile_image"
                 );
 
