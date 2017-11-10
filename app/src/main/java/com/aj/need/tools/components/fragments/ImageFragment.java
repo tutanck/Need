@@ -125,7 +125,7 @@ public class ImageFragment extends Fragment {
     private void upload(final Uri localUri) {
         try {
             __.showLongToast(getContext(),getString(R.string.image_upload_in_progress));
-            imageView.setClickable(false); //!important
+            imageView.setClickable(false); //!important due to the progressBar that don't show up sometimes
             progressBarFragment.show();
             final Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), localUri);
 
@@ -142,7 +142,7 @@ public class ImageFragment extends Fragment {
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     Uri remoteUri = taskSnapshot.getDownloadUrl();
                     app.setImageUri(imageRef.toString(), remoteUri);
-                    refreshImg();
+                    loadImg(localUri);
                     imageView.setClickable(true);
                 }
             });
