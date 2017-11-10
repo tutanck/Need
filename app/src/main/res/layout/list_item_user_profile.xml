@@ -102,6 +102,7 @@
                     android:stepSize="1" />
 
                 <TextView
+                    android:visibility="gone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/large"
@@ -111,6 +112,7 @@
                     android:textSize="12dp" />
 
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/userDistanceTV"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -121,6 +123,7 @@
                     android:textSize="12dp" />
 
                 <TextView
+                    android:visibility="gone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/small"
