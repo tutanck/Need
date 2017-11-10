@@ -139,10 +139,7 @@ public class ImageFragment extends Fragment {
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     Uri remoteUri = taskSnapshot.getDownloadUrl();
                     app.setImageUri(imageRef.toString(), remoteUri);
-                    loadImg(localUri); //less secure (unsafe uri) but can use the same transforms used to reload the image.
-
-                    //imageView.setImageBitmap(bitmap);  //more secure (safe existing img) but can use the same transform used to reload the image.
-                    // progressBarFragment.hide();
+                    loadImg(localUri);
                 }
             });
 
@@ -172,14 +169,6 @@ public class ImageFragment extends Fragment {
     }
 
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        refreshImg();
-    }
-
-
-    // TODO: 09/10/2017 Optimize: shouldnt always reload img see how to store img locally : do it for all the ProfileFragment iof this fragment
     private void refreshImg() {
         progressBarFragment.show();
         Uri storedUri = app.getImageUri(imageRef.toString());
@@ -203,28 +192,12 @@ public class ImageFragment extends Fragment {
             loadImg(storedUri);
             Log.d("ImageFragment", "use of the stored uri=" + storedUri);
         }
-
-
-        //// TODO: 10/11/2017  rem after deciding if usefull to show progressbar
-        /*progressBarFragment.show();
-        imageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-                Bitmap bitmap = _Bitmap.getImage(bytes);
-                imageView.setImageBitmap(bitmap);
-                progressBarFragment.hide();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                progressBarFragment.hide();
-               /* todo see what to do (could be abusive and disturbing for the user)
-               int errCode = ((StorageException) exception).getErrorCode();
-                if (errCode != StorageException.ERROR_OBJECT_NOT_FOUND)
-                    __.showShortToast(getContext(), "Erreur de chargement de l'image.");*/
-        /*    }
-        });*/
     }
 
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        refreshImg();
+    }
 }
