@@ -114,4 +114,5 @@
   -->
     <string name="default_notification_channel_name" translatable="true">Notifications</string>
     <string name="default_notification_channel_description"><![CDATA[Notifications & messages]]></string>
+    <string name="image_upload_in_progress">upload de l\'image en cours.</string>
 </resources>

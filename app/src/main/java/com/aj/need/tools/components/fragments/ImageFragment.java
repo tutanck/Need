@@ -124,14 +124,17 @@ public class ImageFragment extends Fragment {
 
     private void upload(final Uri localUri) {
         try {
+            __.showLongToast(getContext(),getString(R.string.image_upload_in_progress));
+            imageView.setClickable(false); //!important
+            progressBarFragment.show();
             final Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), localUri);
 
-            progressBarFragment.show();
             UploadTask uploadTask = imageRef.putBytes(_Bitmap.getBytes(bitmap));
             uploadTask.addOnFailureListener(getActivity()/*!important*/, new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
                     progressBarFragment.hide();
+                    imageView.setClickable(true);
                     __.showShortToast(getContext(), getString(R.string.fail_to_upload_image_message));
                 }
             }).addOnSuccessListener(getActivity()/*!important*/, new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -139,7 +142,8 @@ public class ImageFragment extends Fragment {
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     Uri remoteUri = taskSnapshot.getDownloadUrl();
                     app.setImageUri(imageRef.toString(), remoteUri);
-                    loadImg(localUri);
+                    refreshImg();
+                    imageView.setClickable(true);
                 }
             });
 
