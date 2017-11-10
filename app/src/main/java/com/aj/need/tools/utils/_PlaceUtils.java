@@ -8,22 +8,32 @@ import android.location.Location;
 
 public class _PlaceUtils {
 
-    public static String distance(
-            double latA
-            , double lngA
-            , double latB
-            , double lngB
-    ) {
+    private static final int kmUnit = 1000;
+    private static final String kmStr = " km";
 
-        Location locationA = new Location("point A");
-        locationA.setLatitude(latA);
-        locationA.setLongitude(lngA);
+    public static String distance(Location locationA, Location locationB) {
+        String distStr = "";
 
+        if (locationA != null && locationB != null) {
+            Integer dist = Math.round(locationA.distanceTo(locationB) / kmUnit);
+
+            if (dist < 1) distStr = "< 1";
+            else if (dist > 900) distStr = "> 900";
+            else distStr = dist.toString();
+
+            distStr = distStr + kmStr;
+        }
+
+        return distStr;
+    }
+
+
+    public static String distance(Location locationA, double latB, double lngB) {
         Location locationB = new Location("point B");
         locationB.setLatitude(latB);
         locationB.setLongitude(lngB);
 
-        return ""+locationA.distanceTo(locationB)+"todo";//// TODO: 03/11/2017 km, m ,+900km, etc
+        return distance(locationA, locationB);
     }
 
 }

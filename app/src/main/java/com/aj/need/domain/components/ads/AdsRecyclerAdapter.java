@@ -41,6 +41,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
 
     private List<UserNeed> mAdList;
     private Context mContext;
+    private App app;
 
     private RequestManager glide;
 
@@ -52,6 +53,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
         this.mContext = context;
         this.mAdList = adList;
         this.glide = glide;
+        this.app = (App)((Activity)context).getApplication();
     }
 
     @Override
@@ -112,11 +114,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
             mOwnerNameTV.setText(ad.getOwnerName());
             mTitleTV.setText(ad.getTitle());
             mAdDateTV.setText(_DateUtils.ago(ad.getDate()));
-            mAdDistanceTV.setText(_PlaceUtils.distance(
-                    ad.getMetaWhereCoord().getLatitude()
-                    , ad.getMetaWhereCoord().getLongitude()
-                    , 0, 0
-            ));
+            mAdDistanceTV.setText(_PlaceUtils.distance(app.getLocation(), ad.getMetaWhereCoord().getLatitude(), ad.getMetaWhereCoord().getLongitude()));
             mDescriptionTV.setText(ad.getDescription());
             mKeywordsTV.setText(Tagger.tags(ad.getSearch()));
 
