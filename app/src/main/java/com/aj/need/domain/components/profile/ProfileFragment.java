@@ -33,6 +33,7 @@ import com.aj.need.tools.components.services.ComponentsServices;
 import com.aj.need.tools.components.services.FormFieldKindTranslator;
 import com.aj.need.tools.utils.Coord;
 import com.aj.need.tools.utils.JSONServices;
+import com.aj.need.tools.utils.PatternsHolder;
 import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -276,7 +277,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
                                 for (String key : formFields.keySet())
                                     formFields.get(key).getTvContent().setText(profile.getString(key));
 
-                                locationCoord =  Coord.toCoord((Map<String , Double>) profile.get(USERS.metaLocationCoordKey));
+                                locationCoord = Coord.toCoord((Map<String, Double>) profile.get(USERS.metaLocationCoordKey));
 
                                 hideProgressBar();
                             } else __.fatal("ProfileFragment : No such document");
@@ -441,18 +442,26 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
     private boolean validState() {
         boolean valid = true;
 
-        if (TextUtils.isEmpty(getFieldText(USERS.usernameKey))) {
+        String username = getFieldText(USERS.usernameKey);
+        if (TextUtils.isEmpty(username)) {
             valid = false;
-            __.showShortToast(getContext(), "Le nom d'utilisateur est obligatoire !");
-            // TODO: 12/11/2017 valid username with signup fun
+            __.showShortToast(getContext(), getString(R.string.mandatory_username));
+        } else if (username.length() < 3) {
+            __.showShortToast(getContext(), getString(R.string.minimum_username));
+            valid = false;
+        } else if (!PatternsHolder.isValidUsername(username)) {
+            __.showShortToast(getContext(), getString(R.string.invalid_username));
+            valid = false;
         }
 
         if (TextUtils.isEmpty(getFieldText(USERS.locationKey))) {
             valid = false;
-            __.showShortToast(getContext(), "La localisation doit être renseignée !");
+            __.showShortToast(getContext(), getString(R.string.location_must_be_filled));
         }
 
         return valid;
     }
+    
+    //// TODO: 12/11/2017 onbackPressed
 
 }

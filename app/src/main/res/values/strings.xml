@@ -130,4 +130,6 @@
     <string name="enter_registration_email">Entrez votre email d\'inscription!</string>
     <string name="resend_email">Renvoyer email</string>
     <string name="update">modifier</string>
+    <string name="location_must_be_filled">La localisation doit être renseignée !</string>
+    <string name="mandatory_username">Le nom d\'utilisateur est obligatoire !</string>
 </resources>
