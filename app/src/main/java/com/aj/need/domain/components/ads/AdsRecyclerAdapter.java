@@ -53,7 +53,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
         this.mContext = context;
         this.mAdList = adList;
         this.glide = glide;
-        this.app = (App)((Activity)context).getApplication();
+        this.app = (App) ((Activity) context).getApplication();
     }
 
     @Override
@@ -146,13 +146,14 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
             });
 
 
-            ComponentsServices.setSelectable(mContext, publicationDateLayout, new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    DatePanelFragment fragment = DatePanelFragment.newFrozenInstance(mAd.getDate().getTime());
-                    fragment.show(((AppCompatActivity) mContext).getSupportFragmentManager(), "Date dialog");
-                }
-            });
+            if (mAd.getDate() != null)//!important (server timestamp not avail offline in local db -> overhead)
+                ComponentsServices.setSelectable(mContext, publicationDateLayout, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        DatePanelFragment fragment = DatePanelFragment.newFrozenInstance(mAd.getDate().getTime());
+                        fragment.show(((AppCompatActivity) mContext).getSupportFragmentManager(), "Date dialog");
+                    }
+                });
 
 
             ComponentsServices.setSelectable(mContext, placeLayout, new View.OnClickListener() {

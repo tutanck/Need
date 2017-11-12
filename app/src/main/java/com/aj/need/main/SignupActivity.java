@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.aj.need.R;
-
+import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.utils.Avail;
@@ -24,7 +24,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
+
 
 public class SignupActivity extends AppCompatActivity {
 
@@ -32,8 +32,6 @@ public class SignupActivity extends AppCompatActivity {
     private Button btnSignIn, btnSignUp, btnResetPassword;
     private ProgressBarFragment progressBarFragment;
     private FirebaseAuth auth;
-
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +68,8 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                String email = inputEmail.getText().toString().trim();
-                String password = inputPassword.getText().toString().trim();
+                final String email = inputEmail.getText().toString().trim();
+                final String password = inputPassword.getText().toString().trim();
                 final String username = inputUsername.getText().toString().trim();
 
                 if (!validateForm(email, password, username)) return;
@@ -83,26 +81,29 @@ public class SignupActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful())
-                                    USERS.getCurrentUserRef().set(new User(username, Avail.AVAILABLE))
+                                    USERS.getCurrentUserRef().set(new User(username, Avail.AVAILABLE, ((App) getApplication()).getLocation()))
                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                 @Override
                                                 public void onSuccess(Void aVoid) {
-                                                    MainActivity.start(SignupActivity.this);
+                                                    IO.getCurrentUser().sendEmailVerification();
+                                                    __.showLongToast(SignupActivity.this, getString(R.string.check_email_has_been_sent));
+                                                    LoginActivity.start(SignupActivity.this);
                                                 }
                                             })
                                             .addOnFailureListener(new OnFailureListener() {
                                                 @Override
                                                 public void onFailure(@NonNull Exception e) {
-                                                    __.showShortToast(SignupActivity.this, "Une Erreur s'est produite!"); //// TODO: 13/10/2017 see what todo
-                                                    finish();  // TODO: 13/10/2017  //quit all
+                                                    progressBarFragment.hide();
+                                                    __.showShortToast(SignupActivity.this, getString(R.string.an_error_occured_try_again));
+                                                    e.printStackTrace();
                                                 }
                                             });
                                 else {
                                     progressBarFragment.hide();
+                                    //// TODO: 01/10/2017 check what exc and swow the right msg error
                                     __.showShortToast(SignupActivity.this, getString(R.string.singup_auth_failed));
-                                    Log.d("FirebaseAuth", "" + task.getException());//// TODO: 01/10/2017 check what exc and swow the right msg error
+                                    Log.d("FirebaseAuth", "" + task.getException());
                                 }
-
                             }
                         });
             }
@@ -112,16 +113,16 @@ public class SignupActivity extends AppCompatActivity {
 
     private boolean validateForm(String email, String password, String username) {
         if (TextUtils.isEmpty(email)) {
-            inputEmail.setError("Email obligatoire!");
+            inputEmail.setError(getString(R.string.email_is_required));
             return false;
         } else if (!email.contains("@")) {
-            inputEmail.setError("Email invalide!");
+            inputEmail.setError(getString(R.string.invalid_email));
             return false;
         } else
             inputEmail.setError(null);
 
         if (TextUtils.isEmpty(password)) {
-            inputPassword.setError("Mot de passe obligatoire!");
+            inputPassword.setError(getString(R.string.password_is_required));
             return false;
         } else if (password.length() < 6) {
             inputPassword.setError(getString(R.string.minimum_password));
@@ -130,7 +131,7 @@ public class SignupActivity extends AppCompatActivity {
             inputPassword.setError(null);
 
         if (TextUtils.isEmpty(username)) {
-            inputUsername.setError("Nom d'utilisateur obligatoire!");
+            inputUsername.setError(getString(R.string.username_is_required));
             return false;
         } else if (username.length() < 3) {
             inputUsername.setError(getString(R.string.minimum_username));

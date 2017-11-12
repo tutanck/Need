@@ -4,6 +4,8 @@ import android.app.Application;
 import android.location.Location;
 import android.net.Uri;
 
+import com.aj.need.tools.utils.Coord;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +36,10 @@ public class App extends Application {
 
     public int getUserAvailability() {
         return this.user.getAvailability();
+    }
+
+    public Coord getUserLocation() {
+        return this.user.getLocation();
     }
 
 

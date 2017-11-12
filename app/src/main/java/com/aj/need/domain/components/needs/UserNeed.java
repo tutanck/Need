@@ -10,7 +10,7 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by joan on 21/09/2017.
@@ -82,7 +82,7 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
                 , need.getString(USER_NEEDS.whereKey)
 
                 , need.getBoolean(USER_NEEDS.metaIsWhereVisibleKey)
-                , toCoord(need.get(USER_NEEDS.metaWhereCoordKey))
+                , Coord.toCoord((Map<Double, Double>) need.get(USER_NEEDS.metaWhereCoordKey))
 
                 , need.getBoolean(USER_NEEDS.activeKey))
                 .setDate(need.getDate(USER_NEEDS.dateKey));
@@ -94,13 +94,7 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
         return this;
     }
 
-    public static Coord toCoord(Object o) {
-        return o == null ? null : new Coord(
-                ((HashMap<Double, Double>) o).get("latitude")
-                , ((HashMap<Double, Double>) o).get("longitude")
-        );
 
-    }
 
 
     public String get_id() {

@@ -9,6 +9,7 @@ import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.tools.utils.__;
 
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
@@ -38,6 +39,7 @@ public final class USERS implements Coll {
     public final static String usernameKey = "username";
     public final static String resumeKey = "resume";
     public final static String tariffKey = "tariff";
+    public final static String locationKey = "location";
 
 
     public final static String availabilityKey = "availability";
@@ -46,13 +48,17 @@ public final class USERS implements Coll {
 
 
     public final static DocumentReference getUserRef(String id) {
-        return IO.db.collection(coll).document(id);
+        return getColl().document(id);
     }
 
     public final static DocumentReference getCurrentUserRef() {
         return getUserRef(IO.getCurrentUserUid());
     }
 
+
+    public final static CollectionReference getColl() {
+        return IO.db.collection(coll);
+    }
 
     /*public static Task<List<UserProfile>> computeUsersInfo(final QuerySnapshot result) {
 

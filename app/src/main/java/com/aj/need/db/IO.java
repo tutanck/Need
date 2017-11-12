@@ -1,6 +1,7 @@
 package com.aj.need.db;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -31,6 +32,10 @@ public class IO {
         //// TODO: 06/11/2017 test auth !=null && currentUser!=null && uid !null and else go to login page
         //// TODO: 06/11/2017  test after deleting all app infos
         return auth.getCurrentUser().getUid();
+    }
+
+    public static FirebaseUser getCurrentUser(){
+        return auth.getCurrentUser();
     }
 
     public static String getInstanceIDToken() {

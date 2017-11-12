@@ -56,6 +56,7 @@
     <string name="user_need_empty_description_warning">La description doit être renseignée !</string>
     <string name="user_need_empty_title_warning">Le titre doit être renseigné !</string>
     <string name="an_error_occured">Une erreur s\'est produite.</string>
+    <string name="an_error_occured_try_again">Une erreur s\'est produite. Merci de réessayer.</string>
     <string name="update_sucessful_message">Mise à jour réussie !</string>
     <string name="unsupported_operation">Votre appareil ne supporte pas cette opération!</string>
     <string name="fail_to_upload_image_message">Echec de la mise à jour de l\'image.</string>
@@ -118,4 +119,14 @@
     <string name="no_ads_for_now">Aucune annonce autour de vous en ce moment.</string>
     <string name="come_back_later">Revenez un peu plus tard.</string>
     <string name="location_required">Votre localisation est requise!</string>
+    <string name="username_is_taken">Nom d\'utilisateur déjà pris.</string>
+    <string name="username_is_required">Nom d\'utilisateur obligatoire!</string>
+    <string name="password_is_required">Mot de passe obligatoire!</string>
+    <string name="invalid_email">Email invalide!</string>
+    <string name="email_is_required">Email obligatoire!</string>
+    <string name="check_email_has_been_sent">Un email de confirmation vous a été envoyé.</string>
+    <string name="reset_password_request_email_has_been_sent">Nous vous avons envoyé des instructions pour réinitialiser votre mot de passe!</string>
+    <string name="failed_to_reset_password">Echec de la réinitialisation du mot de passe!</string>
+    <string name="enter_registration_email">Entrez votre email d\'inscription!</string>
+    <string name="resend_email">Renvoyer email</string>
 </resources>

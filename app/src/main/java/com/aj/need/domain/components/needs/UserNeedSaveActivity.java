@@ -49,8 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.aj.need.domain.components.needs.UserNeed.toCoord;
-
 
 public class UserNeedSaveActivity extends AppCompatActivity
         implements FormField.Listener/*, DatePickerDialog.OnDateSetListener */ {
@@ -150,7 +148,7 @@ public class UserNeedSaveActivity extends AppCompatActivity
 
                             needSwitch.setChecked(need.getBoolean(USER_NEEDS.activeKey));
                             isWhereVisible = need.getBoolean(USER_NEEDS.metaIsWhereVisibleKey);
-                            whereCoord = toCoord(need.get(USER_NEEDS.metaWhereCoordKey));
+                            whereCoord = Coord.toCoord((Map<Double, Double>) need.get(USER_NEEDS.metaWhereCoordKey));
 
                             progressBarFragment.hide();
                         } else {

@@ -58,13 +58,12 @@ public class ResetPasswordActivity extends AppCompatActivity {
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
+                                progressBarFragment.hide();
                                 if (!task.isSuccessful()) {
-                                    progressBarFragment.hide();
-                                    __.showLongToast(ResetPasswordActivity.this, "Echec de la réinitialisation du mot de passe!");
+                                    __.showLongToast(ResetPasswordActivity.this, getString(R.string.failed_to_reset_password));
                                     Log.d("FirebaseAuth", "" + task.getException());//// TODO: 01/10/2017 check what exc and swow the right msg error
                                 } else {
-                                    progressBarFragment.hide();
-                                    __.showLongToast(ResetPasswordActivity.this, "Nous vous avons envoyé des instructions pour réinitialiser votre mot de passe!");
+                                    __.showLongToast(ResetPasswordActivity.this, getString(R.string.reset_password_request_email_has_been_sent));
                                     finish();
                                 }
                             }
@@ -76,10 +75,10 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
     private boolean validateForm(String email) {
         if (TextUtils.isEmpty(email)) {
-            inputEmail.setError("Email obligatoire!");
+            inputEmail.setError(getString(R.string.email_is_required));
             return false;
         } else if (!email.contains("@")) {
-            inputEmail.setError("Entrez votre email d'inscription!");
+            inputEmail.setError(getString(R.string.enter_registration_email));
             return false;
         } else
             inputEmail.setError(null);

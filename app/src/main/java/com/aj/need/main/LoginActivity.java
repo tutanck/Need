@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -14,6 +15,7 @@ import android.widget.EditText;
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
+import com.aj.need.domain.components.needs.UserNeedSaveActivity;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.KeyboardServices;
@@ -47,12 +49,12 @@ public class LoginActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_login);
 
-        inputEmail = (EditText) findViewById(R.id.email);
-        inputPassword = (EditText) findViewById(R.id.password);
+        inputEmail = findViewById(R.id.email);
+        inputPassword = findViewById(R.id.password);
         progressBarFragment = (ProgressBarFragment) getSupportFragmentManager().findFragmentById(R.id.waiter_modal_fragment);
-        btnSignup = (Button) findViewById(R.id.btn_signup);
-        btnLogin = (Button) findViewById(R.id.btn_login);
-        btnReset = (Button) findViewById(R.id.btn_reset_password);
+        btnSignup = findViewById(R.id.btn_signup);
+        btnLogin = findViewById(R.id.btn_login);
+        btnReset = findViewById(R.id.btn_reset_password);
 
         btnSignup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,10 +86,24 @@ public class LoginActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
-                                    USERS.getCurrentUserRef().update(USERS.availabilityKey, Avail.AVAILABLE);
-                                    USERS.getCurrentUserRef().update(USERS.instanceIDTokenKey, IO.getInstanceIDToken());
-                                    MainActivity.start(LoginActivity.this);
-                                }else {
+                                    if (!IO.getCurrentUser().isEmailVerified()) {
+                                        progressBarFragment.hide();
+                                        
+                                        //// TODO: 12/11/2017 set timer to not send to email  
+                                        Snackbar.make(btnLogin, "Votre email n'est pas vérifié!", Snackbar.LENGTH_LONG)
+                                                .setAction(R.string.resend_email, new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View view) {
+                                                        IO.getCurrentUser().sendEmailVerification();
+                                                        __.showLongToast(LoginActivity.this, getString(R.string.check_email_has_been_sent));
+                                                    }
+                                                }).show();
+                                        return;
+                                    }
+
+                                    letsGo();
+
+                                } else {
                                     progressBarFragment.hide();
                                     __.showShortToast(LoginActivity.this, getString(R.string.signin_auth_failed));
                                     Log.d("FirebaseAuth", "" + task.getException());//// TODO: 01/10/2017 check what exc and swow the right msg error
@@ -96,6 +112,13 @@ public class LoginActivity extends AppCompatActivity {
                         });
             }
         });
+    }
+
+
+    private void letsGo() {
+        USERS.getCurrentUserRef().update(USERS.availabilityKey, Avail.AVAILABLE);
+        USERS.getCurrentUserRef().update(USERS.instanceIDTokenKey, IO.getInstanceIDToken());
+        MainActivity.start(LoginActivity.this);
     }
 
 

@@ -27,6 +27,7 @@ import com.aj.need.domain.components.needs.UserNeedsFragment;
 import com.aj.need.domain.components.profile.ProfileFragment;
 import com.aj.need.tools.components.fragments.FormField;
 import com.aj.need.tools.utils.Avail;
+import com.aj.need.tools.utils.Coord;
 import com.aj.need.tools.utils.__;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -100,7 +101,8 @@ public class MainActivity extends AppCompatActivity implements FormField.Listene
                     Log.d("AvailabilityListener: ", "Current data: " + snapshot.getData().toString());
                     String userName = snapshot.getString(USERS.usernameKey);
                     int userAvail = (snapshot.getLong(USERS.availabilityKey)).intValue();
-                    ((App) getApplication()).updateUser(new User(userName, userAvail));
+                    Map<Double,Double> loc = (Map<Double, Double>) snapshot.get(USERS.locationKey);
+                    ((App) getApplication()).updateUser(new User(userName, userAvail, Coord.toCoord(loc)));
                     resetAvailabilityBtn(userAvail);
                 } else
                     __.fatal("Inconsistent database/auth : unknown current user");
