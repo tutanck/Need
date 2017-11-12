@@ -40,6 +40,7 @@ public final class USERS implements Coll {
     public final static String resumeKey = "resume";
     public final static String tariffKey = "tariff";
     public final static String locationKey = "location";
+    public final static String metaLocationCoordKey = "metaLocationCoord";
 
 
     public final static String availabilityKey = "availability";

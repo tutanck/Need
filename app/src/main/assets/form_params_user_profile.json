@@ -2,24 +2,31 @@
   "ordered_fields_names": [
     "username",
     "resume",
-    "tariff"
+    "tariff",
+    "location"
   ],
   "username": {
-    "label": "NOM D\'UTILISATEUR",
-    "indication": "NOM D\'UTILISATEUR",
-    "indication2": "Choisissez un nom d\'utilisateur",
+    "label": "Nom d'utilisateur",
+    "indication": "Nom d'utilisateur",
+    "indication2": "Choisissez un nom d'utilisateur",
     "kind": 1
   },
   "resume": {
-    "label": "MON ACTIVITE",
-    "indication": "MON ACTIVITE",
+    "label": "Description de l'activité",
+    "indication": "Activité",
     "indication2": "Dites en plus sur votre activité",
     "kind": 0
   },
   "tariff": {
-    "label": "MES TARIFS (Optionnel)",
-    "indication": "MES TARIFS (Optionnel)",
+    "label": "Tarifs (Optionnel)",
+    "indication": "Mes tarifs (Optionnel)",
     "indication2": "Indiquez vos tarifs (Optionnel)",
     "kind": 0
+  },
+  "location": {
+    "label": "Localisation",
+    "indication": "Précisez votre ville",
+    "indication2": "Dans quelle ville êtes vous ?",
+    "kind": 1
   }
 }

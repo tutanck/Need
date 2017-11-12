@@ -148,7 +148,7 @@ public class UserNeedSaveActivity extends AppCompatActivity
 
                             needSwitch.setChecked(need.getBoolean(USER_NEEDS.activeKey));
                             isWhereVisible = need.getBoolean(USER_NEEDS.metaIsWhereVisibleKey);
-                            whereCoord = Coord.toCoord((Map<Double, Double>) need.get(USER_NEEDS.metaWhereCoordKey));
+                            whereCoord = Coord.toCoord((Map<String, Double>) need.get(USER_NEEDS.metaWhereCoordKey));
 
                             progressBarFragment.hide();
                         } else {

@@ -101,8 +101,10 @@ public class MainActivity extends AppCompatActivity implements FormField.Listene
                     Log.d("AvailabilityListener: ", "Current data: " + snapshot.getData().toString());
                     String userName = snapshot.getString(USERS.usernameKey);
                     int userAvail = (snapshot.getLong(USERS.availabilityKey)).intValue();
-                    Map<Double,Double> loc = (Map<Double, Double>) snapshot.get(USERS.locationKey);
+
+                    Map<String, Double> loc = (Map<String , Double>) snapshot.get(USERS.metaLocationCoordKey);
                     ((App) getApplication()).updateUser(new User(userName, userAvail, Coord.toCoord(loc)));
+
                     resetAvailabilityBtn(userAvail);
                 } else
                     __.fatal("Inconsistent database/auth : unknown current user");
@@ -184,6 +186,12 @@ public class MainActivity extends AppCompatActivity implements FormField.Listene
         ((FormField.Listener.Delegate) pagerAdapter
                 .getFragment(formField.getDelegateID())
         ).onFormFieldCreated(formField);
+    }
+
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ProfileFragment.PLACE_PICKER_REQUEST)
+            pagerAdapter.getFragment(1).onActivityResult(requestCode, resultCode, data);
     }
 
 

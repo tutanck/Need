@@ -82,7 +82,7 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
                 , need.getString(USER_NEEDS.whereKey)
 
                 , need.getBoolean(USER_NEEDS.metaIsWhereVisibleKey)
-                , Coord.toCoord((Map<Double, Double>) need.get(USER_NEEDS.metaWhereCoordKey))
+                , Coord.toCoord((Map<String, Double>) need.get(USER_NEEDS.metaWhereCoordKey))
 
                 , need.getBoolean(USER_NEEDS.activeKey))
                 .setDate(need.getDate(USER_NEEDS.dateKey));

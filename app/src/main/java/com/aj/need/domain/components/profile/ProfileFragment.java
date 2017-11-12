@@ -1,5 +1,7 @@
 package com.aj.need.domain.components.profile;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -7,6 +9,8 @@ import android.support.design.widget.FloatingActionButton;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,9 +31,15 @@ import com.aj.need.tools.components.fragments.ImageFragment;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.components.services.ComponentsServices;
 import com.aj.need.tools.components.services.FormFieldKindTranslator;
+import com.aj.need.tools.utils.Coord;
 import com.aj.need.tools.utils.JSONServices;
 import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -38,8 +48,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static android.app.Activity.RESULT_OK;
 
 
 public class ProfileFragment extends Fragment implements FormField.Listener.Delegate {
@@ -58,6 +72,8 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
     private FloatingActionButton fabSaveProfile;
 
     private ProgressBarFragment progressBarFragment;
+
+    private Coord locationCoord;
 
 
     public static ProfileFragment newInstance(
@@ -192,6 +208,8 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
                     updates.put(USERS.usernameKey, getFieldText(USERS.usernameKey));
                     updates.put(USERS.resumeKey, getFieldText(USERS.resumeKey));
                     updates.put(USERS.tariffKey, getFieldText(USERS.tariffKey));
+                    updates.put(USERS.locationKey, getFieldText(USERS.locationKey));
+                    updates.put(USERS.metaLocationCoordKey, locationCoord.toMap());
 
                     USERS.getCurrentUserRef().update(updates);
 
@@ -258,6 +276,8 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
                                 for (String key : formFields.keySet())
                                     formFields.get(key).getTvContent().setText(profile.getString(key));
 
+                                locationCoord =  Coord.toCoord((Map<String , Double>) profile.get(USERS.metaLocationCoordKey));
+
                                 hideProgressBar();
                             } else __.fatal("ProfileFragment : No such document");
                         } else {
@@ -285,6 +305,14 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
         View.OnClickListener onClickListener;
         switch (formField.getKey()) {
+            case USERS.locationKey:
+                onClickListener = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        pickPlace();
+                    }
+                };
+                break;
             default:
                 onClickListener = new View.OnClickListener() {
                     @Override
@@ -297,6 +325,64 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
         ComponentsServices.setSelectable(getContext(), formField.getLayout(), onClickListener);
     }
+
+
+
+
+    /*WHERE*/
+
+    public static int PLACE_PICKER_REQUEST = 12;
+
+    private void pickPlace() {
+
+        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+        try {
+            getActivity().startActivityForResult(builder.build(getActivity()), PLACE_PICKER_REQUEST);
+        } catch (GooglePlayServicesRepairableException e) {
+            e.printStackTrace();
+            GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+            apiAvailability.getErrorDialog(getActivity(), e.getConnectionStatusCode(), PLACE_PICKER_REQUEST).show();
+        } catch (GooglePlayServicesNotAvailableException e) {
+            e.printStackTrace();
+            __.showShortToast(getContext(), getString(R.string.unsupported_operation));
+        }
+    }
+
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PLACE_PICKER_REQUEST)
+            if (resultCode == RESULT_OK) {
+
+                Place place = PlacePicker.getPlace(getContext(), data);
+
+                if (place == null) {
+                    __.showShortToast(getContext(), getString(R.string.an_error_occured) + "\n Impossible d'identifier le lieu.");
+                    return;
+                }
+
+                formFields.get(USERS.locationKey).setText(place.getAddress().toString());
+                locationCoord = new Coord(place.getLatLng().latitude, place.getLatLng().longitude);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setCancelable(false);
+                builder.setTitle("Localisation");
+                builder.setMessage("Cette localisation représente votre position de référence.");
+
+                builder.setPositiveButton(R.string.ok, null);
+
+                builder.setNegativeButton(R.string.update, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        pickPlace();
+                    }
+                });
+
+                builder.show();
+
+                enableSaveBtn();
+            }
+    }
+
 
 
 
@@ -336,8 +422,13 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
      /*FIELDS EDITION/VALIDATION*/
 
+    private List<String> lockedKeys = Arrays.asList(new String[]
+            {USERS.usernameKey, USERS.locationKey}
+    );
+
+
     private boolean isEditableField(String key) {
-        return !(key.equals(USERS.usernameKey));
+        return !lockedKeys.contains(key);
     }
 
     private String getFieldText(String key) {
@@ -346,9 +437,22 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
         return tvORet.getText().toString();
     }
 
+
     private boolean validState() {
-        //@see UserNeedSaveActivity for inspiration if needed
-        return true;
+        boolean valid = true;
+
+        if (TextUtils.isEmpty(getFieldText(USERS.usernameKey))) {
+            valid = false;
+            __.showShortToast(getContext(), "Le nom d'utilisateur est obligatoire !");
+            // TODO: 12/11/2017 valid username with signup fun
+        }
+
+        if (TextUtils.isEmpty(getFieldText(USERS.locationKey))) {
+            valid = false;
+            __.showShortToast(getContext(), "La localisation doit être renseignée !");
+        }
+
+        return valid;
     }
 
 }

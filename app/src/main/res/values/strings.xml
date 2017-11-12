@@ -129,4 +129,5 @@
     <string name="failed_to_reset_password">Echec de la réinitialisation du mot de passe!</string>
     <string name="enter_registration_email">Entrez votre email d\'inscription!</string>
     <string name="resend_email">Renvoyer email</string>
+    <string name="update">modifier</string>
 </resources>
