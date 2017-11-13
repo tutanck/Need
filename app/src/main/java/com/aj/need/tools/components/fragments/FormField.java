@@ -128,8 +128,9 @@ public class FormField extends Fragment {
 
 
     public void setText(String text) {
-        getEtContent().setText(text);
-        getTvContent().setText(text);
+        String txt = text.trim();
+        getEtContent().setText(txt);
+        getTvContent().setText(txt);
     }
 
     public RelativeLayout getLayout() {
