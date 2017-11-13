@@ -403,7 +403,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
-            String city = "Inconnu";
+            String city = "Inconnue";
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
             builder.setCancelable(false);
