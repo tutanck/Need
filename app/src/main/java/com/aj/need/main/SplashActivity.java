@@ -6,13 +6,16 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 
 import com.aj.need.R;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 
 /**
@@ -58,16 +61,21 @@ public class SplashActivity extends Activity {
             return;
         }
 
-        //// TODO: 13/11/2017 sync (add a guard bf continuing : bug pos not avail)
-        mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+        mFusedLocationClient.getLastLocation().addOnCompleteListener(this, new OnCompleteListener<Location>() {
             @Override
-            public void onSuccess(Location location) {
-                if (location != null)
-                    app.setLocation(location); // Got last known location. In some rare situations this can be null.
+            public void onComplete(@NonNull Task<Location> task) {
+                if (task.isSuccessful()) {
+                    Location location = task.getResult();
+                    if (location != null) // Got last known location. In some rare situations this can be null. Dt override old location if current is null
+                        app.setLastLocalKnownLocation(location);
+                }
+                letsGo();
             }
         });
+    }
 
 
+    private void letsGo() {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {

@@ -1,5 +1,7 @@
 package com.aj.need.tools.utils;
 
+import android.util.Log;
+
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.Serializable;
@@ -22,6 +24,7 @@ public class Coord implements Serializable {
 
 
     public static Coord toCoord(Map<String, Double> coordMap) {
+        Log.d("_toCoord", ""+coordMap);
         if (coordMap == null) return null;
 
         Double lat = coordMap.get("latitude"), lng = coordMap.get("longitude");

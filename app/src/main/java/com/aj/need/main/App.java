@@ -14,12 +14,11 @@ public class App extends Application {
     public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 12;
 
 
-    private User user;
 
-    private Map<String, Uri> imageUriMap = new HashMap<>();
 
-    private Location location;
+    /*Current user*/
 
+    private User user; //light image of the remote user
 
     public User getUser() {
         return user;
@@ -29,19 +28,16 @@ public class App extends Application {
         this.user = user;
     }
 
-
     public String getUserName() {
         return this.user.getUsername();
     }
 
-    public int getUserAvailability() {
-        return this.user.getAvailability();
-    }
 
-    public Coord getUserLocationCoord() {
-        return this.user.getMetaLocationCoord();
-    }
 
+
+    /*imageUriMap*/
+
+    private Map<String, Uri> imageUriMap = new HashMap<>();
 
     public void setImageUri(String id, Uri uri) {
         imageUriMap.put(id, uri);
@@ -52,11 +48,17 @@ public class App extends Application {
     }
 
 
-    public Location getLocation() {
-        return location;
+
+
+    /*lastLocalKnownLocation*/
+
+    private Location lastLocalKnownLocation;
+
+    public Location getLastLocalKnownLocation() {
+        return lastLocalKnownLocation;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setLastLocalKnownLocation(Location lastLocalKnownLocation) {
+        this.lastLocalKnownLocation = lastLocalKnownLocation;
     }
 }

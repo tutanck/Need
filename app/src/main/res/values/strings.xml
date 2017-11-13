@@ -132,4 +132,5 @@
     <string name="update">modifier</string>
     <string name="location_must_be_filled">La localisation doit être renseignée !</string>
     <string name="mandatory_username">Le nom d\'utilisateur est obligatoire !</string>
+    <string name="unknown">Inconnue</string>
 </resources>

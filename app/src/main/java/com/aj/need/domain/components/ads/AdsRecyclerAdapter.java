@@ -27,7 +27,6 @@ import com.aj.need.tools.utils._DateUtils;
 import com.aj.need.tools.utils._PlaceUtils;
 import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -114,7 +113,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
             mOwnerNameTV.setText(ad.getOwnerName());
             mTitleTV.setText(ad.getTitle());
             mAdDateTV.setText(_DateUtils.ago(ad.getDate()));
-            mAdDistanceTV.setText(_PlaceUtils.distance(app.getLocation(), ad.getMetaWhereCoord().getLatitude(), ad.getMetaWhereCoord().getLongitude()));
+            mAdDistanceTV.setText(_PlaceUtils.distance(app.getLastLocalKnownLocation(), ad.getMetaWhereCoord().getLatitude(), ad.getMetaWhereCoord().getLongitude()));
             mDescriptionTV.setText(ad.getDescription());
             mKeywordsTV.setText(Tagger.tags(ad.getSearch()));
 

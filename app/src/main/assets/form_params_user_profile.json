@@ -3,7 +3,7 @@
     "username",
     "resume",
     "tariff",
-    "location"
+    "locality"
   ],
   "username": {
     "label": "Nom d'utilisateur",
@@ -23,7 +23,7 @@
     "indication2": "Indiquez vos tarifs (Optionnel)",
     "kind": 0
   },
-  "location": {
+  "locality": {
     "label": "Localisation",
     "indication": "Précisez votre ville",
     "indication2": "Dans quelle ville êtes vous ?",

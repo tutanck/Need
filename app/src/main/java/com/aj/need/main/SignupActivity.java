@@ -81,7 +81,7 @@ public class SignupActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful())
-                                    USERS.getCurrentUserRef().set(new User(username, Avail.AVAILABLE, ((App) getApplication()).getLocation()))
+                                    USERS.getCurrentUserRef().set(new User(username, Avail.AVAILABLE, ((App) getApplication()).getLastLocalKnownLocation()))
                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                 @Override
                                                 public void onSuccess(Void aVoid) {

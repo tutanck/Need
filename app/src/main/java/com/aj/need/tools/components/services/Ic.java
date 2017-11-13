@@ -18,7 +18,7 @@ public class Ic {
                 return R.drawable.ic_work_24dp;
             case USERS.tariffKey:
                 return R.drawable.ic_euro_symbol_24dp;
-            case USERS.locationKey:
+            case USERS.localityKey:
                 return R.drawable.ic_place_24dp;
 
             case USER_NEEDS.searchKey:
@@ -35,7 +35,7 @@ public class Ic {
                 return R.drawable.ic_place_24dp;
 
             default:
-                throw new RuntimeException("Unknown icon key");
+                throw new RuntimeException("Unknown icon key : "+key);
         }
     }
 }

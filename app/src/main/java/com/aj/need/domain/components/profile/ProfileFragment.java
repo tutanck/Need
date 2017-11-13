@@ -83,6 +83,8 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
     private Coord locationCoord;
 
+    private AddressResultReceiver mResultReceiver;
+
 
     public static ProfileFragment newInstance(
             String user_id, boolean editable, int delegateID
@@ -222,8 +224,9 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
                     updates.put(USERS.usernameKey, getFieldText(USERS.usernameKey));
                     updates.put(USERS.resumeKey, getFieldText(USERS.resumeKey));
                     updates.put(USERS.tariffKey, getFieldText(USERS.tariffKey));
-                    updates.put(USERS.locationKey, getFieldText(USERS.locationKey));
-                    updates.put(USERS.metaLocationCoordKey, locationCoord.toMap());
+                    updates.put(USERS.localityKey, getFieldText(USERS.localityKey));
+                    if (locationCoord != null)//SNO
+                        updates.put(USERS.metaLocationCoordKey, locationCoord.toMap());
 
                     USERS.getCurrentUserRef().update(updates);
 
@@ -319,7 +322,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
         View.OnClickListener onClickListener;
         switch (formField.getKey()) {
-            case USERS.locationKey:
+            case USERS.localityKey:
                 onClickListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -374,77 +377,68 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
                     return;
                 }
 
+                //!important : we care about the coord first (bf the locality)
                 locationCoord = new Coord(place.getLatLng().latitude, place.getLatLng().longitude);
 
                 blockerDialog.setMessage("Localisation en cours...");
                 blockerDialog.show();
 
-                startIntentService();
+                startIntentService(locationCoord); //try to get the locality
             }
     }
 
 
-    private AddressResultReceiver mResultReceiver;
+    private void startIntentService(Coord coord) {
+        if (coord == null) return;//SNO
 
-    protected void startIntentService() {
         if (!Geocoder.isPresent()) {
-            __.showShortToast(getContext(), "todo"); //// TODO: 13/11/2017  
+            promptLocality(null);
             return;
         }
 
         Intent intent = new Intent(getContext(), FetchAddressIntentService.class);
         intent.putExtra(FetchAddressIntentService.RECEIVER, mResultReceiver);
-        intent.putExtra(FetchAddressIntentService.LOCATION_DATA_EXTRA, locationCoord);
+        intent.putExtra(FetchAddressIntentService.LOCATION_DATA_EXTRA, coord);
         getActivity().startService(intent);
     }
 
 
-    class AddressResultReceiver extends ResultReceiver {
-
-        @Override
-        protected void onReceiveResult(int resultCode, Bundle resultData) {
-            String city = "Inconnue";
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            builder.setCancelable(false);
-            builder.setTitle("Localisation");
-
-            if (resultCode == FetchAddressIntentService.ADDRESS_FOUND) {
-                Address address = resultData.getParcelable(FetchAddressIntentService.RESULT_DATA_KEY);
-                if (address != null) {
-                    String locality = address.getLocality();
-                    if (locality != null && !TextUtils.isEmpty(locality))
-                        city = locality;
-                }
-            }
-
-            builder.setMessage(city);
-
-            final String finalCity = city;
-            builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    formFields.get(USERS.locationKey).setText(finalCity);
-                    enableSaveBtn();
-                }
-            });
-
-            builder.setNegativeButton(R.string.update, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    pickPlace();
-                }
-            });
-
-            builder.show();
-            blockerDialog.hide();
-        }
-
-
+    private class AddressResultReceiver extends ResultReceiver {
         private AddressResultReceiver(Handler handler) {
             super(handler);
         }
 
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            promptLocality((Address) resultData.getParcelable(FetchAddressIntentService.RESULT_DATA_KEY));
+        }
+    }
+
+
+    private void promptLocality(Address address) {
+        String locality = getString(R.string.unknown);
+
+        if (address != null) {
+            String tmp = address.getLocality();
+            if (tmp != null && !TextUtils.isEmpty(tmp))
+                locality = tmp;
+        }
+
+        formFields.get(USERS.localityKey).setText(locality);
+        enableSaveBtn();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setCancelable(false).setTitle("Localisation").setMessage(locality);
+        builder.setPositiveButton(R.string.ok, null);
+        builder.setNegativeButton(R.string.update, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                pickPlace();
+            }
+        });
+
+        builder.show();
+        blockerDialog.hide();
     }
 
 
@@ -487,7 +481,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
      /*FIELDS EDITION/VALIDATION*/
 
     private List<String> lockedKeys = Arrays.asList(new String[]
-            {USERS.usernameKey, USERS.locationKey}
+            {USERS.usernameKey, USERS.localityKey}
     );
 
     private boolean isEditableField(String key) {
@@ -517,7 +511,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
             valid = false;
         }
 
-        if (TextUtils.isEmpty(getFieldText(USERS.locationKey))) {
+        if (TextUtils.isEmpty(getFieldText(USERS.localityKey))) {
             valid = false;
             __.showShortToast(getContext(), getString(R.string.location_must_be_filled));
         }
@@ -526,6 +520,4 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
     }
 
     //// TODO: 12/11/2017 onbackPressed
-    //// TODO: 12/11/2017 find the bug form auto empty desc & tarif
-
 }

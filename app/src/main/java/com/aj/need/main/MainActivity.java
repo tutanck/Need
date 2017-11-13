@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements FormField.Listene
                     String userName = snapshot.getString(USERS.usernameKey);
                     int userAvail = (snapshot.getLong(USERS.availabilityKey)).intValue();
 
-                    Map<String, Double> loc = (Map<String , Double>) snapshot.get(USERS.metaLocationCoordKey);
+                    Map<String, Double> loc = (Map<String, Double>) snapshot.get(USERS.metaLocationCoordKey);
                     ((App) getApplication()).updateUser(new User(userName, userAvail, Coord.toCoord(loc)));
 
                     resetAvailabilityBtn(userAvail);
