@@ -21,16 +21,16 @@ public class User extends Entity implements Serializable, ITranslatable<User> {
     private String instanceIDToken = FirebaseInstanceId.getInstance().getToken();
     private String username;
     private int availability;
-    private Coord location;
+    private Coord metaLocationCoord;
 
 
     public User() {
     }
 
-    User(String username, int availability, Coord location) {
+    User(String username, int availability, Coord metaLocationCoord) {
         this.username = username;
         this.availability = availability;
-        this.location = location;
+        this.metaLocationCoord = metaLocationCoord;
     }
 
     User(String username, int availability, Location loc) {
@@ -50,8 +50,8 @@ public class User extends Entity implements Serializable, ITranslatable<User> {
         return availability;
     }
 
-    public Coord getLocation() {
-        return location;
+    public Coord getMetaLocationCoord() {
+        return metaLocationCoord;
     }
 
     @Override

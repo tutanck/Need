@@ -113,6 +113,11 @@
         </service>
 
 
+        <service
+            android:name=".services.FetchAddressIntentService"
+            android:exported="false"/>
+
+
     </application>
 
 </manifest>

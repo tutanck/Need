@@ -3,12 +3,16 @@ package com.aj.need.domain.components.profile;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.os.ResultReceiver;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
@@ -26,6 +30,7 @@ import com.aj.need.db.colls.USERS;
 import com.aj.need.db.colls.USER_RATINGS;
 import com.aj.need.domain.components.keywords.UserKeywordsActivity;
 import com.aj.need.domain.components.messages.MessagesActivity;
+import com.aj.need.services.FetchAddressIntentService;
 import com.aj.need.tools.components.fragments.FormField;
 import com.aj.need.tools.components.fragments.ImageFragment;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
@@ -68,6 +73,8 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
     private RadioGroup userTypeRG;
     private RatingBar userRating, ratingControl;
 
+    private AlertDialog blockerDialog;
+
     private int availability, completions = 0;
 
     private FloatingActionButton fabSaveProfile;
@@ -96,6 +103,12 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
             , ViewGroup container
             , Bundle savedInstanceState
     ) {
+
+        mResultReceiver = new AddressResultReceiver(new Handler());
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        blockerDialog = builder.setCancelable(false).create();
+
 
         final Bundle args = getArguments();
 
@@ -361,27 +374,75 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
                     return;
                 }
 
-                formFields.get(USERS.locationKey).setText(place.getAddress().toString());
                 locationCoord = new Coord(place.getLatLng().latitude, place.getLatLng().longitude);
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setCancelable(false);
-                builder.setTitle("Localisation");
-                builder.setMessage("Cette localisation représente votre position de référence.");
+                blockerDialog.setMessage("Localisation en cours...");
+                blockerDialog.show();
 
-                builder.setPositiveButton(R.string.ok, null);
-
-                builder.setNegativeButton(R.string.update, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        pickPlace();
-                    }
-                });
-
-                builder.show();
-
-                enableSaveBtn();
+                startIntentService();
             }
+    }
+
+
+    private AddressResultReceiver mResultReceiver;
+
+    protected void startIntentService() {
+        if (!Geocoder.isPresent()) {
+            __.showShortToast(getContext(), "todo"); //// TODO: 13/11/2017  
+            return;
+        }
+
+        Intent intent = new Intent(getContext(), FetchAddressIntentService.class);
+        intent.putExtra(FetchAddressIntentService.RECEIVER, mResultReceiver);
+        intent.putExtra(FetchAddressIntentService.LOCATION_DATA_EXTRA, locationCoord);
+        getActivity().startService(intent);
+    }
+
+
+    class AddressResultReceiver extends ResultReceiver {
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            String city = "Inconnu";
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setCancelable(false);
+            builder.setTitle("Localisation");
+
+            if (resultCode == FetchAddressIntentService.ADDRESS_FOUND) {
+                Address address = resultData.getParcelable(FetchAddressIntentService.RESULT_DATA_KEY);
+                city = address.getLocality();
+            }
+
+            builder.setMessage(city);
+
+
+            final String finalCity = city;
+            builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    formFields.get(USERS.locationKey).setText(finalCity);
+                    enableSaveBtn();
+                }
+            });
+
+
+            builder.setNegativeButton(R.string.update, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    pickPlace();
+                }
+            });
+
+            builder.show();
+            blockerDialog.hide();
+        }
+
+
+        private AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
     }
 
 
@@ -461,7 +522,8 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
         return valid;
     }
-    
+
     //// TODO: 12/11/2017 onbackPressed
+    //// TODO: 12/11/2017 find the bug form auto empty desc & tarif
 
 }

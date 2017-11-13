@@ -58,6 +58,7 @@ public class SplashActivity extends Activity {
             return;
         }
 
+        //// TODO: 13/11/2017 sync (add a guard bf continuing : bug pos not avail)
         mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {

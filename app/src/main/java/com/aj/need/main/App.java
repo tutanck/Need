@@ -38,8 +38,8 @@ public class App extends Application {
         return this.user.getAvailability();
     }
 
-    public Coord getUserLocation() {
-        return this.user.getLocation();
+    public Coord getUserLocationCoord() {
+        return this.user.getMetaLocationCoord();
     }
 
 
