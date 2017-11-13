@@ -288,7 +288,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
                                 //FormField::all
                                 for (String key : formFields.keySet())
-                                    formFields.get(key).getTvContent().setText(profile.getString(key));
+                                    formFields.get(key).setText(profile.getString(key));
 
                                 locationCoord = Coord.toCoord((Map<String, Double>) profile.get(USERS.metaLocationCoordKey));
 
@@ -411,14 +411,14 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
             if (resultCode == FetchAddressIntentService.ADDRESS_FOUND) {
                 Address address = resultData.getParcelable(FetchAddressIntentService.RESULT_DATA_KEY);
-
-                String locality = address.getLocality();
-                if (locality != null && !TextUtils.isEmpty(locality))
-                    city = address.getLocality();
+                if (address != null) {
+                    String locality = address.getLocality();
+                    if (locality != null && !TextUtils.isEmpty(locality))
+                        city = locality;
+                }
             }
 
             builder.setMessage(city);
-
 
             final String finalCity = city;
             builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
@@ -428,7 +428,6 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
                     enableSaveBtn();
                 }
             });
-
 
             builder.setNegativeButton(R.string.update, new DialogInterface.OnClickListener() {
                 @Override
@@ -491,10 +490,10 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
             {USERS.usernameKey, USERS.locationKey}
     );
 
-
     private boolean isEditableField(String key) {
         return !lockedKeys.contains(key);
     }
+
 
     private String getFieldText(String key) {
         FormField ff = formFields.get(key);
