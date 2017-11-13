@@ -411,7 +411,10 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
             if (resultCode == FetchAddressIntentService.ADDRESS_FOUND) {
                 Address address = resultData.getParcelable(FetchAddressIntentService.RESULT_DATA_KEY);
-                city = address.getLocality();
+
+                String locality = address.getLocality();
+                if (locality != null && !TextUtils.isEmpty(locality))
+                    city = address.getLocality();
             }
 
             builder.setMessage(city);
