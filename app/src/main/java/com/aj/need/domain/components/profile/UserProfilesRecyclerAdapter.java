@@ -181,17 +181,15 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
             messageDateTV.setText(_DateUtils.since(mContact.getDate()));
 
             boolean toRead = (!IO.isCurrentUser(mContact.getFrom()) && !mContact.isRead());
-            int txtColor = ContextCompat.getColor(mContext, toRead ? R.color.Black : R.color.Silver);
             int txtTypeFace = toRead ? Typeface.BOLD_ITALIC : Typeface.NORMAL;
 
+            usernameTV.setTypeface(usernameTV.getTypeface(), txtTypeFace);
+
             messageTV.setTypeface(messageTV.getTypeface(), txtTypeFace);
-            messageTV.setTextColor(txtColor);
+            messageTV.setTextColor(ContextCompat.getColor(mContext, toRead ? R.color.Black : R.color.Silver));
 
             messageDateTV.setTypeface(messageDateTV.getTypeface(), txtTypeFace);
-            messageDateTV.setTextColor(txtColor);
-
-            usernameTV.setTypeface(usernameTV.getTypeface(), txtTypeFace);
-            usernameTV.setTextColor(txtColor);
+            messageDateTV.setTextColor(ContextCompat.getColor(mContext, toRead ? R.color.Black : R.color.Gray));
         }
 
 
