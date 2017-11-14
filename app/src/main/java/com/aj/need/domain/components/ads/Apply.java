@@ -16,12 +16,14 @@ public class Apply extends Entity implements Serializable, ITranslatable<Apply> 
 
     private String username;
     private String needTitle;
+    private String queryString;
     private boolean active;
 
 
-    Apply(String username, String needTitle) {
+    Apply(String username, String needTitle, String queryString) {
         this.username = username;
         this.needTitle = needTitle;
+        this.queryString = queryString;
         this.active = true;
     }
 
@@ -32,6 +34,10 @@ public class Apply extends Entity implements Serializable, ITranslatable<Apply> 
 
     public String getNeedTitle() {
         return needTitle;
+    }
+
+    public String getQueryString() {
+        return queryString;
     }
 
     public boolean isActive() {

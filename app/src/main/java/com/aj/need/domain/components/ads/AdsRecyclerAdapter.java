@@ -188,7 +188,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                             App app = ((App) ((Activity) mContext).getApplication());
                             APPLICANTS.getAdApplicantsRef(mAd.getOwnerID(), mAd.get_id())
                                     .document(IO.getCurrentUserUid())
-                                    .set(new Apply(app.getUserName(), mAd.getTitle()));
+                                    .set(new Apply(app.getUserName(), mAd.getTitle(),mAd.getSearch()));
                             __.showShortToast(mContext, mContext.getString(R.string.request_taken_into_consideration_msg));
                         }
                     });
