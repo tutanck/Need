@@ -97,6 +97,7 @@
     <string name="just_now">à l\'instant</string>
     <string name="cancel">Annuler</string>
     <string name="fragment_need_profiles_search_indication">Aucun profil trouvé pour ce besoin</string>
+    <string name="fragment_profiles_search_indication">Aucun profil trouvé pour cette recherche</string>
     <string name="fragment_need_profiles_pokes_indication">Aucune proposition reçue pour le moment</string>
     <string name="request_taken_into_consideration_msg">Votre demande a été prise en compte!</string>
 
@@ -133,4 +134,5 @@
     <string name="mandatory_username">Le nom d\'utilisateur est obligatoire !</string>
     <string name="unknown">Inconnue</string>
     <string name="new_activity_keyword">Nouveau mot-clé de mon activité</string>
+    <string name="no_search_result">Aucun résultat</string>
 </resources>

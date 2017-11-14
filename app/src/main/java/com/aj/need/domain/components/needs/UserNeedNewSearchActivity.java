@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,6 +15,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
@@ -39,6 +42,10 @@ import java.util.List;
 public class UserNeedNewSearchActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
     private static String TAG = "UNeedNewSearchAct";
+
+    //Refresh & indications
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private LinearLayout indicationsLayout;
 
     // Constants:
     private static final int HITS_PER_PAGE = 20;
@@ -70,13 +77,27 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_user_need_new_search);
+        setContentView(R.layout.fragment_recycler_view_with_fab);
 
         // Bind UI components.
-        mRecyclerView = findViewById(R.id.found_profiles_recycler_view);
+        mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(this));
         mAdapter = new UserProfilesRecyclerAdapter(this, userProfileList, 0, Glide.with(this));
         mRecyclerView.setAdapter(mAdapter);
+
+        mSwipeRefreshLayout = findViewById(R.id.recycler_view_SwipeRefreshLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
+        indicationsLayout = findViewById(R.id.component_recycler_indications_layout);
+        TextView indicationTV1 = findViewById(R.id.indicationTV1);
+        indicationTV1.setText(R.string.no_search_result);
+        TextView indicationTV2 = findViewById(R.id.indicationTV2);
+        indicationTV2.setText(R.string.fragment_profiles_search_indication);
 
 
         // Init Algolia.
@@ -89,7 +110,8 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
         query.setFilters("NOT objectID:" + IO.getCurrentUserUid());
         query.setHitsPerPage(HITS_PER_PAGE);
 
-        FloatingActionButton fab = findViewById(R.id.fab_open_need_save);
+        FloatingActionButton fab = findViewById(R.id.fab_recycler_action);
+        fab.setImageResource(R.drawable.ic_speaker_phone_24dp);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -114,6 +136,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
         lastDisplayedPage = -1;
         endReached = false;
 
+        mSwipeRefreshLayout.setRefreshing(true);
         query.setQuery(searchView.getQuery().toString());
         index.searchAsync(query, new CompletionHandler() {
             @Override
@@ -135,6 +158,10 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
                         lastDisplayedSeqNo = currentSearchSeqNo;
                         lastDisplayedPage = 0;
                     }
+
+                    //Indicate the search's result status
+                    indicationsLayout.setVisibility(userProfileList.size() == 0 ? View.VISIBLE : View.GONE);
+                    mSwipeRefreshLayout.setRefreshing(false);
 
                     // Scroll the list back to the top.
                     mRecyclerView.smoothScrollToPosition(0);
