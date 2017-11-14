@@ -23,7 +23,7 @@ import com.aj.need.R;
 public class UserNeedActivity extends AppCompatActivity {
 
     private final static String TAG = "UserNeedAct", NEED_ID = "NEED_ID", NEED_TITLE = "NEED_TITLE",
-            APPLICANT_ID = "APPLICANT_ID", APPLICANT_NAME = "APPLICANT_NAME";
+            QUERY_STRING = "QUERY_STRING", APPLICANT_ID = "APPLICANT_ID", APPLICANT_NAME = "APPLICANT_NAME";
 
     private String needID;
 
@@ -68,10 +68,11 @@ public class UserNeedActivity extends AppCompatActivity {
     }
 
 
-    public static void start(Context context, String needID, String needTitle) {
+    public static void start(Context context, String needID, String needTitle, String queryString) {
         Intent intent = new Intent(context, UserNeedActivity.class);
         intent.putExtra(NEED_ID, needID);
         intent.putExtra(NEED_TITLE, needTitle);
+        intent.putExtra(QUERY_STRING, queryString);
         context.startActivity(intent);
     }
 
@@ -97,7 +98,7 @@ public class UserNeedActivity extends AppCompatActivity {
                 case 0:
                     return PokesFragment.newInstance(needID);
                 case 1:
-                    return SearchFragment.newInstance("j"); //// TODO: 14/11/2017
+                    return SearchFragment.newInstance(getIntent().getStringExtra(QUERY_STRING));
                 default:
                     throw new RuntimeException(TAG + "/PagerAdapter::getItem : unknown top level tab menu");
             }

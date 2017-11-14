@@ -221,7 +221,7 @@ public class UserNeedsFragment extends Fragment {
             @Override
             public void onClick(RecyclerView.ViewHolder viewHolder, int position) {
                 UserNeed userNeed = ((UserNeedsRecyclerAdapter.ViewHolder) viewHolder).getUserNeed();
-                UserNeedActivity.start(getContext(),userNeed.get_id(),userNeed.getTitle());
+                UserNeedActivity.start(getContext(),userNeed.get_id(),userNeed.getTitle(),userNeed.getSearch());
             }
 
             @Override
