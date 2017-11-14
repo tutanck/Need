@@ -17,6 +17,7 @@ import android.view.View;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
+import com.aj.need.db.colls.USERS;
 import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 import com.aj.need.tools.utils.ALGOLIA;
@@ -37,10 +38,12 @@ import java.util.List;
 
 public class UserNeedNewSearchActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
+    private static String TAG = "UNeedNewSearchAct";
+
     // Constants:
-    private static final int HITS_PER_PAGE = 20;
+    private static final int HITS_PER_PAGE = 8;//20;
     // Number of items before the end of the list past which we start loading more content.
-    private static final int LOAD_MORE_THRESHOLD = 5;
+    private static final int LOAD_MORE_THRESHOLD = 1;//5;
 
 
     // UI:
@@ -79,7 +82,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
 
         // Pre-build query.
         query = new Query();
-        query.setAttributesToRetrieve("keywords", "availability", "rating", "username");
+        query.setAttributesToRetrieve("keywords", USERS.availabilityKey, "rating"/*todo repby USERS.avgRatingKey*/, USERS.usernameKey);
         query.setFilters("NOT objectID:" + IO.getCurrentUserUid());
         query.setHitsPerPage(HITS_PER_PAGE);
 
@@ -121,7 +124,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
                     // between two requests. Therefore the order of responses is not guaranteed.
                     if (currentSearchSeqNo <= lastDisplayedSeqNo) return;
 
-                    Log.d("Algolia results", content.toString());
+                    Log.d(TAG, "Algolia results:\n" + content.toString());
 
                     List<UserProfile> results = new Jarvis<UserProfile>().tr(content.optJSONArray("hits"), new UserProfile());
                     if (results.isEmpty())
@@ -137,9 +140,30 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
                     // Scroll the list back to the top.
                     mRecyclerView.smoothScrollToPosition(0);
                 } else
-                    Log.e("Algolia error", "" + error);
+                    Log.e(TAG, "Algolia error", error);
             }
         });
+    }
+
+
+    // SearchView.OnQueryTextListener
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        if (TextUtils.isEmpty(newText)) {
+            mProfiles.clear();
+            mAdapter.notifyDataSetChanged();
+        } else
+            search();
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        // Nothing to do: the search has already been performed by `onQueryTextChange()`.
+        // We do try to close the keyboard, though.
+        searchView.clearFocus();
+        return true;
     }
 
 
@@ -170,27 +194,6 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
         searchView.setIconified(false);
         searchView.setOnQueryTextListener(this);
 
-        return true;
-    }
-
-
-    // SearchView.OnQueryTextListener
-
-    @Override
-    public boolean onQueryTextSubmit(String query) {
-        // Nothing to do: the search has already been performed by `onQueryTextChange()`.
-        // We do try to close the keyboard, though.
-        searchView.clearFocus();
-        return true;
-    }
-
-    @Override
-    public boolean onQueryTextChange(String newText) {
-        if (TextUtils.isEmpty(newText)) {
-            mProfiles.clear();
-            mAdapter.notifyDataSetChanged();
-        } else
-            search();
         return true;
     }
 
