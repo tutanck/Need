@@ -39,7 +39,7 @@ public class App extends Application {
 
     private Map<String, Uri> imageUriMap = new HashMap<>();
 
-    public void setImageUri(String id, Uri uri) {
+    public synchronized void setImageUri(String id, Uri uri) {
         imageUriMap.put(id, uri);
     }
 

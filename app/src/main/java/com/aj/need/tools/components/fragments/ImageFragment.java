@@ -59,6 +59,8 @@ public class ImageFragment extends Fragment {
 
     private DatabaseHelper databaseHelper;
 
+    private boolean onActivityResult = false;
+
 
     public static ImageFragment newInstance(
             String imgRefStr
@@ -105,6 +107,7 @@ public class ImageFragment extends Fragment {
                             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                             intent.setType("image/*");
                             startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+                            onActivityResult  = true;
                         }
                     }
             );
@@ -132,6 +135,7 @@ public class ImageFragment extends Fragment {
             uploadTask.addOnFailureListener(getActivity()/*!important*/, new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
+                    onActivityResult  = false;
                     progressBarFragment.hide();
                     imageView.setClickable(true);
                     __.showShortToast(getContext(), getString(R.string.fail_to_upload_image_message));
@@ -143,12 +147,14 @@ public class ImageFragment extends Fragment {
                     app.setImageUri(imageRef.toString(), remoteUri);
                     loadImg(localUri);//// TODO: 14/11/2017 conc with onResume/onStart
                     imageView.setClickable(true);
+                    onActivityResult  = false;
                     __.showLongToast(getContext(), "upload : End");
                 }
             });
 
         } catch (IOException e) {
             __.showShortToast(getActivity(), getString(R.string.fail_to_retrieve_image_message));
+            onActivityResult  = false;
             e.printStackTrace();
         }
     }
@@ -208,7 +214,9 @@ public class ImageFragment extends Fragment {
         //https://stackoverflow.com/questions/16340732/execution-order-of-onactivityresult-and-onresume
         //https://stackoverflow.com/questions/30084659/android-onactivityresult-order-of-execution
         //https://stackoverflow.com/questions/5059028/state-of-activity-while-in-onactivityresult-question/5060245#5060245
-        __.showShortToast(getContext(), "onResume");
-        refreshImg(); //// TODO: 14/11/2017  conc with onActResult
+        if(!onActivityResult) {
+            __.showShortToast(getContext(), "onResume");
+            refreshImg(); //// TODO: 14/11/2017  conc with onActResult
+        }
     }
 }
