@@ -128,7 +128,10 @@ public class FormField extends Fragment {
 
 
     public void setText(String text) {
-        String txt = text.trim();
+        String txt = null;
+
+        if (text != null) txt = text.trim();
+
         getEtContent().setText(txt);
         getTvContent().setText(txt);
     }

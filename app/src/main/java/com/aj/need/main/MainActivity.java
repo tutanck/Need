@@ -60,6 +60,9 @@ public class MainActivity extends AppCompatActivity implements FormField.Listene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (!IO.getCurrentUser().isEmailVerified())
+            LoginActivity.start(MainActivity.this);
+
         authListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -90,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements FormField.Listene
     @Override
     protected void onStart() {
         super.onStart();
+
 
         profileRegistration = USERS.getCurrentUserRef().addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -186,12 +190,6 @@ public class MainActivity extends AppCompatActivity implements FormField.Listene
         ((FormField.Listener.Delegate) pagerAdapter
                 .getFragment(formField.getDelegateID())
         ).onFormFieldCreated(formField);
-    }
-
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == ProfileFragment.PLACE_PICKER_REQUEST)
-            pagerAdapter.getFragment(1).onActivityResult(requestCode, resultCode, data);
     }
 
 

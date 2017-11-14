@@ -81,12 +81,13 @@ public class SignupActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful())
-                                    USERS.getCurrentUserRef().set(new User(username, Avail.AVAILABLE, ((App) getApplication()).getLastLocalKnownLocation()))
+                                    USERS.getCurrentUserRef().set(new User(username, Avail.OFFLINE, ((App) getApplication()).getLastLocalKnownLocation()))
                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                 @Override
                                                 public void onSuccess(Void aVoid) {
                                                     IO.getCurrentUser().sendEmailVerification();
                                                     __.showLongToast(SignupActivity.this, getString(R.string.check_email_has_been_sent));
+                                                    IO.auth.signOut();
                                                     LoginActivity.start(SignupActivity.this);
                                                 }
                                             })

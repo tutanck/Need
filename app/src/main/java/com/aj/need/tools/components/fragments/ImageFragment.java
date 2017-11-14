@@ -115,7 +115,6 @@ public class ImageFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST)
             if (resultCode == RESULT_OK && data != null && data.getData() != null)
                 upload(data.getData());
@@ -142,8 +141,9 @@ public class ImageFragment extends Fragment {
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     Uri remoteUri = taskSnapshot.getDownloadUrl();
                     app.setImageUri(imageRef.toString(), remoteUri);
-                    loadImg(localUri);
+                    //loadImg(localUri);//// TODO: 14/11/2017 conc uncoment
                     imageView.setClickable(true);
+                    __.showLongToast(getContext(),"upload : End");
                 }
             });
 
@@ -155,17 +155,20 @@ public class ImageFragment extends Fragment {
 
 
     private void loadImg(Uri uri) {
+        __.showShortToast(getContext(),"loadImg: begins");
         glide.load(uri).listener(
                 new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                         progressBarFragment.hide();
+                        __.showShortToast(getContext(),"loadImg: onLoadFailed");
                         return false;
                     }
 
                     @Override
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                         progressBarFragment.hide();
+                        __.showShortToast(getContext(),"loadImg: onResourceReady");
                         return false;
                     }
                 }
@@ -202,6 +205,7 @@ public class ImageFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        refreshImg();
+        __.showShortToast(getContext(),"onResume");
+        refreshImg(); //// TODO: 14/11/2017  conc with onActResult
     }
 }

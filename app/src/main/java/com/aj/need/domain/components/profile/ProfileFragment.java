@@ -354,7 +354,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
 
         PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
         try {
-            getActivity().startActivityForResult(builder.build(getActivity()), PLACE_PICKER_REQUEST);
+            startActivityForResult(builder.build(getActivity()), PLACE_PICKER_REQUEST);
         } catch (GooglePlayServicesRepairableException e) {
             e.printStackTrace();
             GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
@@ -365,7 +365,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
         }
     }
 
-
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PLACE_PICKER_REQUEST)
             if (resultCode == RESULT_OK) {
