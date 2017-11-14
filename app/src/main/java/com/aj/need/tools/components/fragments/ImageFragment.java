@@ -123,7 +123,7 @@ public class ImageFragment extends Fragment {
 
     private void upload(final Uri localUri) {
         try {
-            __.showLongToast(getContext(),getString(R.string.image_upload_in_progress));
+            __.showLongToast(getContext(), getString(R.string.image_upload_in_progress));
             imageView.setClickable(false); //!important due to the progressBar that don't show up sometimes
             progressBarFragment.show();
             final Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), localUri);
@@ -141,9 +141,9 @@ public class ImageFragment extends Fragment {
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     Uri remoteUri = taskSnapshot.getDownloadUrl();
                     app.setImageUri(imageRef.toString(), remoteUri);
-                    //loadImg(localUri);//// TODO: 14/11/2017 conc uncoment
+                    loadImg(localUri);//// TODO: 14/11/2017 conc with onResume/onStart
                     imageView.setClickable(true);
-                    __.showLongToast(getContext(),"upload : End");
+                    __.showLongToast(getContext(), "upload : End");
                 }
             });
 
@@ -151,28 +151,6 @@ public class ImageFragment extends Fragment {
             __.showShortToast(getActivity(), getString(R.string.fail_to_retrieve_image_message));
             e.printStackTrace();
         }
-    }
-
-
-    private void loadImg(Uri uri) {
-        __.showShortToast(getContext(),"loadImg: begins");
-        glide.load(uri).listener(
-                new RequestListener<Drawable>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        progressBarFragment.hide();
-                        __.showShortToast(getContext(),"loadImg: onLoadFailed");
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        progressBarFragment.hide();
-                        __.showShortToast(getContext(),"loadImg: onResourceReady");
-                        return false;
-                    }
-                }
-        ).into(imageView);
     }
 
 
@@ -202,10 +180,35 @@ public class ImageFragment extends Fragment {
     }
 
 
+    private void loadImg(Uri uri) {
+        __.showShortToast(getContext(), "loadImg: begins");
+        glide.load(uri).listener(
+                new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        progressBarFragment.hide();
+                        __.showShortToast(getContext(), "loadImg: onLoadFailed");
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        progressBarFragment.hide();
+                        __.showShortToast(getContext(), "loadImg: onResourceReady");
+                        return false;
+                    }
+                }
+        ).into(imageView);
+    }
+
+
     @Override
-    public void onStart() {
-        super.onStart();
-        __.showShortToast(getContext(),"onResume");
+    public void onResume() {
+        super.onResume();
+        //https://stackoverflow.com/questions/16340732/execution-order-of-onactivityresult-and-onresume
+        //https://stackoverflow.com/questions/30084659/android-onactivityresult-order-of-execution
+        //https://stackoverflow.com/questions/5059028/state-of-activity-while-in-onactivityresult-question/5060245#5060245
+        __.showShortToast(getContext(), "onResume");
         refreshImg(); //// TODO: 14/11/2017  conc with onActResult
     }
 }
