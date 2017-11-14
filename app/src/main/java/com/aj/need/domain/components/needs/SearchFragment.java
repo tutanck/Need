@@ -137,6 +137,7 @@ public class SearchFragment extends Fragment {
         lastDisplayedPage = -1;
         endReached = false;
 
+        mSwipeRefreshLayout.setRefreshing(true);
         query.setQuery(queryString);
         index.searchAsync(query, new CompletionHandler() {
             @Override
