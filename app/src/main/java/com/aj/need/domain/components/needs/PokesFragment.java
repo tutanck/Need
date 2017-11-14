@@ -30,9 +30,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 
 
-public class NeedProfilesFragment extends Fragment {
+public class PokesFragment extends Fragment {
 
-    private final static String POS = "POS", NEED_ID = "NEED_ID";
+    private final static String TAG = "NeedProfilesFoundFrag", NEED_ID = "NEED_ID";
 
 
     private ArrayList<UserProfile> profileList = new ArrayList<>();
@@ -48,11 +48,10 @@ public class NeedProfilesFragment extends Fragment {
     private QuerySnapshot lastQuerySnapshot;
 
 
-    public static NeedProfilesFragment newInstance(int pos, String needID) {
+    public static PokesFragment newInstance(String needID) {
         Bundle args = new Bundle();
-        args.putInt(POS, pos);
         args.putString(NEED_ID, needID);
-        NeedProfilesFragment fragment = new NeedProfilesFragment();
+        PokesFragment fragment = new PokesFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -82,17 +81,14 @@ public class NeedProfilesFragment extends Fragment {
         });
 
         indicationsLayout = view.findViewById(R.id.component_recycler_indications_layout);
-        TextView indicationTV1 = view.findViewById(R.id.indicationTV1);
         TextView indicationTV2 = view.findViewById(R.id.indicationTV2);
 
-        indicationTV2.setText(getArguments().getInt(POS) == 1 ?
-                R.string.fragment_need_profiles_indic1 :
-                R.string.fragment_need_profiles_indic2);
+        indicationTV2.setText(R.string.fragment_need_profiles_pokes_indication);
 
         String needID = getArguments().getString(NEED_ID);
 
-        if(needID == null)
-            __.fatal("NeedProfilesFragment: needID == null !");
+        if (needID == null)
+            __.fatal(TAG + ": needID == null !");
 
         mLoadQuery = APPLICANTS.getAdApplicantsRef(IO.getCurrentUserUid(), needID);
         //// TODO: 28/10/2017  limit and orderBy date and vu !important
@@ -116,7 +112,7 @@ public class NeedProfilesFragment extends Fragment {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 //!important : useful log for index issues tracking, etc.
-                Log.d("NeedProfilesFragment", "onStart/onComplete::querySnapshot=" + task.getResult() + " error=" + task.getException());
+                Log.d(TAG, "onStart/onComplete::querySnapshot=" + task.getResult() + " error=" + task.getException());
                 if (task.isSuccessful())
                     refreshProfileList(task.getResult(), true);
                 else

@@ -22,10 +22,8 @@ import com.aj.need.R;
  */
 public class UserNeedActivity extends AppCompatActivity {
 
-    private final static String NEED_ID = "NEED_ID";
-    private final static String NEED_TITLE = "NEED_TITLE";
-    private final static String APPLICANT_ID = "APPLICANT_ID";
-    private final static String APPLICANT_NAME = "APPLICANT_NAME";
+    private final static String TAG = "UserNeedAct", NEED_ID = "NEED_ID", NEED_TITLE = "NEED_TITLE",
+            APPLICANT_ID = "APPLICANT_ID", APPLICANT_NAME = "APPLICANT_NAME";
 
     private String needID;
 
@@ -97,11 +95,11 @@ public class UserNeedActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return NeedProfilesFragment.newInstance(position, needID);
+                    return PokesFragment.newInstance(needID);
                 case 1:
-                    return NeedProfilesFragment.newInstance(position, needID);
+                    return SearchFragment.newInstance("j"); //// TODO: 14/11/2017
                 default:
-                    throw new RuntimeException("UserNeedActivity/PagerAdapter::getItem : unknown top level tab menu");
+                    throw new RuntimeException(TAG + "/PagerAdapter::getItem : unknown top level tab menu");
             }
         }
 

@@ -1,19 +1,16 @@
 package com.aj.need.domain.components.needs;
 
-import android.app.SearchManager;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.IO;
@@ -36,9 +33,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class UserNeedNewSearchActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
+public class SearchFragment extends Fragment {
 
-    private static String TAG = "UNeedNewSearchAct";
+    private final static String TAG = "NeedProfilesPokeFrag", QUERY_STRING = "QUERY_STRING";
+
+
+    //Refresh & indications
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private LinearLayout indicationsLayout;
+
 
     // Constants:
     private static final int HITS_PER_PAGE = 20;
@@ -47,10 +50,9 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
 
 
     // UI:
-    private SearchView searchView;
     private RecyclerView mRecyclerView;
-    private LinearLayoutManager linearLayoutManager;
     private UserProfilesRecyclerAdapter mAdapter;
+    private LinearLayoutManager linearLayoutManager;
     private List<UserProfile> userProfileList = new ArrayList<>();
 
 
@@ -61,22 +63,54 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
     private int lastSearchedSeqNo;
     private int lastDisplayedSeqNo;
 
+    private String queryString;
+
+
     // Pagination:
     private int lastRequestedPage;
     private int lastDisplayedPage;
     private boolean endReached;
 
 
+    // Fragment instantiation
+    public static SearchFragment newInstance(String queryString) {
+        Bundle args = new Bundle();
+        args.putString(QUERY_STRING, queryString);
+        SearchFragment fragment = new SearchFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_user_need_new_search);
+    public View onCreateView(
+            LayoutInflater inflater
+            , ViewGroup container
+            , Bundle savedInstanceState
+    ) {
+        View view = inflater.inflate(R.layout.component_recycler_view, container, false);
 
         // Bind UI components.
-        mRecyclerView = findViewById(R.id.found_profiles_recycler_view);
-        mRecyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(this));
-        mAdapter = new UserProfilesRecyclerAdapter(this, userProfileList, 0, Glide.with(this));
+        mRecyclerView = view.findViewById(R.id.recycler_view);
+        mRecyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getActivity()));
+        mAdapter = new UserProfilesRecyclerAdapter(getContext(), userProfileList, 0, Glide.with(this));
         mRecyclerView.setAdapter(mAdapter);
+
+        mSwipeRefreshLayout = view.findViewById(R.id.recycler_view_SwipeRefreshLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                search();
+            }
+        });
+
+        indicationsLayout = view.findViewById(R.id.component_recycler_indications_layout);
+        TextView indicationTV2 = view.findViewById(R.id.indicationTV2);
+        indicationTV2.setText(R.string.fragment_need_profiles_search_indication);
+
+
+        queryString = getArguments().getString(QUERY_STRING);
+        if (queryString == null) __.fatal(TAG + ": queryString == null !");
 
 
         // Init Algolia.
@@ -89,20 +123,9 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
         query.setFilters("NOT objectID:" + IO.getCurrentUserUid());
         query.setHitsPerPage(HITS_PER_PAGE);
 
-        FloatingActionButton fab = findViewById(R.id.fab_open_need_save);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String searchText = searchView.getQuery().toString();
-
-                if (TextUtils.isEmpty(searchText))
-                    __.showShortSnack(view, "Impossible de publier une recherche vide!");
-                else
-                    UserNeedSaveActivity.start(UserNeedNewSearchActivity.this, searchText, false);
-            }
-        });
-
         setRecyclerViewScrollListener();
+
+        return view;
     }
 
 
@@ -114,7 +137,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
         lastDisplayedPage = -1;
         endReached = false;
 
-        query.setQuery(searchView.getQuery().toString());
+        query.setQuery(queryString);
         index.searchAsync(query, new CompletionHandler() {
             @Override
             public void requestCompleted(JSONObject content, AlgoliaException error) {
@@ -135,6 +158,10 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
                         lastDisplayedSeqNo = currentSearchSeqNo;
                         lastDisplayedPage = 0;
                     }
+
+                    //Indicate the search's result status
+                    indicationsLayout.setVisibility(userProfileList.size() == 0 ? View.VISIBLE : View.GONE);
+                    mSwipeRefreshLayout.setRefreshing(false);
 
                     // Scroll the list back to the top.
                     mRecyclerView.smoothScrollToPosition(0);
@@ -186,6 +213,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
                 if (lastRequestedPage > lastDisplayedPage) return;
 
                 // Load more if we are sufficiently close to the end of the list.
+
                 int firstInvisibleItem = linearLayoutManager.findLastVisibleItemPosition() + 1;
                 if (firstInvisibleItem + LOAD_MORE_THRESHOLD >= totalItemCount)
                     loadMore();
@@ -194,60 +222,10 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
     }
 
 
-    // SearchView.OnQueryTextListener
-
     @Override
-    public boolean onQueryTextChange(String newText) {
-        if (TextUtils.isEmpty(newText)) {
-            userProfileList.clear();
-            mAdapter.notifyDataSetChanged();
-        } else
-            search();
-        return true;
-    }
-
-    @Override
-    public boolean onQueryTextSubmit(String query) {
-        // Nothing to do: the search has already been performed by `onQueryTextChange()`.
-        // We do try to close the keyboard, though.
-        searchView.clearFocus();
-        return true;
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.searchbar_menu, menu);
-
-        // Associate searchable configuration with the SearchView
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        MenuItem searchMenuItem = menu.findItem(R.id.search);
-
-        searchMenuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
-
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-                return true; // KEEP IT TO TRUE OR IT DOESN'T OPEN !!
-            }
-
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-                UserNeedNewSearchActivity.super.onBackPressed();
-                return true; // OR FALSE IF YOU DIDN'T WANT IT TO CLOSE!
-            }
-        });
-
-        searchView = (SearchView) searchMenuItem.getActionView();
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName())); //todo : dt work : getSearchableInfo = null
-        searchView.setIconified(false);
-        searchView.setOnQueryTextListener(this);
-
-        return true;
-    }
-
-
-    public static void start(Context context) {
-        context.startActivity(new Intent(context, UserNeedNewSearchActivity.class));
+    public void onStart() {
+        super.onStart();
+        search();
     }
 
 }
