@@ -41,24 +41,27 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
     private static String TAG = "UNeedNewSearchAct";
 
     // Constants:
-    private static final int HITS_PER_PAGE = 8;//20;
+    private static final int HITS_PER_PAGE = 20;
     // Number of items before the end of the list past which we start loading more content.
-    private static final int LOAD_MORE_THRESHOLD = 1;//5;
+    private static final int LOAD_MORE_THRESHOLD = 5;
 
 
     // UI:
     private SearchView searchView;
     private RecyclerView mRecyclerView;
+    private LinearLayoutManager linearLayoutManager;
     private UserProfilesRecyclerAdapter mAdapter;
     private ArrayList<UserProfile> mProfiles = new ArrayList<>();
 
 
-    // Algolia Search:
+    // Search:
     private Client client;
     private Index index;
     private Query query;
     private int lastSearchedSeqNo;
     private int lastDisplayedSeqNo;
+
+    // Pagination:
     private int lastRequestedPage;
     private int lastDisplayedPage;
     private boolean endReached;
@@ -71,7 +74,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
 
         // Bind UI components.
         mRecyclerView = findViewById(R.id.found_profiles_recycler_view);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(this));
         mAdapter = new UserProfilesRecyclerAdapter(this, mProfiles, 0, Glide.with(this));
         mRecyclerView.setAdapter(mAdapter);
 
@@ -99,6 +102,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
             }
         });
 
+        setRecyclerViewScrollListener();
     }
 
 
@@ -111,25 +115,20 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
         endReached = false;
 
         query.setQuery(searchView.getQuery().toString());
-
         index.searchAsync(query, new CompletionHandler() {
             @Override
             public void requestCompleted(JSONObject content, AlgoliaException error) {
                 if (content != null && error == null) {
-                    // NOTE: Check that the received results are newer that the last displayed results.
-                    //
-                    // Rationale: Although TCP imposes a server to send responses in the same order as
-                    // requests, nothing prevents the system from opening multiple connections to the
-                    // same server, nor the Algolia client to transparently switch to another server
-                    // between two requests. Therefore the order of responses is not guaranteed.
+
+                    //Check that the received results are newer that the last displayed results.
                     if (currentSearchSeqNo <= lastDisplayedSeqNo) return;
 
                     Log.d(TAG, "Algolia results:\n" + content.toString());
 
                     List<UserProfile> results = new Jarvis<UserProfile>().tr(content.optJSONArray("hits"), new UserProfile());
-                    if (results.isEmpty())
+                    if (results.isEmpty()) {
                         endReached = true;
-                    else {
+                    } else {
                         mProfiles.clear();
                         mProfiles.addAll(results);
                         mAdapter.notifyDataSetChanged();
@@ -141,6 +140,54 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
                     mRecyclerView.smoothScrollToPosition(0);
                 } else
                     Log.e(TAG, "Algolia error", error);
+            }
+        });
+    }
+
+
+    private void loadMore() {
+        Query loadMoreQuery = new Query(query);
+        loadMoreQuery.setPage(++lastRequestedPage);
+        final int currentSearchSeqNo = lastSearchedSeqNo;
+        index.searchAsync(loadMoreQuery, new CompletionHandler() {
+            @Override
+            public void requestCompleted(JSONObject content, AlgoliaException error) {
+                if (content != null && error == null) {
+
+                    // Ignore results if they are for an older query.
+                    if (lastDisplayedSeqNo != currentSearchSeqNo) return;
+
+                    List<UserProfile> results = new Jarvis<UserProfile>().tr(content.optJSONArray("hits"), new UserProfile());
+                    if (results.isEmpty()) {
+                        endReached = true;
+                    } else {
+                        mProfiles.addAll(results);
+                        mAdapter.notifyDataSetChanged();
+                        lastDisplayedPage = lastRequestedPage;
+                    }
+                }
+            }
+        });
+    }
+
+
+    private void setRecyclerViewScrollListener() {
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                // Abort if 1st page is not full or the end has already been reached.
+                if (endReached) return;
+
+                // Ignore if a new page has already been requested.
+                if (lastRequestedPage > lastDisplayedPage) return;
+
+                // Load more if we are sufficiently close to the end of the list.
+                int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
+                int firstInvisibleItem = linearLayoutManager.findLastVisibleItemPosition() + 1;
+                if (firstInvisibleItem + LOAD_MORE_THRESHOLD >= totalItemCount)
+                    loadMore();
             }
         });
     }
