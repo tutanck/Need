@@ -138,6 +138,7 @@ public class SearchFragment extends Fragment {
         endReached = false;
 
         mSwipeRefreshLayout.setRefreshing(true);
+
         query.setQuery(queryString);
         index.searchAsync(query, new CompletionHandler() {
             @Override
@@ -162,12 +163,13 @@ public class SearchFragment extends Fragment {
 
                     //Indicate the search's result status
                     indicationsLayout.setVisibility(userProfileList.size() == 0 ? View.VISIBLE : View.GONE);
-                    mSwipeRefreshLayout.setRefreshing(false);
 
                     // Scroll the list back to the top.
                     mRecyclerView.smoothScrollToPosition(0);
                 } else
                     Log.e(TAG, "Algolia error", error);
+
+                mSwipeRefreshLayout.setRefreshing(false);
             }
         });
     }
@@ -185,6 +187,8 @@ public class SearchFragment extends Fragment {
                     // Ignore results if they are for an older query.
                     if (lastDisplayedSeqNo != currentSearchSeqNo) return;
 
+                    Log.d(TAG, "Algolia results:\n" + content.toString());
+
                     List<UserProfile> results = new Jarvis<UserProfile>().tr(content.optJSONArray("hits"), new UserProfile());
                     if (results.isEmpty()) {
                         endReached = true;
@@ -193,7 +197,8 @@ public class SearchFragment extends Fragment {
                         mAdapter.notifyDataSetChanged();
                         lastDisplayedPage = lastRequestedPage;
                     }
-                }
+                }else
+                    Log.e(TAG, "Algolia error", error);
             }
         });
     }
@@ -207,14 +212,13 @@ public class SearchFragment extends Fragment {
 
                 int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
 
-                // Abort if 1st page is not full or the end has already been reached.
+                // Abort if list is empty or the end has already been reached.
                 if (totalItemCount == 0 || endReached) return;
 
                 // Ignore if a new page has already been requested.
                 if (lastRequestedPage > lastDisplayedPage) return;
 
                 // Load more if we are sufficiently close to the end of the list.
-
                 int firstInvisibleItem = linearLayoutManager.findLastVisibleItemPosition() + 1;
                 if (firstInvisibleItem + LOAD_MORE_THRESHOLD >= totalItemCount)
                     loadMore();
@@ -228,5 +232,4 @@ public class SearchFragment extends Fragment {
         super.onStart();
         search();
     }
-
 }

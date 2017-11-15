@@ -137,6 +137,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
         endReached = false;
 
         mSwipeRefreshLayout.setRefreshing(true);
+
         query.setQuery(searchView.getQuery().toString());
         index.searchAsync(query, new CompletionHandler() {
             @Override
@@ -161,12 +162,13 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
 
                     //Indicate the search's result status
                     indicationsLayout.setVisibility(userProfileList.size() == 0 ? View.VISIBLE : View.GONE);
-                    mSwipeRefreshLayout.setRefreshing(false);
 
                     // Scroll the list back to the top.
                     mRecyclerView.smoothScrollToPosition(0);
                 } else
                     Log.e(TAG, "Algolia error", error);
+
+                mSwipeRefreshLayout.setRefreshing(false);
             }
         });
     }
@@ -184,6 +186,8 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
                     // Ignore results if they are for an older query.
                     if (lastDisplayedSeqNo != currentSearchSeqNo) return;
 
+                    Log.d(TAG, "Algolia results:\n" + content.toString());
+
                     List<UserProfile> results = new Jarvis<UserProfile>().tr(content.optJSONArray("hits"), new UserProfile());
                     if (results.isEmpty()) {
                         endReached = true;
@@ -192,7 +196,8 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
                         mAdapter.notifyDataSetChanged();
                         lastDisplayedPage = lastRequestedPage;
                     }
-                }
+                }else
+                    Log.e(TAG, "Algolia error", error);
             }
         });
     }
@@ -206,7 +211,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
 
                 int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
 
-                // Abort if 1st page is not full or the end has already been reached.
+                // Abort if list is empty or the end has already been reached.
                 if (totalItemCount == 0 || endReached) return;
 
                 // Ignore if a new page has already been requested.

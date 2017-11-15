@@ -1,6 +1,7 @@
 package com.aj.need.domain.components.messages;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,6 +22,8 @@ import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -35,12 +38,10 @@ public class ConversationsFragment extends Fragment {
 
     private final static String TAG = "ConversationsFrag";
 
-
     // Constants:
     /*
     *!important the number of results displayed must always be enough to over-fulfill the screen :
-    * The first visible and the last visibles items must never be seen on the same screen
-    * */
+    * The first visible and the last visible items must never be seen on the same screen */
     private final int HITS_PER_PAGE = 10; //// TODO: 27/10/2017  20 in prod
 
     // Number of items before the end of the list past which we start loading more content.
@@ -61,6 +62,12 @@ public class ConversationsFragment extends Fragment {
     private QuerySnapshot lastQuerySnapshot;
 
     private ListenerRegistration contactsRegistration;
+
+
+    // Pagination:
+    private int lastRequestedPage;
+    private int lastDisplayedPage;
+    private boolean endReached;
 
 
     public static ConversationsFragment newInstance() {
@@ -85,7 +92,7 @@ public class ConversationsFragment extends Fragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                 sync();
+                sync();
             }
         });
 
@@ -99,41 +106,101 @@ public class ConversationsFragment extends Fragment {
         mLoadQuery = USER_CONTACTS.getCurrentUserContactsRef()
                 .orderBy(Coll.dateKey, Query.Direction.DESCENDING);
 
+        setRecyclerViewScrollListener();
+
         return view;
     }
 
 
-    // TODO: 28/10/2017 loadMore (offset)
-    private synchronized void refreshContactList(QuerySnapshot querySnapshot, boolean reset) {
-        if (querySnapshot == null) return;
-        lastQuerySnapshot = querySnapshot;
-        if (reset) contactList.clear();
-        contactList.addAll(new Jarvis<UserProfile>().tr(querySnapshot, new Contact()));
-        Log.i("contactList", contactList.toString());
-        indicationsLayout.setVisibility(contactList.size() == 0 ? View.VISIBLE : View.GONE);
-        mAdapter.notifyDataSetChanged();
-        if (reset) mRecyclerView.scrollToPosition(0);
-    }
-
-
     private synchronized void sync() {
+        lastRequestedPage = 0;
+        lastDisplayedPage = -1;
+        endReached = false;
+
         mSwipeRefreshLayout.setRefreshing(true);
+
         unsync();
-        contactsRegistration = mLoadQuery.limit(HITS_PER_PAGE)
-                .addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(QuerySnapshot querySnapshot, FirebaseFirestoreException e) {
-                        Log.i(TAG, "contactsRegistration:" + " querySnapshot=" + querySnapshot, e);
+        contactsRegistration = mLoadQuery.limit(HITS_PER_PAGE).addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot querySnapshot, FirebaseFirestoreException e) {
+                Log.i(TAG, "contactsRegistration:" + " querySnapshot=" + querySnapshot, e);
 
-                        if (e == null) refreshContactList(querySnapshot, true);
-
-                        else
-                            __.showShortToast(getContext(), getString(R.string.load_error_message));
-
-                        mSwipeRefreshLayout.setRefreshing(false);
+                if (querySnapshot != null && e == null) {
+                    if (querySnapshot.isEmpty()) {
+                        endReached = true;
+                    } else {
+                        contactList.clear();
+                        contactList.addAll(new Jarvis<UserProfile>().tr(querySnapshot, new Contact()));
+                        mAdapter.notifyDataSetChanged();
+                        Log.i("contactList", contactList.toString());
+                        lastQuerySnapshot = querySnapshot;
+                        lastDisplayedPage = 0;
                     }
-                });
+
+                    //Indicate the search's result status
+                    indicationsLayout.setVisibility(contactList.size() == 0 ? View.VISIBLE : View.GONE);
+
+                    // Scroll the list back to the top.
+                    mRecyclerView.scrollToPosition(0);
+                } else
+                    __.showShortToast(getContext(), getString(R.string.load_error_message));
+
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+        });
     }
+
+
+    private synchronized void loadMore() {
+        Query loadMoreQuery = mLoadQuery.startAfter(lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1));
+        ++lastRequestedPage;
+        loadMoreQuery.limit(HITS_PER_PAGE).get().addOnCompleteListener(getActivity(), new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                QuerySnapshot querySnapshot = task.getResult();
+                Exception e = task.getException();
+
+                Log.d(TAG, "loadMore::" + "querySnapshot=" + querySnapshot + " e=", e);
+
+                if (task.isSuccessful() && querySnapshot != null && e == null) {
+                    if (querySnapshot.isEmpty()) {
+                        endReached = true;
+                    } else {
+                        contactList.addAll(new Jarvis<UserProfile>().tr(querySnapshot, new Contact()));
+                        mAdapter.notifyDataSetChanged();
+                        lastQuerySnapshot = querySnapshot;
+                        lastDisplayedPage = lastRequestedPage;
+                    }
+                } else
+                    __.showShortToast(getContext(), getString(R.string.load_error_message));
+            }
+        });
+
+    }
+
+
+    private void setRecyclerViewScrollListener() {
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
+
+                // Abort if list is empty or the end has already been reached.
+                if (totalItemCount == 0 || endReached) return;
+
+                // Ignore if a new page has already been requested.
+                if (lastRequestedPage > lastDisplayedPage) return;
+
+                // Load more if we are sufficiently close to the end of the list.
+                int firstInvisibleItem = linearLayoutManager.findLastVisibleItemPosition() + 1;
+                if (firstInvisibleItem + LOAD_MORE_THRESHOLD >= totalItemCount)
+                    loadMore();
+            }
+        });
+    }
+
 
     private synchronized void unsync() {
         if (contactsRegistration != null) contactsRegistration.remove();
