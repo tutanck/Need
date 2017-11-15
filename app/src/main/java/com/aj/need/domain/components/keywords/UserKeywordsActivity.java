@@ -25,6 +25,7 @@ import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USER_KEYWORDS;
 import com.aj.need.tools.utils.Jarvis;
+import com.aj.need.tools.utils.PatternsHolder;
 import com.aj.need.tools.utils.__;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -166,7 +167,7 @@ public class UserKeywordsActivity extends AppCompatActivity {
     }
 
 
-    void saveKeyword(String keyword, boolean active, boolean deleted, boolean isUpadate) {
+    void saveKeyword(String keyword, boolean active, boolean deleted, boolean isUpdate) {
         if (isKeyword(keyword)) {
             USER_KEYWORDS.getCurrentUserKeywordsRef()
                     .document(keyword).set(new UserKeyword(keyword, active, deleted))
@@ -176,7 +177,7 @@ public class UserKeywordsActivity extends AppCompatActivity {
                             __.showShortToast(UserKeywordsActivity.this, getString(R.string.error_saving_keyword_message));
                         }
                     });
-            if (!isUpadate) etKeyword.setText("");
+            if (!isUpdate) etKeyword.setText("");
         } else
             __.showLongSnack(btnAdd, getString(R.string.keyword_conformity_indication));
     }
@@ -193,7 +194,7 @@ public class UserKeywordsActivity extends AppCompatActivity {
 
 
     private boolean isKeyword(String input) {
-        return !TextUtils.isEmpty(input) && !__.found("[^a-zA-Z0-9]", input);
+        return !TextUtils.isEmpty(input) && !__.found(PatternsHolder.blank, input);
     }
 
 

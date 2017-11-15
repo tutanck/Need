@@ -46,7 +46,7 @@
     <string name="load_error_message">Erreur de chargement.  Tirez pour rééssayer.</string>
     <string name="error_deleting_user_need_message">Erreur de suppression du besoin.</string>
     <string name="error_saving_keyword_message">Erreur de sauvegarde du mot-clé.</string>
-    <string name="keyword_conformity_indication">Un mot-clé est composé d\'un seul mot (caractères alphanumériques sans accents).</string>
+    <string name="keyword_conformity_indication">Un mot-clé est composé d\'un seul mot.</string>
     <string name="activity_keywords_indic4">Aucun mot-clé à afficher</string>
     <string name="activity_keywords_indic3">Mot-clés de l\'activité</string>
     <string name="fragment_conversation_indic2">Aucun message pour le moment</string>
