@@ -43,7 +43,7 @@
     <string name="nothing_to_show">Rien à afficher</string>
     <string name="activity_keywords_indic1">Mots-clés de mon activité</string>
     <string name="activity_keywords_indic2">(Les mots-clés aident vos clients à vous retrouver)</string>
-    <string name="load_error_message">Erreur de chargement.  Tirez pour rééssayer.</string>
+    <string name="load_error_message">Erreur de chargement.</string>
     <string name="error_deleting_user_need_message">Erreur de suppression du besoin.</string>
     <string name="error_saving_keyword_message">Erreur de sauvegarde du mot-clé.</string>
     <string name="keyword_conformity_indication">Un mot-clé est composé d\'un seul mot.</string>

@@ -1,7 +1,6 @@
 package com.aj.need.domain.components.messages;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -22,8 +21,6 @@ import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -54,7 +51,7 @@ public class ConversationsFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private UserProfilesRecyclerAdapter mAdapter;
     private LinearLayoutManager linearLayoutManager;
-    private ArrayList<UserProfile> contactList = new ArrayList<>();
+    private List<UserProfile> contactList = new ArrayList<>();
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private LinearLayout indicationsLayout;
 
@@ -62,15 +59,9 @@ public class ConversationsFragment extends Fragment {
     // Search:
     private Query mLoadQuery;
     private QuerySnapshot lastQuerySnapshot;
-    private int lastSearchedSeqNo;
-    private int lastDisplayedSeqNo;
 
     private ListenerRegistration contactsRegistration;
 
-    // Pagination:
-    private int lastRequestedPage;
-    private int lastDisplayedPage;
-    private boolean endReached;
 
     public static ConversationsFragment newInstance() {
         return new ConversationsFragment();
@@ -85,7 +76,6 @@ public class ConversationsFragment extends Fragment {
     ) {
         View view = inflater.inflate(R.layout.component_recycler_view, container, false);
 
-        // Bind UI components.
         mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getActivity()));
         mAdapter = new UserProfilesRecyclerAdapter(getContext(), contactList, 1, Glide.with(this));
@@ -95,8 +85,7 @@ public class ConversationsFragment extends Fragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (lastQuerySnapshot == null) loadContacts();
-                else mSwipeRefreshLayout.setRefreshing(false);
+                 sync();
             }
         });
 
@@ -109,51 +98,12 @@ public class ConversationsFragment extends Fragment {
 
         mLoadQuery = USER_CONTACTS.getCurrentUserContactsRef()
                 .orderBy(Coll.dateKey, Query.Direction.DESCENDING);
-        //// TODO: 28/10/2017  limit !important
 
         return view;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        mSwipeRefreshLayout.setRefreshing(true);
-        contactsRegistration = mLoadQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(QuerySnapshot querySnapshot, FirebaseFirestoreException e) {
-                Log.w("contactsRegistration", "querySnapshot=" + querySnapshot + " error=" + e);
-                if (e == null && querySnapshot != null)
-                    refreshContactList(querySnapshot, true);
-                else
-                    __.showShortToast(getContext(), getString(R.string.load_error_message));
 
-                mSwipeRefreshLayout.setRefreshing(false);
-            }
-        });
-    }
-
-
-    //// TODO: 28/10/2017 loadMore (offset)
-    private synchronized /*!important : sync access to shared attributes (isLoading, etc)*/
-    void loadContacts() {  //// TODO: 10/10/2017  redo
-        mSwipeRefreshLayout.setRefreshing(true); //useful only for loadMore
-        mLoadQuery.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                //!important : useful log for index issues tracking, etc.
-                Log.d("ConversationsFragment", "loadContacts/onComplete::querySnapshot=" + task.getResult() + " e=", task.getException());
-
-                if (task.isSuccessful())
-                    refreshContactList(task.getResult(), true);
-                else
-                    __.showShortToast(getContext(), getString(R.string.load_error_message));
-
-                mSwipeRefreshLayout.setRefreshing(false);
-            }
-        });
-    }
-
-
+    // TODO: 28/10/2017 loadMore (offset)
     private synchronized void refreshContactList(QuerySnapshot querySnapshot, boolean reset) {
         if (querySnapshot == null) return;
         lastQuerySnapshot = querySnapshot;
@@ -166,11 +116,39 @@ public class ConversationsFragment extends Fragment {
     }
 
 
+    private synchronized void sync() {
+        mSwipeRefreshLayout.setRefreshing(true);
+        unsync();
+        contactsRegistration = mLoadQuery.limit(HITS_PER_PAGE)
+                .addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(QuerySnapshot querySnapshot, FirebaseFirestoreException e) {
+                        Log.i(TAG, "contactsRegistration:" + " querySnapshot=" + querySnapshot, e);
+
+                        if (e == null) refreshContactList(querySnapshot, true);
+
+                        else
+                            __.showShortToast(getContext(), getString(R.string.load_error_message));
+
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+                });
+    }
+
+    private synchronized void unsync() {
+        if (contactsRegistration != null) contactsRegistration.remove();
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        sync();
+    }
+
     @Override
     public void onStop() {
         super.onStop();
-        if (contactsRegistration != null)
-            contactsRegistration.remove();
+        unsync();
     }
-
 }

@@ -39,29 +39,36 @@ import java.util.List;
 
 public class UserNeedsFragment extends Fragment {
 
+    private final static String TAG = "UserNeedsFrag";
+
+
+    // Constants:
     /*
     *!important the number of results displayed must always be enough to over-fulfill the screen :
     * The first visible and the last visibles items must never be seen on the same screen
     * */
     private final int HITS_PER_PAGE = 10; //// TODO: 27/10/2017  20 in prod
 
-    private boolean isLoading;
+    // Number of items before the end of the list past which we start loading more content.
+    private static final int LOAD_MORE_THRESHOLD = 1;//// TODO: 15/11/2017 5 in prod
 
-    private List<UserNeed> needList = new ArrayList<>();
+
+    // UI:
     private RecyclerView mRecyclerView;
-    private LinearLayoutManager linearLayoutManager;
     private UserNeedsRecyclerAdapter mAdapter;
-
+    private LinearLayoutManager linearLayoutManager;
+    private List<UserNeed> needList = new ArrayList<>();
     private SwipeRefreshLayout mSwipeRefreshLayout;
-
     private LinearLayout indicationsLayout;
 
-    private UserNeedsFragment self = this;
-
+    // Search:
     private Query mLoadQuery;
     private QuerySnapshot lastQuerySnapshot;
 
     private ListenerRegistration needsRegistration;
+
+
+    private boolean isLoading;
 
 
     @Override
@@ -70,7 +77,6 @@ public class UserNeedsFragment extends Fragment {
             , ViewGroup container
             , Bundle savedInstanceState
     ) {
-
         View view = inflater.inflate(R.layout.fragment_recycler_view_with_fab, container, false);
 
         mRecyclerView = view.findViewById(R.id.recycler_view);
@@ -221,7 +227,7 @@ public class UserNeedsFragment extends Fragment {
             @Override
             public void onClick(RecyclerView.ViewHolder viewHolder, int position) {
                 UserNeed userNeed = ((UserNeedsRecyclerAdapter.ViewHolder) viewHolder).getUserNeed();
-                UserNeedActivity.start(getContext(),userNeed.get_id(),userNeed.getTitle(),userNeed.getSearch());
+                UserNeedActivity.start(getContext(), userNeed.get_id(), userNeed.getTitle(), userNeed.getSearch());
             }
 
             @Override
@@ -234,7 +240,7 @@ public class UserNeedsFragment extends Fragment {
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        ((UserNeedsRecyclerAdapter.ViewHolder) viewHolder).deleteNeed(getActivity(), self,
+                        ((UserNeedsRecyclerAdapter.ViewHolder) viewHolder).deleteNeed(getActivity(), UserNeedsFragment.this,
                                 IO.getCurrentUserUid(), needList, mAdapter);
                     }
                 });
