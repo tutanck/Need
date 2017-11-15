@@ -225,9 +225,13 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
 
     @Override
     public boolean onQueryTextChange(String newText) {
+        mSwipeRefreshLayout.setRefreshing(false);
+
         if (TextUtils.isEmpty(newText)) {
             userProfileList.clear();
             mAdapter.notifyDataSetChanged();
+            //Indicate the search's result status
+            indicationsLayout.setVisibility(View.GONE);
         } else
             search();
         return true;

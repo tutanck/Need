@@ -1,6 +1,7 @@
 package com.aj.need.domain.components.keywords;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.aj.need.R;
+import com.aj.need.tools.utils.__;
 
 import java.util.List;
 
@@ -41,7 +43,7 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.bindItem(mUserKeywords.get(position), mContext, mIsEditable);
+        holder.bindItem(mUserKeywords.get(position), mIsEditable);
     }
 
     @Override
@@ -50,7 +52,7 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
     }
 
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public /*static*/ class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView mTextView;
         private Switch mSwitch;
@@ -58,8 +60,6 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
         private boolean haveSwitchListener = false;
 
         private UserKeyword mUserKeyword;
-
-        private Context mContext;
 
         private boolean mIsEditable;
 
@@ -69,11 +69,11 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
 
             mTextView = v.findViewById(R.id.keyword_textview);
             mSwitch = v.findViewById(R.id.keyword_switch);
+            v.setBackgroundColor(__.getBackgroundStyle(mContext));
         }
 
-        public void bindItem(UserKeyword userKeyword, final Context context, boolean isEditable) {
+        public void bindItem(UserKeyword userKeyword, boolean isEditable) {
             this.mUserKeyword = userKeyword;
-            this.mContext = context;
             this.mIsEditable = isEditable;
 
             mTextView.setText(userKeyword.getKeyword());
@@ -85,7 +85,7 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
                     mSwitch.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            ((UserKeywordsActivity) context).saveKeyword
+                            ((UserKeywordsActivity) mContext).saveKeyword
                                     (mUserKeyword.getKeyword(), !mUserKeyword.isActive(), false, true);
                         }
                     });

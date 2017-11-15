@@ -2,6 +2,7 @@ package com.aj.need.tools.utils;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.support.design.widget.Snackbar;
 import android.text.TextUtils;
 import android.util.Log;
@@ -98,5 +99,18 @@ public class __ {
 
     public static Object soften(Object o) {
         return o == null ? null : o;
+    }
+
+
+
+    public static int getBackgroundStyle(Context context){
+        TypedArray array = context.getTheme().obtainStyledAttributes(new int[]{
+                android.R.attr.colorBackground,
+                android.R.attr.textColorPrimary,
+        });
+        int backgroundColor = array.getColor(0, 0xFF00FF);
+        int textColor = array.getColor(1, 0xFF00FF);
+        array.recycle();
+        return backgroundColor;
     }
 }
