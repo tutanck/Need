@@ -50,7 +50,7 @@
     <string name="activity_keywords_indic4">Aucun mot-clé à afficher</string>
     <string name="activity_keywords_indic3">Mot-clés de l\'activité</string>
     <string name="fragment_conversation_indic2">Aucun message pour le moment</string>
-    <string name="fragment_conversation_indic1">Messages</string>
+    <string name="fragment_conversation_indic1">Liste des conversations</string>
     <string name="user_need_changes_will_be_lost_message">Les modifications seront perdues !</string>
     <string name="ok">OK</string>
     <string name="user_need_empty_description_warning">La description doit être renseignée !</string>

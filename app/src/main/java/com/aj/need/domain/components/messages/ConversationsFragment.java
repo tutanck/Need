@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.colls.USER_CONTACTS;
+import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.domain.components.profile.Contact;
 import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
@@ -35,19 +36,41 @@ import java.util.List;
 
 public class ConversationsFragment extends Fragment {
 
-    private ArrayList<UserProfile> contactList = new ArrayList<>();
+    private final static String TAG = "ConversationsFrag";
 
+
+    // Constants:
+    /*
+    *!important the number of results displayed must always be enough to over-fulfill the screen :
+    * The first visible and the last visibles items must never be seen on the same screen
+    * */
+    private final int HITS_PER_PAGE = 10; //// TODO: 27/10/2017  20 in prod
+
+    // Number of items before the end of the list past which we start loading more content.
+    private static final int LOAD_MORE_THRESHOLD = 1;//// TODO: 15/11/2017 5 in prod
+
+
+    // UI:
     private RecyclerView mRecyclerView;
     private UserProfilesRecyclerAdapter mAdapter;
-
+    private LinearLayoutManager linearLayoutManager;
+    private ArrayList<UserProfile> contactList = new ArrayList<>();
     private SwipeRefreshLayout mSwipeRefreshLayout;
-
     private LinearLayout indicationsLayout;
 
+
+    // Search:
     private Query mLoadQuery;
     private QuerySnapshot lastQuerySnapshot;
+    private int lastSearchedSeqNo;
+    private int lastDisplayedSeqNo;
 
     private ListenerRegistration contactsRegistration;
+
+    // Pagination:
+    private int lastRequestedPage;
+    private int lastDisplayedPage;
+    private boolean endReached;
 
     public static ConversationsFragment newInstance() {
         return new ConversationsFragment();
@@ -62,9 +85,9 @@ public class ConversationsFragment extends Fragment {
     ) {
         View view = inflater.inflate(R.layout.component_recycler_view, container, false);
 
+        // Bind UI components.
         mRecyclerView = view.findViewById(R.id.recycler_view);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
+        mRecyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getActivity()));
         mAdapter = new UserProfilesRecyclerAdapter(getContext(), contactList, 1, Glide.with(this));
         mRecyclerView.setAdapter(mAdapter);
 
@@ -84,8 +107,9 @@ public class ConversationsFragment extends Fragment {
         indicationTV1.setText(R.string.fragment_conversation_indic1);
         indicationTV2.setText(R.string.fragment_conversation_indic2);
 
-        mLoadQuery = USER_CONTACTS.getCurrentUserContactsRef();
-        //// TODO: 28/10/2017  limit and orderBy date and vu !important
+        mLoadQuery = USER_CONTACTS.getCurrentUserContactsRef()
+                .orderBy(Coll.dateKey, Query.Direction.DESCENDING);
+        //// TODO: 28/10/2017  limit !important
 
         return view;
     }

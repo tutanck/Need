@@ -43,7 +43,7 @@ public class UserNeedsFragment extends Fragment {
     *!important the number of results displayed must always be enough to over-fulfill the screen :
     * The first visible and the last visibles items must never be seen on the same screen
     * */
-    private final int BATCH_SIZE = 10; //// TODO: 27/10/2017  25 in prod
+    private final int HITS_PER_PAGE = 10; //// TODO: 27/10/2017  20 in prod
 
     private boolean isLoading;
 
@@ -125,7 +125,7 @@ public class UserNeedsFragment extends Fragment {
         super.onStart();
         mSwipeRefreshLayout.setRefreshing(true);
         //initial load then follow
-        needsRegistration = mLoadQuery.limit(BATCH_SIZE)
+        needsRegistration = mLoadQuery.limit(HITS_PER_PAGE)
                 .addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException e
@@ -157,7 +157,7 @@ public class UserNeedsFragment extends Fragment {
 
         if (offset != null/*loadMore*/) query = query.startAfter(offset);
 
-        query.limit(BATCH_SIZE).get().addOnCompleteListener(getActivity(), new OnCompleteListener<QuerySnapshot>() {
+        query.limit(HITS_PER_PAGE).get().addOnCompleteListener(getActivity(), new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 //!important : useful log for index issues tracking, etc.
