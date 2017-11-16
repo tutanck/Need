@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.APPLICANTS;
+import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.domain.components.profile.Applicant;
 import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
@@ -28,24 +29,40 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class PokesFragment extends Fragment {
 
-    private final static String TAG = "NeedProfilesFoundFrag", NEED_ID = "NEED_ID";
+    private final static String TAG = "PokesFrag", NEED_ID = "NEED_ID";
+
+    // Constants:
+    /*
+    *!important the number of results displayed must always be enough to over-fulfill the screen :
+    * The first visible and the last visible items must never be seen on the same screen */
+    private final int HITS_PER_PAGE = 10; //// TODO: 27/10/2017  20 in prod
+
+    // Number of items before the end of the list past which we start loading more content.
+    private static final int LOAD_MORE_THRESHOLD = 1;//// TODO: 15/11/2017 5 in prod
 
 
-    private ArrayList<UserProfile> profileList = new ArrayList<>();
-
+    // UI:
     private RecyclerView mRecyclerView;
     private UserProfilesRecyclerAdapter mAdapter;
-
+    private LinearLayoutManager linearLayoutManager;
+    private List<UserProfile> profileList = new ArrayList<>();
     private SwipeRefreshLayout mSwipeRefreshLayout;
-
     private LinearLayout indicationsLayout;
 
+
+    // Search:
     private Query mLoadQuery;
     private QuerySnapshot lastQuerySnapshot;
+    private int lastSyncedSeqNo = 0;
+
+
+    // Pagination:
+    private Boolean pageRequestInProgress = false;
 
 
     public static PokesFragment newInstance(String needID) {
@@ -66,8 +83,7 @@ public class PokesFragment extends Fragment {
         View view = inflater.inflate(R.layout.component_recycler_view, container, false);
 
         mRecyclerView = view.findViewById(R.id.recycler_view);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
+        mRecyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getActivity()));
         mAdapter = new UserProfilesRecyclerAdapter(getContext(), profileList, 0, Glide.with(this));
         mRecyclerView.setAdapter(mAdapter);
 
@@ -75,47 +91,45 @@ public class PokesFragment extends Fragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (lastQuerySnapshot == null) loadProfiles();
-                else mSwipeRefreshLayout.setRefreshing(false);
+                reload();
             }
         });
 
         indicationsLayout = view.findViewById(R.id.component_recycler_indications_layout);
         TextView indicationTV2 = view.findViewById(R.id.indicationTV2);
-
         indicationTV2.setText(R.string.fragment_need_profiles_pokes_indication);
 
         String needID = getArguments().getString(NEED_ID);
 
-        if (needID == null)
-            __.fatal(TAG + ": needID == null !");
+        if (needID == null) __.fatal(TAG + ": needID == null !");
 
-        mLoadQuery = APPLICANTS.getAdApplicantsRef(IO.getCurrentUserUid(), needID);
-        //// TODO: 28/10/2017  limit and orderBy date and vu !important
+        mLoadQuery = APPLICANTS.getAdApplicantsRef(IO.getCurrentUserUid(), needID)
+                .orderBy(Coll.dateKey, Query.Direction.DESCENDING);
+
+        setRecyclerViewScrollListener();
 
         return view;
     }
 
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        loadProfiles();
-    }
+    private void reload() {
+        mSwipeRefreshLayout.setRefreshing(true);
 
-
-    //// TODO: 28/10/2017 loadMore (offset)
-    private synchronized /*!important : sync access to shared attributes (isLoading, etc)*/
-    void loadProfiles() {  //// TODO: 10/10/2017  redo
-        mSwipeRefreshLayout.setRefreshing(true); //useful only for loadMore
-        mLoadQuery.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        mLoadQuery.limit(HITS_PER_PAGE).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                //!important : useful log for index issues tracking, etc.
-                Log.d(TAG, "onStart/onComplete::querySnapshot=" + task.getResult() + " error=" + task.getException());
-                if (task.isSuccessful())
-                    refreshProfileList(task.getResult(), true);
-                else
+                Log.d(TAG, "reload: querySnapshot=" + task.getResult() + " error=" + task.getException());
+
+                if (task.isSuccessful()) {
+                    // refresh ui
+                    refreshList(task.getResult(), true, null);
+
+                    //Indicate the search's result status
+                    indicationsLayout.setVisibility(profileList.size() == 0 ? View.VISIBLE : View.GONE);
+
+                    // Scroll the list back to the top.
+                    mRecyclerView.scrollToPosition(0);
+                } else
                     __.showShortToast(getContext(), getString(R.string.load_error_message));
 
                 mSwipeRefreshLayout.setRefreshing(false);
@@ -124,16 +138,75 @@ public class PokesFragment extends Fragment {
     }
 
 
-    private synchronized void refreshProfileList(QuerySnapshot querySnapshot, boolean reset) {
+    private synchronized void refreshList(QuerySnapshot querySnapshot, boolean reset, Integer currentSyncedSeqNo) {
         if (querySnapshot == null) return;
         lastQuerySnapshot = querySnapshot;
-        if (reset) profileList.clear();
+
+        if (reset) {
+            lastSyncedSeqNo++;
+            profileList.clear();
+        } else // Ignore results if they are for an older synced data
+            if (currentSyncedSeqNo != lastSyncedSeqNo) return;
 
         profileList.addAll(new Jarvis<UserProfile>().tr(querySnapshot, new Applicant()));
-        Log.i("profileList", profileList.toString());
-        indicationsLayout.setVisibility(profileList.size() == 0 ? View.VISIBLE : View.GONE);
         mAdapter.notifyDataSetChanged();
-        if (reset) mRecyclerView.scrollToPosition(0);
+        Log.i(TAG, "profileList: " + profileList.toString());
     }
 
+
+    private void loadMore() {
+        final int currentSyncedSeqNo = lastSyncedSeqNo;
+        Query loadMoreQuery = mLoadQuery.startAfter(lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1));
+        loadMoreQuery.limit(HITS_PER_PAGE).get().addOnCompleteListener(getActivity(), new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+
+                Log.d(TAG, "loadMore::" + "querySnapshot=" + task.getResult() + " e=", task.getException());
+
+                if (task.isSuccessful())
+                    refreshList(task.getResult(), false, currentSyncedSeqNo);
+                else
+                    __.showShortToast(getContext(), getString(R.string.load_error_message));
+
+                pageRequestInProgress = false;
+            }
+        });
+    }
+
+
+    private void setRecyclerViewScrollListener() {
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
+
+                // Abort if list is empty or if the initial load does not exists
+                if (totalItemCount == 0 || lastQuerySnapshot == null) return;
+
+                // Abort if the end has already been reached (endReached==true).
+                if (lastQuerySnapshot.isEmpty()) return;
+
+                // Load more if we are sufficiently close to the end of the list.
+                int firstInvisibleItem = linearLayoutManager.findLastVisibleItemPosition() + 1;
+
+                if (firstInvisibleItem + LOAD_MORE_THRESHOLD >= totalItemCount) {
+                    synchronized (pageRequestInProgress) {
+                        // Ignore if a page request is already in progress
+                        if (pageRequestInProgress) return;
+                        pageRequestInProgress = true;
+                    }
+                    loadMore();
+                }
+            }
+        });
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        reload();
+    }
 }

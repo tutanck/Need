@@ -171,7 +171,6 @@ public class ConversationsFragment extends Fragment {
                 pageRequestInProgress = false;
             }
         });
-
     }
 
 
