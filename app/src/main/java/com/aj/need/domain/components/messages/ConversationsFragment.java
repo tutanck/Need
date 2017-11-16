@@ -194,7 +194,7 @@ public class ConversationsFragment extends Fragment {
 
                 if (firstInvisibleItem + LOAD_MORE_THRESHOLD >= totalItemCount) {
                     synchronized (pageRequestInProgress) {
-                        // Ignore if a page has already been requested.
+                        // Ignore if a page request is already in progress
                         if (pageRequestInProgress) return;
                         pageRequestInProgress = true;
                     }
