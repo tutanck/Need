@@ -60,14 +60,13 @@ public class ConversationsFragment extends Fragment {
     // Search:
     private Query mLoadQuery;
     private QuerySnapshot lastQuerySnapshot;
+    private int lastSyncedSeqNo = 0;
 
     private ListenerRegistration contactsRegistration;
 
 
     // Pagination:
-    private int lastRequestedPage;
-    private int lastDisplayedPage;
-    private boolean endReached;
+    private Boolean pageRequestInProgress = false;
 
 
     public static ConversationsFragment newInstance() {
@@ -112,30 +111,18 @@ public class ConversationsFragment extends Fragment {
     }
 
 
-    private synchronized void sync() {
-        lastRequestedPage = 0;
-        lastDisplayedPage = -1;
-        endReached = false;
-
+    private void sync() {
         mSwipeRefreshLayout.setRefreshing(true);
 
         unsync();
         contactsRegistration = mLoadQuery.limit(HITS_PER_PAGE).addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot querySnapshot, FirebaseFirestoreException e) {
-                Log.i(TAG, "contactsRegistration:" + " querySnapshot=" + querySnapshot, e);
+                Log.i(TAG, "contactsRegistration:" + " querySnapshot=" + querySnapshot + " e=", e);
 
                 if (querySnapshot != null && e == null) {
-                    if (querySnapshot.isEmpty()) {
-                        endReached = true;
-                    } else {
-                        contactList.clear();
-                        contactList.addAll(new Jarvis<UserProfile>().tr(querySnapshot, new Contact()));
-                        mAdapter.notifyDataSetChanged();
-                        Log.i("contactList", contactList.toString());
-                        lastQuerySnapshot = querySnapshot;
-                        lastDisplayedPage = 0;
-                    }
+                    // refresh ui
+                    refreshList(querySnapshot, true, null);
 
                     //Indicate the search's result status
                     indicationsLayout.setVisibility(contactList.size() == 0 ? View.VISIBLE : View.GONE);
@@ -151,28 +138,37 @@ public class ConversationsFragment extends Fragment {
     }
 
 
-    private synchronized void loadMore() {
+    private synchronized void refreshList(QuerySnapshot querySnapshot, boolean reset, Integer currentSyncedSeqNo) {
+        if (querySnapshot == null) return;
+        lastQuerySnapshot = querySnapshot;
+
+        if (reset) {
+            lastSyncedSeqNo++; //// TODO: 16/11/2017 add in messageActivity
+            contactList.clear();
+        } else // Ignore results if they are for an older synced data
+            if (currentSyncedSeqNo != lastSyncedSeqNo) return;
+
+        contactList.addAll(new Jarvis<UserProfile>().tr(querySnapshot, new Contact()));
+        mAdapter.notifyDataSetChanged();
+        Log.i(TAG, "contactList" + contactList.toString());
+    }
+
+
+    private void loadMore() {
+        final int currentSyncedSeqNo = lastSyncedSeqNo;
         Query loadMoreQuery = mLoadQuery.startAfter(lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1));
-        ++lastRequestedPage;
         loadMoreQuery.limit(HITS_PER_PAGE).get().addOnCompleteListener(getActivity(), new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                QuerySnapshot querySnapshot = task.getResult();
-                Exception e = task.getException();
 
-                Log.d(TAG, "loadMore::" + "querySnapshot=" + querySnapshot + " e=", e);
+                Log.d(TAG, "loadMore::" + "querySnapshot=" + task.getResult() + " e=", task.getException());
 
-                if (task.isSuccessful() && querySnapshot != null && e == null) {
-                    if (querySnapshot.isEmpty()) {
-                        endReached = true;
-                    } else {
-                        contactList.addAll(new Jarvis<UserProfile>().tr(querySnapshot, new Contact()));
-                        mAdapter.notifyDataSetChanged();
-                        lastQuerySnapshot = querySnapshot;
-                        lastDisplayedPage = lastRequestedPage;
-                    }
-                } else
+                if (task.isSuccessful())
+                    refreshList(task.getResult(), false, currentSyncedSeqNo);
+                else
                     __.showShortToast(getContext(), getString(R.string.load_error_message));
+
+                pageRequestInProgress = false;
             }
         });
 
@@ -187,16 +183,23 @@ public class ConversationsFragment extends Fragment {
 
                 int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
 
-                // Abort if list is empty or the end has already been reached.
-                if (totalItemCount == 0 || endReached) return;
+                // Abort if list is empty or if the initial load does not exists
+                if (totalItemCount == 0 || lastQuerySnapshot == null) return;
 
-                // Ignore if a new page has already been requested.
-                if (lastRequestedPage > lastDisplayedPage) return;
+                // Abort if the end has already been reached (endReached==true).
+                if (lastQuerySnapshot.isEmpty()) return;
 
                 // Load more if we are sufficiently close to the end of the list.
                 int firstInvisibleItem = linearLayoutManager.findLastVisibleItemPosition() + 1;
-                if (firstInvisibleItem + LOAD_MORE_THRESHOLD >= totalItemCount)
+
+                if (firstInvisibleItem + LOAD_MORE_THRESHOLD >= totalItemCount) {
+                    synchronized (pageRequestInProgress) {
+                        // Ignore if a page has already been requested.
+                        if (pageRequestInProgress) return;
+                        pageRequestInProgress = true;
+                    }
                     loadMore();
+                }
             }
         });
     }

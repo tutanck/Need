@@ -215,7 +215,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
                 if (totalItemCount == 0 || endReached) return;
 
                 // Ignore if a new page has already been requested.
-                if (lastRequestedPage > lastDisplayedPage) return;
+                if (lastRequestedPage > lastDisplayedPage) return;  //bug : dt load more if a miss(fail of one in flight loadMore request) cause lastDisplayedPage = lastRequestedPage; is never executed
 
                 // Load more if we are sufficiently close to the end of the list.
                 int firstInvisibleItem = linearLayoutManager.findLastVisibleItemPosition() + 1;

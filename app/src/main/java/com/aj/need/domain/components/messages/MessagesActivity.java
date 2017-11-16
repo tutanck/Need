@@ -28,7 +28,7 @@ import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.RequestManager;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -175,15 +175,16 @@ public class MessagesActivity extends AppCompatActivity {
     private void loadMessages() {
         Query query = mLoadQuery;
 
-        if (lastQuerySnapshot != null) //not the initial load
-            if (lastQuerySnapshot.isEmpty()) { //no more content to load
-                mSwipeRefreshLayout.setRefreshing(false);
-                return;
-            } else {
-                DocumentSnapshot offset = lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1);
-                Log.d("loadMessages/_offset=", offset.getData().toString()); //debug
-                query = query.startAfter(offset);
-            }
+        if (lastQuerySnapshot == null) return;//no initial load
+
+        if (lastQuerySnapshot.isEmpty()) { //no more content to load
+            mSwipeRefreshLayout.setRefreshing(false);
+            return;
+        }
+
+        DocumentSnapshot offset = lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1);
+        Log.d("loadMessages/_offset=", offset.getData().toString()); //debug
+        query = query.startAfter(offset);
 
         query.limit(BATCH_SIZE).get().addOnCompleteListener(this, new OnCompleteListener<QuerySnapshot>() {
             @Override
