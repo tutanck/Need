@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.net.Uri;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -25,13 +24,11 @@ import com.aj.need.tools.utils._DateUtils;
 import com.aj.need.tools.utils._Storage;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
 
@@ -70,22 +67,21 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.bindItem(mProfiles.get(position), mOnClickListenerType);
+        holder.bindItem(mProfiles.get(position));
     }
 
-    //// TODO: 17/11/2017 test
+    //// TODO: 17/11/2017 test: not sure if the right way to do this
     @Override
     public void onViewDetachedFromWindow(ViewHolder viewHolder) {
-        Log.d(TAG, "bf listenerRegistration"+viewHolder.listenerRegistration);
-        viewHolder.unsetListener();
-        Log.d(TAG, "af listenerRegistration"+viewHolder.listenerRegistration);
+        Log.d(TAG, "bf listenerRegistration" + viewHolder.listenerRegistration);
+        viewHolder.unsync();
+        Log.d(TAG, "af listenerRegistration" + viewHolder.listenerRegistration);
     }
 
     @Override
     public int getItemCount() {
         return mProfiles.size();
     }
-
 
 
     /*Avoid image duplication between rows
@@ -115,7 +111,10 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
 
 
         private UserProfile mUserProfile;
-        private int mOnClickListenerType;
+        //Potentially missing parts
+        private String username = null;
+        private Long reputation = Long.valueOf(0);
+        private int availability = Avail.UNKNOWN;
 
         private ListenerRegistration listenerRegistration;
 
@@ -134,26 +133,7 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
         }
 
 
-        public void bindItem(UserProfile userProfile, int onClickListenerType) {
-            this.mUserProfile = userProfile;
-            this.mOnClickListenerType = onClickListenerType;
-
-            setLastMessage();
-            setProfile();
-
-            userProfileIV.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    UtherProfileActivity.start(mContext, mUserProfile.get_id());
-                }
-            });
-
-
-            if (mUserProfile.isIncomplete()) { //todo && listener == null + store here isComplete bool + missing parts directly in the VH
-                Log.d(TAG, "bindItem::addSnapshotListener");
-                resetListener();
-            }
-
+        public void bindItem(UserProfile userProfile) {
             _Storage.loadRef(_Storage.getRef(userProfile.get_id()))
                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
@@ -164,33 +144,53 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
                                     .into(userProfileIV);
                         }
                     });
+
+            this.mUserProfile = userProfile;
+            setLastMessage();
+            setProfile();
+
+            sync();
+
+            userProfileIV.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    UtherProfileActivity.start(mContext, mUserProfile.get_id());
+                }
+            });
         }
 
 
-        //// TODO: 17/11/2017 do better. Pb : useless multiple read onBind. store missing part in VH and load only if not avail
-        private void resetListener() {
-            unsetListener();
+        private void sync() {
+            Log.d(TAG, "sync called");
+            if (listenerRegistration != null) return;
+
+            unsync();
             listenerRegistration = USERS.getUserRef(mUserProfile.get_id()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override
                 public void onEvent(DocumentSnapshot userDoc, FirebaseFirestoreException e) {
                     Log.i(TAG, "onEvent:" + " userDoc=" + userDoc + " e=", e);
 
                     if (e == null && userDoc != null && userDoc.exists()) {
-                        mUserProfile.setAvailability(userDoc.getLong(USERS.availabilityKey).intValue());
-                        mUserProfile.setUsername(userDoc.getString(USERS.usernameKey));
-                        mUserProfile.setReputation(userDoc.getLong(USERS.avgRatingKey));
+                        availability = userDoc.getLong(USERS.availabilityKey).intValue();
+                        username = userDoc.getString(USERS.usernameKey);
+                        reputation = userDoc.getLong(USERS.avgRatingKey);
                         setProfile();
                     }
                 }
             });
         }
 
-        void unsetListener(){
+        synchronized void unsync() {
             if (listenerRegistration != null) listenerRegistration.remove();
+            listenerRegistration = null;
         }
 
 
         private void setProfile() {
+            mUserProfile.setAvailability(availability);
+            mUserProfile.setUsername(username);
+            mUserProfile.setReputation(reputation);
+
             usernameTV.setText(mUserProfile.getUsername());
             userStatusFAB.setBackgroundTintList(
                     ColorStateList.valueOf(ContextCompat.getColor
