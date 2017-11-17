@@ -149,7 +149,7 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
             });
 
 
-            if (mUserProfile.isIncomplete()) {
+            if (mUserProfile.isIncomplete()) { //todo && listener == null + store here isComplete bool + missing parts directly in the VH
                 Log.d(TAG, "bindItem::addSnapshotListener");
                 resetListener();
             }
@@ -167,8 +167,8 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
         }
 
 
-        //// TODO: 17/11/2017 !important : remove all listeners on unbind
-        private void resetListener() {//// TODO: 17/11/2017 do better : by eg: load from fragment, pb : useless multiple read onBind or set the missing parts in mProfiles
+        //// TODO: 17/11/2017 do better. Pb : useless multiple read onBind. store missing part in VH and load only if not avail
+        private void resetListener() {
             unsetListener();
             listenerRegistration = USERS.getUserRef(mUserProfile.get_id()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override

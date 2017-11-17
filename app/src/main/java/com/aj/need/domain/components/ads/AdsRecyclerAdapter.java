@@ -85,7 +85,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
     public int getItemViewType(int position) {
         return position;
     }
-    
+
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
