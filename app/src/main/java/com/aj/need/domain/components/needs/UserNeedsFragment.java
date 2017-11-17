@@ -21,6 +21,7 @@ import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USER_NEEDS;
 
+import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.tools.components.others._Recycler;
 import com.aj.need.tools.utils.Jarvis;
 import com.aj.need.tools.utils.__;
@@ -41,7 +42,6 @@ public class UserNeedsFragment extends Fragment {
 
     private final static String TAG = "UserNeedsFrag";
 
-
     // Constants:
     /*
     *!important the number of results displayed must always be enough to over-fulfill the screen :
@@ -61,14 +61,25 @@ public class UserNeedsFragment extends Fragment {
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private LinearLayout indicationsLayout;
 
+
     // Search:
     private Query mLoadQuery;
     private QuerySnapshot lastQuerySnapshot;
+    private int lastSyncedSeqNo = 0;
 
     private ListenerRegistration needsRegistration;
 
 
     private boolean isLoading;
+
+
+    // Pagination:
+    private Boolean pageRequestInProgress = false;
+
+
+    public static UserNeedsFragment newInstance() {
+        return new UserNeedsFragment();
+    }
 
 
     @Override
@@ -80,33 +91,23 @@ public class UserNeedsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_recycler_view_with_fab, container, false);
 
         mRecyclerView = view.findViewById(R.id.recycler_view);
-        linearLayoutManager = new LinearLayoutManager(getActivity());
-        mRecyclerView.setLayoutManager(linearLayoutManager);
-
+        mRecyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getActivity()));
         mAdapter = new UserNeedsRecyclerAdapter(getContext(), needList);
         mRecyclerView.setAdapter(mAdapter);
-
-        setRecyclerViewScrollListener();
-        setRecyclerViewItemTouchListener();
 
         mSwipeRefreshLayout = view.findViewById(R.id.recycler_view_SwipeRefreshLayout);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (lastQuerySnapshot == null) loadUserNeeds(null);
-                else mSwipeRefreshLayout.setRefreshing(false);
+                sync();
             }
         });
 
-
         indicationsLayout = view.findViewById(R.id.component_recycler_indications_layout);
-
         TextView indicationTV1 = view.findViewById(R.id.indicationTV1);
-        indicationTV1.setText(R.string.fragment_user_need_indic1);
-
         TextView indicationTV2 = view.findViewById(R.id.indicationTV2);
+        indicationTV1.setText(R.string.fragment_user_need_indic1);
         indicationTV2.setText(R.string.fragment_user_need_indic2);
-
 
         FloatingActionButton fab = view.findViewById(R.id.fab_recycler_action);
         fab.setImageResource(R.drawable.ic_search_24dp);
@@ -117,78 +118,79 @@ public class UserNeedsFragment extends Fragment {
             }
         });
 
-
         mLoadQuery = USER_NEEDS.getCurrentUserNeedsRef()
-                .whereEqualTo(USER_NEEDS.deletedKey, false) //// TODO: 27/10/2017  check if work well on disactivating needs
-                .orderBy(USER_NEEDS.activeKey, Query.Direction.DESCENDING); //// TODO: 27/10/2017 by date too
+                .whereEqualTo(USER_NEEDS.deletedKey, false) //// TODO: 27/10/2017  dt work well on disactivating needs
+                .orderBy(USER_NEEDS.activeKey, Query.Direction.DESCENDING)
+                .orderBy(Coll.dateKey, Query.Direction.DESCENDING);
+
+        setRecyclerViewScrollListener();
+        setRecyclerViewItemTouchListener();
 
         return view;
     }
 
 
-    @Override
-    public void onStart() {
-        super.onStart();
+    public void sync() {
         mSwipeRefreshLayout.setRefreshing(true);
-        //initial load then follow
-        needsRegistration = mLoadQuery.limit(HITS_PER_PAGE)
-                .addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException e
-                    ) {
-                        Log.w("needsRegistration", "querySnapshot=" + querySnapshot + " error=" + e);
-                        if (e == null && querySnapshot != null)
-                            refreshUserNeedsList(querySnapshot, true);
-                        else
-                            __.showShortToast(getActivity(), getString(R.string.load_error_message));
 
-                        mSwipeRefreshLayout.setRefreshing(false);
-                    }
-                });
-    }
-
-
-    private synchronized/*!important : sync access to shared attributes (isLoading, etc) */
-    void loadUserNeeds(final DocumentSnapshot offset) {
-        if (isLoading)
-            return; //cancel concurrent manual reload is better.//TODO: 28/10/2017  test if it's useful or not
-
-        // TODO: 28/10/2017  test if it's useful or not
-        isLoading = true;/*!important : must be 1st instruction and only this method should modify it*/
-        mSwipeRefreshLayout.setRefreshing(true); //useful only for loadMore
-
-        Query query = mLoadQuery;
-
-        Log.d("loadUserNeeds/_offset=", offset != null ? offset.getData().toString() : " no offset"); //debug
-
-        if (offset != null/*loadMore*/) query = query.startAfter(offset);
-
-        query.limit(HITS_PER_PAGE).get().addOnCompleteListener(getActivity(), new OnCompleteListener<QuerySnapshot>() {
+        unsync();
+        needsRegistration = mLoadQuery.limit(HITS_PER_PAGE).addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                //!important : useful log for index issues tracking, etc.
-                Log.d("UNeedsFra/loadUserNeeds", "res=" + task.getResult() + " e=", task.getException());
+            public void onEvent(@Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException e
+            ) {
+                Log.i(TAG, "needsRegistration:" + " querySnapshot=" + querySnapshot + " e=", e);
 
-                if (task.isSuccessful())
-                    refreshUserNeedsList(task.getResult(), offset == null/*reload*/);
-                else
-                    __.showShortToast(getContext(), getString(R.string.load_error_message));
+                if (querySnapshot != null && e == null) {
+                    // refresh ui
+                    refreshList(querySnapshot, true, null);
+
+                    //Indicate the search's result status
+                    indicationsLayout.setVisibility(needList.size() == 0 ? View.VISIBLE : View.GONE);
+
+                    // Scroll the list back to the top.
+                    mRecyclerView.scrollToPosition(0);
+                } else
+                    __.showShortToast(getActivity(), getString(R.string.load_error_message));
 
                 mSwipeRefreshLayout.setRefreshing(false);
-                isLoading = false;
             }
         });
     }
 
 
-    private synchronized void refreshUserNeedsList(QuerySnapshot querySnapshot, boolean reset) {
+    private synchronized void refreshList(QuerySnapshot querySnapshot, boolean reset, Integer currentSyncedSeqNo) {
         if (querySnapshot == null) return;
         lastQuerySnapshot = querySnapshot;
-        if (reset) needList.clear();
+
+        if (reset) {
+            lastSyncedSeqNo++;
+            needList.clear();
+        } else // Ignore results if they are for an older synced data
+            if (currentSyncedSeqNo != lastSyncedSeqNo) return;
+
         needList.addAll(new Jarvis<UserNeed>().tr(querySnapshot, new UserNeed()));
-        indicationsLayout.setVisibility(needList.size() == 0 ? View.VISIBLE : View.GONE);
         mAdapter.notifyDataSetChanged();
-        if (reset) mRecyclerView.scrollToPosition(0);
+        Log.i(TAG, "needList" + needList.toString());
+    }
+
+
+    private void loadMore() {
+        final int currentSyncedSeqNo = lastSyncedSeqNo;
+        Query loadMoreQuery = mLoadQuery.startAfter(lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1));
+        loadMoreQuery.limit(HITS_PER_PAGE).get().addOnCompleteListener(getActivity(), new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+
+                Log.d(TAG, "loadMore::" + "querySnapshot=" + task.getResult() + " e=", task.getException());
+
+                if (task.isSuccessful())
+                    refreshList(task.getResult(), false, currentSyncedSeqNo);
+                else
+                    __.showShortToast(getContext(), getString(R.string.load_error_message));
+
+                pageRequestInProgress = false;
+            }
+        });
     }
 
 
@@ -198,23 +200,25 @@ public class UserNeedsFragment extends Fragment {
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                //__.showShortToast(getContext(), "setRecyclerViewScrollListener=");
-
-                if (lastQuerySnapshot == null /*the initial load is required to load more*/
-                        || lastQuerySnapshot.isEmpty() /*no more content to load*/
-                        || isLoading /*load in progress*/) return;
-
-                int firstCompletelyVisibleItemPosition = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
-                int lastVisibleItemPosition = linearLayoutManager.findLastVisibleItemPosition();
                 int totalItemCount = mRecyclerView.getLayoutManager().getItemCount();
 
-                //__.showShortToast(getContext(), "load more: firstVisible=" + firstCompletelyVisibleItemPosition + " lastVisible=" + lastVisibleItemPosition);
+                // Abort if list is empty or if the initial load does not exists
+                if (totalItemCount == 0 || lastQuerySnapshot == null) return;
 
-                //// TODO: 27/10/2017  fix bug concurent call with reload :: check if all right
-                if (/*firstCompletelyVisibleItemPosition > 0 &&*/ totalItemCount == lastVisibleItemPosition + 1) {
-                    loadUserNeeds(lastQuerySnapshot.getDocuments().get(lastQuerySnapshot.size() - 1));
+                // Abort if the end has already been reached (endReached==true).
+                if (lastQuerySnapshot.isEmpty()) return;
+
+                // Load more if we are sufficiently close to the end of the list.
+                int firstInvisibleItem = linearLayoutManager.findLastVisibleItemPosition() + 1;
+
+                if (firstInvisibleItem + LOAD_MORE_THRESHOLD >= totalItemCount) {
+                    synchronized (pageRequestInProgress) {
+                        // Ignore if a page request is already in progress
+                        if (pageRequestInProgress) return;
+                        pageRequestInProgress = true;
+                    }
+                    loadMore();
                 }
-
             }
         });
     }
@@ -257,14 +261,20 @@ public class UserNeedsFragment extends Fragment {
     }
 
 
+    public synchronized void unsync() {
+        if (needsRegistration != null) needsRegistration.remove();
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        sync();
+    }
+
     @Override
     public void onStop() {
         super.onStop();
-        if (needsRegistration != null)
-            needsRegistration.remove();
-    }
-
-    public static UserNeedsFragment newInstance() {
-        return new UserNeedsFragment();
+        unsync();
     }
 }

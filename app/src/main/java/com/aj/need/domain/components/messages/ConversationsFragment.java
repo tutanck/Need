@@ -98,7 +98,6 @@ public class ConversationsFragment extends Fragment {
         indicationsLayout = view.findViewById(R.id.component_recycler_indications_layout);
         TextView indicationTV1 = view.findViewById(R.id.indicationTV1);
         TextView indicationTV2 = view.findViewById(R.id.indicationTV2);
-
         indicationTV1.setText(R.string.fragment_conversation_indic1);
         indicationTV2.setText(R.string.fragment_conversation_indic2);
 

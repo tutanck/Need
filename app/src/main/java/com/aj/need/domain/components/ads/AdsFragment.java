@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.aj.need.R;
 import com.aj.need.db.colls.USER_NEEDS;
+import com.aj.need.db.colls.itf.Coll;
 import com.aj.need.domain.components.needs.UserNeed;
 import com.aj.need.tools.utils.Jarvis;
 import com.bumptech.glide.Glide;
@@ -57,7 +58,7 @@ public class AdsFragment extends Fragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                mSwipeRefreshLayout.setRefreshing(false);
+                reload();
             }
         });
 
@@ -87,18 +88,17 @@ public class AdsFragment extends Fragment {
     }
 
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        load();
+    public static AdsFragment newInstance() {
+        return new AdsFragment();
     }
 
 
-    private void load() {
+    private void reload() {
         mSwipeRefreshLayout.setRefreshing(true);
         USER_NEEDS.getCurrentUserNeedsRef()
                 .whereEqualTo(USER_NEEDS.deletedKey, false)
-                .orderBy(USER_NEEDS.activeKey, Query.Direction.DESCENDING).get()
+                .orderBy(USER_NEEDS.activeKey, Query.Direction.DESCENDING)
+                .orderBy(Coll.dateKey, Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot querySnapshot) {
@@ -113,7 +113,9 @@ public class AdsFragment extends Fragment {
     }
 
 
-    public static AdsFragment newInstance() {
-        return new AdsFragment();
+    @Override
+    public void onStart() {
+        super.onStart();
+        reload();
     }
 }
