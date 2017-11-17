@@ -28,6 +28,10 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
 
@@ -35,6 +39,8 @@ import java.util.List;
  * Created by joan on 21/09/17.
  */
 public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfilesRecyclerAdapter.ViewHolder> {
+
+    private final static String TAG = "UserProfilesRA";
 
     private List<UserProfile> mProfiles;
     private Context mContext;
@@ -64,7 +70,15 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.bindItem(mProfiles.get(position), mContext, mOnClickListenerType);
+        holder.bindItem(mProfiles.get(position), mOnClickListenerType);
+    }
+
+    //// TODO: 17/11/2017 test
+    @Override
+    public void onViewDetachedFromWindow(ViewHolder viewHolder) {
+        Log.d(TAG, "bf listenerRegistration"+viewHolder.listenerRegistration);
+        viewHolder.unsetListener();
+        Log.d(TAG, "af listenerRegistration"+viewHolder.listenerRegistration);
     }
 
     @Override
@@ -73,20 +87,37 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
     }
 
 
+
+    /*Avoid image duplication between rows
+    * https://stackoverflow.com/questions/36240878/recyclerview-duplicated-items-on-scroll*/
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
+
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        private final static String TAG = "UserProfilesRA_VH";
 
         private ImageView userProfileIV;
         private TextView usernameTV;
         private FloatingActionButton userStatusFAB;
         private RatingBar userReputationRBar;
-        private TextView userDistanceTV;
+        private TextView userDistanceTV;//// TODO: 17/11/2017
         private TextView messageTV;
         private TextView messageDateTV;
 
 
         private UserProfile mUserProfile;
-        private Context mContext;
         private int mOnClickListenerType;
+
+        private ListenerRegistration listenerRegistration;
 
 
         public ViewHolder(View v) {
@@ -103,9 +134,8 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
         }
 
 
-        public void bindItem(UserProfile userProfile, Context context, int onClickListenerType) {
+        public void bindItem(UserProfile userProfile, int onClickListenerType) {
             this.mUserProfile = userProfile;
-            this.mContext = context;
             this.mOnClickListenerType = onClickListenerType;
 
             setLastMessage();
@@ -120,24 +150,8 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
 
 
             if (mUserProfile.isIncomplete()) {
-                Log.d("bindItem/", "UserProfilesRecyclerAdapter::getUser");
-                USERS.getUserRef(mUserProfile.get_id()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot userDoc) {
-                        Log.d("bindItem/", "UserProfilesRecyclerAdapter::onSuccess: data=" + userDoc.getData());
-                        if (userDoc.exists()) {
-                            mUserProfile.setAvailability(userDoc.getLong(USERS.availabilityKey).intValue());
-                            mUserProfile.setUsername(userDoc.getString(USERS.usernameKey));
-                            mUserProfile.setReputation(userDoc.getLong(USERS.avgRatingKey));
-                            setProfile();
-                        }
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e("bindItem/", "UserProfilesRecyclerAdapter::onFailure", e);
-                    }
-                });
+                Log.d(TAG, "bindItem::addSnapshotListener");
+                resetListener();
             }
 
             _Storage.loadRef(_Storage.getRef(userProfile.get_id()))
@@ -150,6 +164,29 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
                                     .into(userProfileIV);
                         }
                     });
+        }
+
+
+        //// TODO: 17/11/2017 !important : remove all listeners on unbind
+        private void resetListener() {//// TODO: 17/11/2017 do better : by eg: load from fragment, pb : useless multiple read onBind or set the missing parts in mProfiles
+            unsetListener();
+            listenerRegistration = USERS.getUserRef(mUserProfile.get_id()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(DocumentSnapshot userDoc, FirebaseFirestoreException e) {
+                    Log.i(TAG, "onEvent:" + " userDoc=" + userDoc + " e=", e);
+
+                    if (e == null && userDoc != null && userDoc.exists()) {
+                        mUserProfile.setAvailability(userDoc.getLong(USERS.availabilityKey).intValue());
+                        mUserProfile.setUsername(userDoc.getString(USERS.usernameKey));
+                        mUserProfile.setReputation(userDoc.getLong(USERS.avgRatingKey));
+                        setProfile();
+                    }
+                }
+            });
+        }
+
+        void unsetListener(){
+            if (listenerRegistration != null) listenerRegistration.remove();
         }
 
 

@@ -52,6 +52,19 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
     }
 
 
+    /*Avoid image duplication between rows
+    * https://stackoverflow.com/questions/36240878/recyclerview-duplicated-items-on-scroll*/
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
+
     public /*static*/ class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView mTextView;

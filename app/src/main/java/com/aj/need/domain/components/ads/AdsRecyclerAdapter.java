@@ -74,6 +74,19 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
     }
 
 
+    /*Avoid image duplication between rows
+    * https://stackoverflow.com/questions/36240878/recyclerview-duplicated-items-on-scroll*/
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+    
+
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private Context mContext;
@@ -188,7 +201,7 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                             App app = ((App) ((Activity) mContext).getApplication());
                             APPLICANTS.getAdApplicantsRef(mAd.getOwnerID(), mAd.get_id())
                                     .document(IO.getCurrentUserUid())
-                                    .set(new Apply(app.getUserName(), mAd.getTitle(),mAd.getSearch()));
+                                    .set(new Apply(app.getUserName(), mAd.getTitle(), mAd.getSearch()));
                             __.showShortToast(mContext, mContext.getString(R.string.request_taken_into_consideration_msg));
                         }
                     });

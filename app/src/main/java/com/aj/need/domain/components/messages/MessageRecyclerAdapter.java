@@ -57,6 +57,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter {
         return mMessageList.size();
     }
 
+
     // Determines the appropriate ViewType according to the sender of the message.
     @Override
     public int getItemViewType(int position) {

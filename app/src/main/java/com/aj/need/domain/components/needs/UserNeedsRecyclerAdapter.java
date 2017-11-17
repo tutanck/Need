@@ -63,6 +63,19 @@ public class UserNeedsRecyclerAdapter extends RecyclerView.Adapter<UserNeedsRecy
     }
 
 
+    /*Avoid image duplication between rows
+    * https://stackoverflow.com/questions/36240878/recyclerview-duplicated-items-on-scroll*/
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         private Context mContext;
@@ -120,7 +133,7 @@ public class UserNeedsRecyclerAdapter extends RecyclerView.Adapter<UserNeedsRecy
                 }
             });
 
-            ComponentsServices.setSelectable(mContext,needWrapperLayout);
+            ComponentsServices.setSelectable(mContext, needWrapperLayout);
         }
 
 
