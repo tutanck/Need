@@ -1,9 +1,11 @@
 package com.aj.need.domain.components.profile;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -24,6 +26,7 @@ import com.aj.need.tools.utils._DateUtils;
 import com.aj.need.tools.utils._Storage;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -135,13 +138,19 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
 
         public void bindItem(UserProfile userProfile) {
             _Storage.loadRef(_Storage.getRef(userProfile.get_id()))
-                    .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    .addOnSuccessListener((Activity) mContext, new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
                             //@see https://github.com/bumptech/glide/issues/803
                             glide.load(uri)
                                     .apply(RequestOptions.circleCropTransform())
                                     .into(userProfileIV);
+                        }
+                    })
+                    .addOnFailureListener((Activity) mContext, new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            userProfileIV.setImageResource(R.drawable.ic_person_24dp);
                         }
                     });
 

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -29,6 +30,7 @@ import com.aj.need.tools.utils._Storage;
 import com.aj.need.tools.utils.__;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.List;
@@ -138,6 +140,12 @@ public class AdsRecyclerAdapter extends RecyclerView.Adapter<AdsRecyclerAdapter.
                             glide.load(uri)
                                     .apply(RequestOptions.circleCropTransform())
                                     .into(ownerIV);
+                        }
+                    })
+                    .addOnFailureListener((Activity) mContext, new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            ownerIV.setImageResource(R.drawable.ic_person_24dp);
                         }
                     });
 
