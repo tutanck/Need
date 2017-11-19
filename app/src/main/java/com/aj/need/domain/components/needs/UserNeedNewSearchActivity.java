@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
+import com.aj.need.db.colls.USER_KEYWORDS;
 import com.aj.need.domain.components.profile.UserProfile;
 import com.aj.need.domain.components.profile.UserProfilesRecyclerAdapter;
 import com.aj.need.tools.utils.ALGOLIA;
@@ -106,7 +107,7 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
 
         // Pre-build query.
         query = new Query();
-        query.setAttributesToRetrieve("keywords", USERS.availabilityKey, "rating"/*todo repby USERS.avgRatingKey*/, USERS.usernameKey);
+        query.setAttributesToRetrieve(USER_KEYWORDS.index_profile_keywordsKey, USERS.availabilityKey, "rating"/*todo repby USERS.avgRatingKey*/, USERS.usernameKey);
         query.setFilters("NOT objectID:" + IO.getCurrentUserUid());
         query.setHitsPerPage(HITS_PER_PAGE);
 

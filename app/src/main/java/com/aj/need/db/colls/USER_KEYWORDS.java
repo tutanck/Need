@@ -16,6 +16,7 @@ public final class USER_KEYWORDS implements Coll {
 
     public final static String activeKey = "active";
     public final static String keywordKey = "keyword";
+    public final static String index_profile_keywordsKey = "keywords";
 
 
     public final static CollectionReference getUserKeywordsRef(String uid) {

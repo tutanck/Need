@@ -1,5 +1,6 @@
 package com.aj.need.domain.components.profile;
 
+import com.aj.need.db.colls.USERS;
 import com.aj.need.domain.entities.Entity;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.ITranslatable;
@@ -77,9 +78,9 @@ public class UserProfile extends Entity implements Serializable, ITranslatable<U
         if (json == null) return null;
 
         String objectID = json.optString("objectID");
-        String username = json.optString("username");
-        int availability = json.optInt("availability", Avail.UNKNOWN);
-        int rating = json.optInt("rating", 0);
+        String username = json.optString(USERS.usernameKey);
+        int availability = json.optInt(USERS.availabilityKey, Avail.UNKNOWN);
+        int rating = json.optInt("rating", 0); //// TODO: 19/11/2017 change to avgRating
 
         if (objectID != null && username != null && availability >= 0)
             return new UserProfile(objectID, username, rating, availability);

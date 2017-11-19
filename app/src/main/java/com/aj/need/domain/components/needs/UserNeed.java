@@ -73,7 +73,7 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
     public UserNeed tr(DocumentSnapshot need) {
         return new UserNeed(need.getId()
                 , need.getString(USER_NEEDS.ownerIDKey)
-                ,need.getString(USER_NEEDS.ownerNameKey)
+                , need.getString(USER_NEEDS.ownerNameKey)
 
                 , need.getString(USER_NEEDS.searchKey)
                 , need.getString(USER_NEEDS.titleKey)
@@ -89,12 +89,43 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
     }
 
 
+    @Override
+    public UserNeed tr(JSONObject json) {
+        if (json == null) return null;
+
+        String objectID = json.optString("objectID");
+
+        String ownerID = json.optString(USER_NEEDS.ownerIDKey);
+        String ownerName = json.optString(USER_NEEDS.ownerNameKey);
+
+        String search = json.optString(USER_NEEDS.searchKey);
+        String title = json.optString(USER_NEEDS.titleKey);
+        String description = json.optString(USER_NEEDS.descriptionKey);
+        String reward = json.optString(USER_NEEDS.rewardKey);
+        String where = json.optString(USER_NEEDS.whereKey);
+
+        boolean metaIsWhereVisible = json.optBoolean(USER_NEEDS.metaIsWhereVisibleKey);
+        JSONObject metaWhereCoord = json.optJSONObject(USER_NEEDS.metaWhereCoordKey);
+
+        boolean active = json.optBoolean(USER_NEEDS.activeKey);
+        String date = json.optString(USER_NEEDS.dateKey);
+
+        if (!json.optBoolean(USER_NEEDS.deletedKey))
+            return new UserNeed(objectID
+                    , ownerID, ownerName
+                    , search, title, description, reward, where
+                    , metaIsWhereVisible
+                    , Coord.toCoord(metaWhereCoord)
+                    , active).setDate(null);//TODO: 19/11/2017
+
+        return null;
+    }
+
+
     private UserNeed setDate(Date date) {
         super.date = date;
         return this;
     }
-
-
 
 
     public String get_id() {
@@ -144,11 +175,4 @@ public class UserNeed extends Entity implements Serializable, ITranslatable<User
     public boolean isDeleted() {
         return deleted;
     }
-
-
-    @Override
-    public UserNeed tr(JSONObject json) {
-        return null;
-    }
-
 }

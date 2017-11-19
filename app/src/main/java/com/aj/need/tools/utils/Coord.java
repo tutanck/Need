@@ -4,6 +4,9 @@ import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +27,7 @@ public class Coord implements Serializable {
 
 
     public static Coord toCoord(Map<String, Double> coordMap) {
-        Log.d("_toCoord", ""+coordMap);
+        Log.d("_toCoord::Map", "" + coordMap);
         if (coordMap == null) return null;
 
         Double lat = coordMap.get("latitude"), lng = coordMap.get("longitude");
@@ -32,6 +35,24 @@ public class Coord implements Serializable {
 
         return new Coord(lat, lng);
     }
+
+
+    public static Coord toCoord(JSONObject coordJSON) {
+        Log.d("_toCoord::JSON", "" + coordJSON);
+        if (coordJSON == null) return null;
+
+        try {
+            Double lat = null, lng = null;
+            lat = coordJSON.getDouble("latitude");
+            lng = coordJSON.getDouble("longitude");
+            return new Coord(lat, lng);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
 
     public Map<String, Double> toMap() {
         Map<String, Double> coordMap = new HashMap<>();
@@ -59,5 +80,6 @@ public class Coord implements Serializable {
     public LatLng toLatLng() {
         return new LatLng(this.getLatitude(), this.getLongitude());
     }
+
 
 }
