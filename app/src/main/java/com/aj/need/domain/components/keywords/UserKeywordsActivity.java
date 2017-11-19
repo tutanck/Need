@@ -41,24 +41,30 @@ import java.util.List;
 
 public class UserKeywordsActivity extends AppCompatActivity {
 
-    private final static String UID = "UID";
+    private final static String TAG = "UserKeywordsAct", UID = "UID";
+
+    private final static int MAX_KEYWORDS = 25;
 
     private String uid = null;
 
-    private List<UserKeyword> keywordList = new ArrayList<>();
 
+    //Refresh & indications
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private LinearLayout indicationsLayout;
+
+
+    // UI:
     private RecyclerView mRecyclerView;
     private UserKeywordsRecyclerAdapter mAdapter;
-
-    private EditText etKeyword;
-    private ImageButton btnAdd;
-
-    private SwipeRefreshLayout mSwipeRefreshLayout;
-
-    private LinearLayout indicationsLayout;
+    private LinearLayoutManager linearLayoutManager;
+    private List<UserKeyword> keywordList = new ArrayList<>();
 
     private Query mLoadQuery;
     private QuerySnapshot lastQuerySnapshot;
+
+
+    private EditText etKeyword;
+    private ImageButton btnAdd;
 
     private ListenerRegistration keywordsRegistration;
 
@@ -73,8 +79,7 @@ public class UserKeywordsActivity extends AppCompatActivity {
         if (uid == null) __.fatal("UserKeywordsActivity : uid == null");
 
         mRecyclerView = findViewById(R.id.recycler_view);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
+        mRecyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(this));
         mAdapter = new UserKeywordsRecyclerAdapter(UserKeywordsActivity.this, keywordList, IO.isCurrentUser(uid));
         mRecyclerView.setAdapter(mAdapter);
 
@@ -82,8 +87,7 @@ public class UserKeywordsActivity extends AppCompatActivity {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (lastQuerySnapshot == null) loadKeywords();
-                else mSwipeRefreshLayout.setRefreshing(false);
+                sync();
             }
         });
 
@@ -108,7 +112,6 @@ public class UserKeywordsActivity extends AppCompatActivity {
             functionalizeBtnAdd();
             setRecyclerViewItemTouchListener();
         } else {
-
             indicationTV1.setText(R.string.activity_keywords_indic3);
             indicationTV2.setText(R.string.activity_keywords_indic4);
 
@@ -116,39 +119,32 @@ public class UserKeywordsActivity extends AppCompatActivity {
             etKeyword.setVisibility(View.GONE);
         }
 
-
         mLoadQuery = USER_KEYWORDS.getUserKeywordsRef(getIntent().getStringExtra(UID))
                 .whereEqualTo(USER_KEYWORDS.deletedKey, false)
                 .orderBy(USER_KEYWORDS.activeKey, Query.Direction.DESCENDING)
                 .orderBy(USER_KEYWORDS.keywordKey);
-
     }
 
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+    private synchronized void sync() {
+        mSwipeRefreshLayout.setRefreshing(true);
+
+        unsync();
         keywordsRegistration = mLoadQuery.addSnapshotListener(this, new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot querySnapshot, FirebaseFirestoreException e) {
-                Log.w("keywordsRegistration", "querySnapshot=" + querySnapshot + " error=" + e);
-                if (e == null && querySnapshot != null)
+                Log.w(TAG, "keywordsRegistration: " + "querySnapshot=" + querySnapshot + " error=" + e);
+
+                if (e == null && querySnapshot != null) {
+                    // refresh ui
                     refreshUserKeywordsList(querySnapshot);
-                else
-                    __.showShortToast(UserKeywordsActivity.this, getString(R.string.load_error_message));
-            }
-        });
-    }
 
+                    //Indicate the sync's result status
+                    indicationsLayout.setVisibility(keywordList.size() == 0 ? View.VISIBLE : View.GONE);
 
-    private synchronized/*!important : sync access to shared attributes (isLoading, etc) */
-    void loadKeywords() {
-        mLoadQuery.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful())
-                    refreshUserKeywordsList(task.getResult());
-                else
+                    // Scroll the list back to the top.
+                    mRecyclerView.scrollToPosition(0);
+                } else
                     __.showShortToast(UserKeywordsActivity.this, getString(R.string.load_error_message));
 
                 mSwipeRefreshLayout.setRefreshing(false);
@@ -160,9 +156,9 @@ public class UserKeywordsActivity extends AppCompatActivity {
     private synchronized void refreshUserKeywordsList(QuerySnapshot querySnapshot) {
         if (querySnapshot == null) return;
         lastQuerySnapshot = querySnapshot;
+
         keywordList.clear();
         keywordList.addAll(new Jarvis<UserKeyword>().tr(querySnapshot, new UserKeyword()));
-        indicationsLayout.setVisibility(keywordList.size() == 0 ? View.VISIBLE : View.GONE);
         mAdapter.notifyDataSetChanged();
     }
 
@@ -187,6 +183,10 @@ public class UserKeywordsActivity extends AppCompatActivity {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (keywordList.size() > MAX_KEYWORDS) {
+                    __.showLongSnack(btnAdd, getString(R.string.you_can_have_max_keywords) + " " + MAX_KEYWORDS + " " + getString(R.string.keywords));
+                    return;
+                }
                 saveKeyword(etKeyword.getText().toString().trim(), true, false, false);
             }
         });
@@ -227,17 +227,17 @@ public class UserKeywordsActivity extends AppCompatActivity {
             public void onSwiped(final RecyclerView.ViewHolder viewHolder, int swipeDir) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(UserKeywordsActivity.this);
-                builder.setTitle("Supprimer le mot clé ?");
+                builder.setTitle(R.string.delete_keyword_indication);
                 builder.setMessage(getString(R.string.delete_keyword_warning));
 
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         ((UserKeywordsRecyclerAdapter.ViewHolder) viewHolder).deleteKeyword();
                     }
                 });
 
-                builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         mAdapter.notifyDataSetChanged();
@@ -245,8 +245,6 @@ public class UserKeywordsActivity extends AppCompatActivity {
                 });
 
                 builder.show();
-
-
             }
         };
 
@@ -261,11 +259,21 @@ public class UserKeywordsActivity extends AppCompatActivity {
         context.startActivity(intent);
     }
 
+
+    private synchronized void unsync() {
+        if (keywordsRegistration != null) keywordsRegistration.remove();
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        sync();
+    }
+
     @Override
     public void onStop() {
         super.onStop();
-        if (keywordsRegistration != null)
-            keywordsRegistration.remove();
+        unsync();
     }
-
 }

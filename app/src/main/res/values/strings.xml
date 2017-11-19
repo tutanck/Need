@@ -135,4 +135,7 @@
     <string name="unknown">Inconnue</string>
     <string name="new_activity_keyword">Nouveau mot-clé de mon activité</string>
     <string name="no_search_result">Aucun résultat</string>
+    <string name="delete_keyword_indication">Supprimer le mot clé ?</string>
+    <string name="you_can_have_max_keywords">Vous pouvez avoir au maximum</string>
+    <string name="keywords">mots-clés.</string>
 </resources>

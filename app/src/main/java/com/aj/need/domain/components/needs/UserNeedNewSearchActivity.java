@@ -57,8 +57,8 @@ public class UserNeedNewSearchActivity extends AppCompatActivity implements Sear
     // UI:
     private SearchView searchView;
     private RecyclerView mRecyclerView;
-    private LinearLayoutManager linearLayoutManager;
     private UserProfilesRecyclerAdapter mAdapter;
+    private LinearLayoutManager linearLayoutManager;
     private List<UserProfile> userProfileList = new ArrayList<>();
 
 
