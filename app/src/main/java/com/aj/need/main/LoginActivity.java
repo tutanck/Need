@@ -90,9 +90,9 @@ public class LoginActivity extends AppCompatActivity {
                                 if (task.isSuccessful()) {
                                     if (!IO.getCurrentUser().isEmailVerified()) {
                                         progressBarFragment.hide();
-                                        
-                                        //// TODO: 12/11/2017 set timer to not send too many emails
-                                        Snackbar.make(btnLogin, "Votre email n'est pas vérifié!", Snackbar.LENGTH_LONG)
+
+                                        //TODO LATER: 12/11/2017 set timer to not send too many emails
+                                        Snackbar.make(btnLogin, R.string.email_not_verified, Snackbar.LENGTH_LONG)
                                                 .setAction(R.string.resend_email, new View.OnClickListener() {
                                                     @Override
                                                     public void onClick(View view) {

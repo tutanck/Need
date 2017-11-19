@@ -138,4 +138,5 @@
     <string name="delete_keyword_indication">Supprimer le mot clé ?</string>
     <string name="you_can_have_max_keywords">Vous pouvez avoir au maximum</string>
     <string name="keywords">mots-clés.</string>
+    <string name="email_not_verified">Votre email n\'est pas vérifié!</string>
 </resources>
