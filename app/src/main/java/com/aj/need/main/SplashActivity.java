@@ -11,13 +11,14 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import com.aj.need.R;
-import com.aj.need.tools.utils.__;
-import com.google.android.gms.location.FusedLocationProviderClient;
+import com.aj.need.services._GooglePlayService;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+
+import static com.aj.need.tools.utils.__.showShortToast;
+
 
 /**
  * Created by joan on 01/10/2017.
@@ -29,67 +30,53 @@ public class SplashActivity extends Activity {
 
     private static int SPLASH_TIME_OUT = 1000;
 
-    private App app;
-    private FusedLocationProviderClient mFusedLocationClient;
-    private FirebaseAuth auth;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-
-        app = (App) getApplication();
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        auth = FirebaseAuth.getInstance();
     }
 
 
     @Override
-    protected void onStart() {
-        super.onStart();
-
-        /* todo ggl play services  : @see https://firebase.google.com/docs/cloud-messaging/android/client
-        todo : consider doing this in the splash activity iof
-        Apps that rely on the Play Services SDK should always check the device for a compatible Google Play services APK before accessing Google Play services features. It is recommended to do this in two places: in the main activity's onCreate() method, and in its onResume() method. The check in onCreate() ensures that the app can't be used without a successful check. The check in onResume() ensures that if the user returns to the running app through some other means, such as through the back button, the check is still performed.
-        If the device doesn't have a compatible version of Google Play services, your app can call GoogleApiAvailability.makeGooglePlayServicesAvailable() to allow users to download Google Play services from the Play Store. */
-
-        start();
+    protected void onResume() {
+        super.onResume();
+        _GooglePlayService.checkPlayServices(this);
+        begin();
     }
 
 
-    private void start() {
+    private void begin() {
+        final FirebaseAuth auth = FirebaseAuth.getInstance();
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, App.MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             return;
         }
 
-        mFusedLocationClient.getLastLocation().addOnCompleteListener(this, new OnCompleteListener<Location>() {
+        LocationServices.getFusedLocationProviderClient(this).getLastLocation().addOnCompleteListener(this, new OnCompleteListener<Location>() {
             @Override
             public void onComplete(@NonNull Task<Location> task) {
                 if (task.isSuccessful()) {
                     Location location = task.getResult();
                     if (location != null) // Got last known location. In some rare situations this can be null. Dt override old location if current is null
-                        app.setLastLocalKnownLocation(location);
+                        ((App) getApplication()).setLastLocalKnownLocation(location);
                 } else
                     Log.d(TAG, "getLastLocation", task.getException());
 
-                letsGo();
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (auth.getCurrentUser() != null)
+                            MainActivity.start(SplashActivity.this);
+                        else
+                            LoginActivity.start(SplashActivity.this);
+                    }
+                }, SPLASH_TIME_OUT);
+
             }
         });
-    }
-
-
-    private void letsGo() {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (auth.getCurrentUser() != null)
-                    MainActivity.start(SplashActivity.this);
-                else
-                    LoginActivity.start(SplashActivity.this);
-            }
-        }, SPLASH_TIME_OUT);
     }
 
 
@@ -99,9 +86,9 @@ public class SplashActivity extends Activity {
             case App.MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                    start();
+                    begin();
                 else {
-                    __.showShortToast(this, getString(R.string.location_required));
+                    showShortToast(this, getString(R.string.location_required));
                     finish();
                 }
                 return;

@@ -15,6 +15,7 @@ import android.widget.EditText;
 import com.aj.need.R;
 import com.aj.need.db.IO;
 import com.aj.need.db.colls.USERS;
+import com.aj.need.services._GooglePlayService;
 import com.aj.need.tools.components.fragments.ProgressBarFragment;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.KeyboardServices;
@@ -43,6 +44,8 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (!_GooglePlayService.isGooglePlayServicesAvailable(this)) finish();
 
         auth = FirebaseAuth.getInstance();
 

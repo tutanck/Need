@@ -25,10 +25,13 @@ import com.aj.need.domain.components.ads.AdsFragment;
 import com.aj.need.domain.components.messages.ConversationsFragment;
 import com.aj.need.domain.components.needs.UserNeedsFragment;
 import com.aj.need.domain.components.profile.ProfileFragment;
+import com.aj.need.services._GooglePlayService;
 import com.aj.need.tools.components.fragments.FormField;
 import com.aj.need.tools.utils.Avail;
 import com.aj.need.tools.utils.Coord;
 import com.aj.need.tools.utils.__;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -60,8 +63,9 @@ public class MainActivity extends AppCompatActivity implements FormField.Listene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!IO.getCurrentUser().isEmailVerified())
-            LoginActivity.start(MainActivity.this);
+        if (!_GooglePlayService.isGooglePlayServicesAvailable(this)) finish();
+
+        if (!IO.getCurrentUser().isEmailVerified()) LoginActivity.start(MainActivity.this);
 
         authListener = new FirebaseAuth.AuthStateListener() {
             @Override
