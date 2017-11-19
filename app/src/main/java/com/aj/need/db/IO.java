@@ -28,9 +28,6 @@ public class IO {
     }
 
     public static String getCurrentUserUid() {
-        //// TODO: 06/11/2017 : this .m must be the only one method used to access uid  
-        //// TODO: 06/11/2017 test auth !=null && currentUser!=null && uid !null and else go to login page
-        //// TODO: 06/11/2017  test after deleting all app infos
         return auth.getCurrentUser().getUid();
     }
 

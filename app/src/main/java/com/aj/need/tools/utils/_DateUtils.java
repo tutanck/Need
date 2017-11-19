@@ -55,7 +55,6 @@ public class _DateUtils {
 
         String ago = "il y a ";
 
-        // TODO: localize
         final long diff = now - time;
         if (diff < MINUTE_MILLIS) return "à l'instant";
 

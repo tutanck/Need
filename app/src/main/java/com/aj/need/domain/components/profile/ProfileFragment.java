@@ -299,7 +299,7 @@ public class ProfileFragment extends Fragment implements FormField.Listener.Dele
                             } else __.fatal("ProfileFragment : No such document");
                         } else {
                             Log.d("getUserProfile", "get failed with ", task.getException());
-                            __.showShortToast(getContext(), "Impossible de charger le profile"); //// TODO: 13/10/2017
+                            __.showShortToast(getContext(), "Impossible de charger le profile"); //// TODO: 13/10/2017 what to do ?
                         }
                     }
                 }

@@ -40,10 +40,10 @@ public class PokesFragment extends Fragment {
     /*
     *!important the number of results displayed must always be enough to over-fulfill the screen :
     * The first visible and the last visible items must never be seen on the same screen */
-    private final int HITS_PER_PAGE = 10; //// TODO: 27/10/2017  20 in prod
+    private final int HITS_PER_PAGE = 20;
 
     // Number of items before the end of the list past which we start loading more content.
-    private static final int LOAD_MORE_THRESHOLD = 1;//// TODO: 15/11/2017 5 in prod
+    private static final int LOAD_MORE_THRESHOLD = 5;
 
 
     // UI:
