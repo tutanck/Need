@@ -34,7 +34,7 @@ import java.util.List;
 
 public class AdsFragment extends Fragment {
 
-    private final static String TAG = "NeedProfilesPokeFrag", QUERY_STRING = "QUERY_STRING";
+    private final static String TAG = "AdsFrag", QUERY_STRING = "QUERY_STRING";
 
 
     //Refresh & indications
@@ -125,7 +125,7 @@ public class AdsFragment extends Fragment {
                 , USER_NEEDS.activeKey
                 , USER_NEEDS.dateKey
         );
-        query.setFilters("NOT ownerID:" + IO.getCurrentUserUid());//// TODO: 19/11/2017  not working
+        query.setFilters("NOT " + USER_NEEDS.ownerIDKey + ":" + IO.getCurrentUserUid());
         query.setHitsPerPage(HITS_PER_PAGE);
 
         setRecyclerViewScrollListener();
