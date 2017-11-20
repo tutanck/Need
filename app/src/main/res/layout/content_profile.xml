@@ -54,13 +54,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="Particulier" />
+                    android:text="@string/individual" />
 
                 <RadioButton
                     android:id="@+id/radio_button2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Entreprise" />
+                    android:text="@string/company" />
 
             </RadioGroup>
 

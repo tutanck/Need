@@ -26,7 +26,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="@dimen/small"
                 android:ellipsize="end"
-                android:text="Publier votre recherche"
+                android:text="@string/publish_your_search"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textColor="#212121"
                 android:textSize="16dp" />
@@ -36,7 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="(publier votre recherche comme annonce)"
+                android:text="@string/publish_search_as_ad"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textColor="#212121"
                 android:textSize="12dp" />
@@ -57,7 +57,7 @@
                     android:layout_marginRight="@dimen/large"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
-                    android:text="Annonce active" />
+                    android:text="@string/active_ad" />
 
                 <Switch
                     android:id="@+id/need_switch"
@@ -88,8 +88,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|right|end"
         android:layout_margin="@dimen/fab_margin"
-        android:backgroundTint="@android:color/transparent"
-        android:elevation="8dp"
+        app:backgroundTint="@android:color/transparent"
+        app:elevation="8dp"
         android:src="@drawable/ic_done_24dp"
         app:borderWidth="0dp"
         app:pressedTranslationZ="6dp"

@@ -139,4 +139,10 @@
     <string name="you_can_have_max_keywords">Vous pouvez avoir au maximum</string>
     <string name="keywords">mots-clés.</string>
     <string name="email_not_verified">Votre email n\'est pas vérifié!</string>
+    <string name="send">Envoi</string>
+    <string name="enter_message">Rédigez un message</string>
+    <string name="publish_your_search">Publier votre recherche</string>
+    <string name="publish_search_as_ad">(publier votre recherche comme annonce)</string>
+    <string name="active_ad">Annonce active</string>
+    <string name="apply">SE PROPOSER</string>
 </resources>

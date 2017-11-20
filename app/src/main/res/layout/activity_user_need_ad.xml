@@ -55,8 +55,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|right|end"
         android:layout_margin="@dimen/fab_margin"
-        android:elevation="8dp"
-        android:backgroundTint="@color/Gold"
+        app:elevation="8dp"
+        app:backgroundTint="@color/Gold"
         android:src="@drawable/ic_description_white_24dp" />
 
 </android.support.design.widget.CoordinatorLayout>
