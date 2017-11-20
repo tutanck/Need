@@ -34,7 +34,7 @@ import java.util.List;
 
 public class AdsFragment extends Fragment {
 
-    private final static String TAG = "AdsFrag", QUERY_STRING = "QUERY_STRING";
+    private final static String TAG = "AdsFrag";
 
 
     //Refresh & indications
