@@ -228,12 +228,12 @@ public class UserProfilesRecyclerAdapter extends RecyclerView.Adapter<UserProfil
             boolean toRead = (!IO.isCurrentUser(mContact.getFrom()) && !mContact.isRead());
             int txtTypeFace = toRead ? Typeface.BOLD_ITALIC : Typeface.NORMAL;
 
-            usernameTV.setTypeface(usernameTV.getTypeface(), txtTypeFace);
+            usernameTV.setTypeface(null, txtTypeFace);
 
-            messageTV.setTypeface(messageTV.getTypeface(), txtTypeFace);
+            messageTV.setTypeface(null, txtTypeFace);
             messageTV.setTextColor(ContextCompat.getColor(mContext, toRead ? R.color.Black : R.color.Silver));
 
-            messageDateTV.setTypeface(messageDateTV.getTypeface(), txtTypeFace);
+            messageDateTV.setTypeface(null, txtTypeFace);
             messageDateTV.setTextColor(ContextCompat.getColor(mContext, toRead ? R.color.Black : R.color.Gray));
         }
 

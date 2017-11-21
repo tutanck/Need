@@ -70,8 +70,15 @@ public class UserProfile extends Entity implements Serializable, ITranslatable<U
         this.availability = availability;
     }
 
-    public boolean isIncomplete(){return getUsername() == null || getAvailability() == Avail.UNKNOWN;}
+    public boolean isIncomplete() {
+        return getUsername() == null || getAvailability() == Avail.UNKNOWN;
+    }
 
+
+    @Override
+    public String toString() {
+        return username + " " + reputation + " " + availability + " " + date;
+    }
 
     @Override
     public UserProfile tr(JSONObject json) {

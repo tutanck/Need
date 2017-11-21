@@ -69,6 +69,12 @@ public class Contact extends UserProfile {
 
 
     @Override
+    public String toString() {
+        return super.toString() + " " + message + " " + from + " " + to + " " + conversationID + " " + messageID + " " + read + " " + date;
+    }
+
+
+    @Override
     public UserProfile tr(DocumentSnapshot contactDoc) {
         Boolean readObj = contactDoc.getBoolean(MESSAGES.readKey);
         return new Contact(

@@ -77,7 +77,7 @@ public class Message extends Entity implements Serializable, ITranslatable<Messa
 
     @Override
     public String toString() {
-        return message + " " + from + " " + to + " " + conversationID + " " + date;
+        return message + " " + from + " " + to + " " + conversationID + " " + messageID + " " + read + " "+ isPending + " " + date;
     }
 
     @Override
