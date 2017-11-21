@@ -145,4 +145,6 @@
     <string name="publish_search_as_ad">(publier votre recherche comme annonce)</string>
     <string name="active_ad">Annonce active</string>
     <string name="apply">SE PROPOSER</string>
+    <string name="warning">Attention!!</string>
+    <string name="warning_deleting_applicants">Cette action entraînera la suppression de toutes les propositions déjà en cours pour cette annonce.</string>
 </resources>

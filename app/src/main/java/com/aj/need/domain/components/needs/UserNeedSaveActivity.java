@@ -302,30 +302,41 @@ public class UserNeedSaveActivity extends AppCompatActivity
             public void onClick(View view) {
                 if (!validState()) return;
 
-                final CollectionReference userNeedsRef = USER_NEEDS.getCurrentUserNeedsRef();
+                AlertDialog.Builder builder = new AlertDialog.Builder(UserNeedSaveActivity.this);
+                builder.setCancelable(false).setTitle(R.string.warning).setMessage(R.string.warning_deleting_applicants);
+                builder.setNegativeButton(R.string.cancel, null);
+                builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        
+                        final CollectionReference userNeedsRef = USER_NEEDS.getCurrentUserNeedsRef();
 
-                //!important : it would be a bug if docs were upserted on update mode (_id==null upsert iof update)
-                final DocumentReference curUserNeedRef = (_id != null) ? userNeedsRef.document(_id) : userNeedsRef.document();
+                        //!important : it would be a bug if docs were upserted on update mode (_id==null upsert iof update)
+                        final DocumentReference curUserNeedRef = (_id != null) ? userNeedsRef.document(_id) : userNeedsRef.document();
 
-                //!important : avoid creating new needs if initial id==null. Must be set bf creating the UserNeed object
-                _id = curUserNeedRef.getId();
+                        //!important : avoid creating new needs if initial id==null. Must be set bf creating the UserNeed object
+                        _id = curUserNeedRef.getId();
 
-                curUserNeedRef.set(new UserNeed(_id
-                        , IO.getCurrentUserUid()
-                        , ((App) getApplication()).getUserName()
-                        , getFieldText(USER_NEEDS.searchKey)
-                        , getFieldText(USER_NEEDS.titleKey)
-                        , getFieldText(USER_NEEDS.descriptionKey)
-                        , getFieldText(USER_NEEDS.rewardKey)
-                        , getFieldText(USER_NEEDS.whereKey)
-                        , isWhereVisible
-                        , whereCoord
-                        , needSwitch.isChecked())
-                );
+                        curUserNeedRef.set(new UserNeed(_id
+                                , IO.getCurrentUserUid()
+                                , ((App) getApplication()).getUserName()
+                                , getFieldText(USER_NEEDS.searchKey)
+                                , getFieldText(USER_NEEDS.titleKey)
+                                , getFieldText(USER_NEEDS.descriptionKey)
+                                , getFieldText(USER_NEEDS.rewardKey)
+                                , getFieldText(USER_NEEDS.whereKey)
+                                , isWhereVisible
+                                , whereCoord
+                                , needSwitch.isChecked())
+                        );
 
-                close();
-                __.showShortToast(UserNeedSaveActivity.this, getString(R.string.update_sucessful_message));
-                //finish(); //TODO: 04/10/2017 uncomment on prod mode
+                        close();
+                        __.showShortToast(UserNeedSaveActivity.this, getString(R.string.update_sucessful_message));
+
+                    }
+                });
+                builder.show();
+
             }
         });
     }

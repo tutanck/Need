@@ -109,7 +109,7 @@ public class UserKeywordsRecyclerAdapter extends RecyclerView.Adapter<UserKeywor
 
         void deleteKeyword() {
             if (mIsEditable)
-                ((UserKeywordsActivity) mContext).saveKeyword(mUserKeyword.getKeyword(), mUserKeyword.isActive(), true, true);
+                ((UserKeywordsActivity) mContext).saveKeyword(mUserKeyword.getKeyword(), false, true, true);
         }
 
     }
